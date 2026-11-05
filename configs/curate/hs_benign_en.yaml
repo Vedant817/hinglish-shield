@@ -1,0 +1,38 @@
+# HS-Benign EN CuratorKIT pipeline (CPU clean/dedup/export).
+# Hold: do not run until Lexsi/Vedant confirm registration.
+# Prefer: python -m src.curate.build_en_v0 --run-curatorkit
+#
+# Refs: vendor/CuratorKIT/docs/reference/cli.md
+#       data/CURATION_PLAN.md
+
+name: hs_benign_en
+version: "0.1.0"
+
+readers:
+  - type: jsonl
+    path: data/interim/en/hs_benign_train.jsonl
+    format: prompt_only
+    # TODO(cli): field_mapping prompt -> instruction if YAML supports it
+    # (docs/guides/data-sources.md). build_en_v0 Python path already maps.
+
+gates:
+  - type: schema
+    required_fields:
+      - instruction
+    min_tokens: 3
+    max_tokens: 2048
+    use_tiktoken: false
+  # toxicity_gate off: OR-Bench hard is benign-looking-risky; Detoxify FPs expected
+
+normalizers:
+  - type: exact_dedup
+  - type: text_cleaner
+    transforms:
+      strip_html: true
+      normalise_unicode: true
+      fix_encoding_artifacts: true
+      collapse_whitespace: true
+      remove_control_chars: true
+
+exporters:
+  - type: ppo

@@ -1,0 +1,42 @@
+# HS-Harm EN CuratorKIT pipeline (CPU clean/dedup/export).
+# Hold: do not run until Lexsi/Vedant confirm registration.
+# Prefer: python -m src.curate.build_en_v0 --run-curatorkit
+# Or: curatorkit run configs/curate/hs_harm_en.yaml --output-dir data/curated/hs_harm_en/train
+#
+# Refs: vendor/CuratorKIT/docs/reference/cli.md
+#       vendor/CuratorKIT/examples/quickstart/pipeline.yaml
+#       data/CURATION_PLAN.md
+
+name: hs_harm_en
+version: "0.1.0"
+
+readers:
+  - type: jsonl
+    path: data/interim/en/hs_harm_train.jsonl
+    format: prompt_only
+    # field_mapping is Python-API oriented; YAML reader uses format detection.
+    # Ensure interim rows include "prompt"; map via build_en_v0 when using Python API.
+    # TODO(cli): if YAML gains field_mapping, set prompt -> instruction here
+    # (see docs/guides/data-sources.md).
+
+gates:
+  - type: schema
+    required_fields:
+      - instruction
+    min_tokens: 3
+    max_tokens: 2048
+    use_tiktoken: false
+  # toxicity_gate intentionally omitted: would reject harm prompts
+
+normalizers:
+  - type: exact_dedup
+  - type: text_cleaner
+    transforms:
+      strip_html: true
+      normalise_unicode: true
+      fix_encoding_artifacts: true
+      collapse_whitespace: true
+      remove_control_chars: true
+
+exporters:
+  - type: ppo

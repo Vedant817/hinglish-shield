@@ -1,0 +1,56 @@
+# Dataset Card: hs_benign_en_val
+
+## Summary
+
+- **Run timestamp**: 2026-11-05T19:59:21.163688Z
+- **Wall clock time**: 0.0s
+- **Pipeline config hash**: `2c6d558c052c762b`
+
+## Source Documents
+
+  - Unknown
+
+## Pipeline Stages
+
+| Step | Input | Passed | Recovered | Rejected | Forward |
+|------|-------|--------|-----------|----------|---------|
+| JSONLReader | 117 | 117 | — | 0 | 117 |
+| SchemaGate | 117 | 117 | 0 | 0 | 117 |
+| ExactDeduplicator | 117 | 117 | — | — | 117 |
+| TextCleaner | 117 | 117 | — | — | 117 |
+| PPOExporter | — | 117 | — | — | 117 |
+
+## Gate Pass Rates and Rejection Breakdown
+
+- **JSONLReader**: 117/0 passed (N/A), 0 rejected
+- **SchemaGate**: 117/117 passed (100.0%), 0 rejected
+
+
+**Rejection reasons:**
+  - None
+
+## Deduplication
+
+  - exact_duplicates_removed: 0
+
+## Known Limitations
+
+- No MinHash deduplication applied.
+- Table extraction requires `extract_tables: true` on the PDF reader and MinerU with GPU support. Disabled by default.
+- Token counting uses a whitespace tokenizer by default. For exact LLM context window
+  enforcement, enable `use_tiktoken: true` in the SchemaGate config.
+- Both within-run (MinHash/Diversity) and cross-run (EmbeddingDeduplicator) deduplication
+  are available. Cross-run dedup persists an embedding index across runs; use
+  `embedding_reset_index: true` to start fresh.
+
+## Reproduction
+
+```bash
+pip install curatorkit
+curatorkit run pipeline.yaml --output-dir ./out/
+```
+
+## Tool Versions
+
+- **curatorkit**: 0.1.21
+- **python**: 3.13.5

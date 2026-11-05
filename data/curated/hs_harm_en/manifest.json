@@ -1,0 +1,26 @@
+{
+  "name": "hs_harm_en",
+  "curatorkit_version": "0.1.21",
+  "interim_n": 943,
+  "passed_n": 943,
+  "rejected_n": 0,
+  "test_frac": 0.355,
+  "splits": {
+    "train": {
+      "passed": 465,
+      "rejected": 0,
+      "dir": "data/curated/hs_harm_en/train"
+    },
+    "val": {
+      "passed": 143,
+      "rejected": 0,
+      "dir": "data/curated/hs_harm_en/val"
+    },
+    "test": {
+      "passed": 335,
+      "rejected": 0,
+      "dir": "data/curated/hs_harm_en/test"
+    }
+  },
+  "note": "Rollup of per-split CuratorKIT outputs. See each split manifest.json and lexsi_provenance.json for checksums."
+}
