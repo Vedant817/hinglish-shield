@@ -1,0 +1,20 @@
+project: hinglish-shield
+model_id: CohereLabs/tiny-aya-global
+fallback_model_id: CohereLabs/aya-expanse-8b
+seed: 42
+languages:
+  - EN
+  - HI
+  - Hinglish
+judges:
+  primary: allenai/wildguard
+  secondary: llm_judge
+repair_order:
+  - steering
+  - lora_finetune
+data:
+  seeds_dir: data/seeds
+  curated_dir: data/curated
+paths:
+  runs_dir: runs
+  metrics_schema: schemas/metrics.schema.json

@@ -1,0 +1,12 @@
+# Hinglish Shield - light deps for make smoke (Python 3.11+)
+jsonschema==4.23.0
+PyYAML==6.0.2
+
+# Heavy stack (install when registration/compute is green; pin later):
+# torch
+# transformers
+# datasets
+# huggingface_hub
+# gradio
+# pandas
+# matplotlib

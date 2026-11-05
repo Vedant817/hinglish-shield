@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+.env.*
+
+# Caches and local tooling
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+.DS_Store
+
+# Local vendor checkouts and HF cache (not for this repo)
+vendor/
+.cache/
+huggingface/
+
+# Run artifacts except the checked-in example
+runs/*
+!runs/_example/
+!runs/_example/**
+
+*.pt
+*.bin
+*.safetensors
+*.ckpt
