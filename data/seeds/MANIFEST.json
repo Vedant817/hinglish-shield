@@ -1,0 +1,43 @@
+{
+  "pulled_date": "2026-11-06 IST",
+  "root": "data/seeds",
+  "sources": {
+    "aya_redteaming": {
+      "path": "data/seeds/aya_redteaming",
+      "url": "https://huggingface.co/datasets/CohereLabs/aya_redteaming",
+      "license": "Apache-2.0",
+      "n_items": 7419,
+      "n_items_hindi": 915,
+      "hindi_path": "data/seeds/aya_redteaming/aya_hin.jsonl",
+      "notes": "Per-language JSONL from HF. Hindi subset is aya_hin.jsonl (915). n_items is sum of all language files. License from HF card YAML and README."
+    },
+    "harmbench": {
+      "path": "data/seeds/harmbench",
+      "url": "https://github.com/centerforaisafety/HarmBench",
+      "license": "MIT",
+      "n_items": 400,
+      "primary_file": "data/seeds/harmbench/behavior_datasets/harmbench_behaviors_text_all.csv",
+      "notes": "Behaviors only. n_items is harmbench_behaviors_text_all.csv data rows (csv-parsed). Also saved test/val/multimodal CSVs and extra_behavior_datasets. No images or model artifacts. License from repo LICENSE."
+    },
+    "xstest": {
+      "path": "data/seeds/xstest",
+      "url": "https://github.com/paul-rottger/xstest",
+      "license": "CC-BY-4.0",
+      "n_items": 450,
+      "primary_file": "data/seeds/xstest/xstest_prompts.csv",
+      "notes": "Prompts only (xstest_prompts.csv). Completions and eval labels not kept. License from LICENSE and readme.md."
+    },
+    "or_bench": {
+      "path": "data/seeds/or_bench",
+      "url": "https://huggingface.co/datasets/bench-llm/or-bench",
+      "license": "CC-BY-4.0",
+      "n_items": 80359,
+      "files": {
+        "or-bench-80k.csv": 80359,
+        "or-bench-hard-1k.csv": 1319,
+        "or-bench-toxic.csv": 655
+      },
+      "notes": "n_items refers to or-bench-80k.csv data rows. hard-1k and toxic also saved. License from HF card YAML. Images not downloaded."
+    }
+  }
+}
