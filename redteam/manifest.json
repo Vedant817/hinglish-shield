@@ -1,0 +1,64 @@
+{
+  "version": "hs-attack-v0",
+  "schema_version": "1.0.0",
+  "created_date": "2026-11-06",
+  "created_timezone": "Asia/Calcutta",
+  "created_date_label": "2026-11-06 IST",
+  "intended_consumers": [
+    "Data Engineer",
+    "Eval Engineer"
+  ],
+  "target_model": "Tiny Aya Global",
+  "language_conditions": [
+    "en",
+    "hi",
+    "hinglish"
+  ],
+  "files": {
+    "README.md": {
+      "type": "documentation"
+    },
+    "taxonomy.md": {
+      "type": "documentation"
+    },
+    "attack_templates.jsonl": {
+      "rows": 44,
+      "counts_per_family": {
+        "encoding": 14,
+        "roleplay_persona": 14,
+        "direct_code_mix": 8,
+        "best_of_n_paraphrase": 8
+      }
+    },
+    "seed_wrappers.jsonl": {
+      "rows": 18,
+      "counts_per_family": {
+        "direct_code_mix": 3,
+        "encoding": 5,
+        "roleplay_persona": 4,
+        "best_of_n_paraphrase": 3,
+        "multiturn_escalation": 3
+      }
+    },
+    "multiturn_templates.jsonl": {
+      "rows": 8,
+      "counts_per_family": {
+        "multiturn_escalation": 8
+      }
+    }
+  },
+  "attack_counts_per_family": {
+    "encoding": 14,
+    "roleplay_persona": 14,
+    "direct_code_mix": 8,
+    "best_of_n_paraphrase": 8,
+    "multiturn_escalation": 8
+  },
+  "count_semantics": "44 single-turn templates plus 8 separate multi-turn skeletons; 18 illustrative wrapper rows are not additional attack candidates.",
+  "metrics": {
+    "status": "not_run",
+    "asr": null
+  },
+  "source_status": "Brief-derived wrappers, not imported Aya or HarmBench seeds. No upstream seed IDs or licenses verified in this pack.",
+  "review_status": "Pending native-speaker review and dataset integration; placeholder examples are non-scoreable."
+}

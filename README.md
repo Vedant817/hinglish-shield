@@ -20,6 +20,7 @@ runs/          metrics.json per run (example under runs/_example)
 schemas/       metrics JSON Schema
 scripts/       smoke and helpers
 notebooks/     exploration
+redteam/       attack templates and wrappers (research eval)
 space/         Gradio HF Space
 ```
 
