@@ -5,6 +5,7 @@ import sys
 import json
 import hashlib
 import unittest
+import pytest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -83,13 +84,19 @@ def test_exposure_ledger_blocks_old_holdout_without_reading_prompts(tmp_path, mo
     assert any("unreadable or invalid" in p for p in problems)
 
 
-def test_exposure_guard_requires_ledger_and_tracks_source_across_family_renames(tmp_path, monkeypatch):
+@pytest.mark.parametrize("ledger_source,member_source", [
+    ("fixture", "fixture"), ("XSTest", "xstest"),
+    ("aya", "aya_redteaming"), ("AYA_REDTEAMING", "AYA"),
+])
+def test_exposure_guard_requires_ledger_and_tracks_source_across_family_renames(
+    tmp_path, monkeypatch, ledger_source, member_source,
+):
     monkeypatch.setattr(run_baseline, "ROOT", tmp_path)
     split_dir = tmp_path / "data/splits"
     split_dir.mkdir(parents=True)
     manifest = split_dir / "membership.json"
     raw = json.dumps({"frozen": True, "families": {"renamed": {"split": "test", "members": [
-        {"source_dataset": "fixture", "source_id": "one"}]}}}).encode()
+        {"source_dataset": member_source, "source_id": "one"}]}}}).encode()
     manifest.write_bytes(raw)
     Path(str(manifest) + ".sha256").write_text(hashlib.sha256(raw).hexdigest())
     config = {"model_revision": "a" * 40, "splits": ["test"],
@@ -99,5 +106,5 @@ def test_exposure_guard_requires_ledger_and_tracks_source_across_family_renames(
                                                      config_path=tmp_path / "test_locked.yaml")
     assert any("exposure ledger" in p for p in problems())
     (split_dir / "development_exposures.json").write_text(json.dumps({"entries": [
-        {"family_id": "original", "source_dataset": "fixture", "source_id": "one"}]}))
+        {"family_id": "original", "source_dataset": ledger_source, "source_id": "one"}]}))
     assert any("development-exposed" in p for p in problems())

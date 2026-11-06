@@ -25,6 +25,8 @@ import sys
 from pathlib import Path
 from typing import Any
 
+from src.curate.family_splits import canon
+
 ROOT = Path(__file__).resolve().parents[2]
 
 try:
@@ -152,10 +154,11 @@ def _validate_test_single_shot(
                             source_id = entry["source_id"]
                             if not all(isinstance(value, str) and value for value in (source, source_id)):
                                 raise ValueError("Invalid exposure identity")
+                            identity = canon(source.casefold(), source_id)
                             family = membership["families"].get(entry["family_id"])
                             member_in_test = any(
                                 candidate.get("split") == "test" and any(
-                                    member.get("source_dataset") == source and str(member.get("source_id")) == source_id
+                                    canon(member["source_dataset"].casefold(), str(member["source_id"])) == identity
                                     for member in candidate.get("members", [])
                                 ) for candidate in membership["families"].values()
                             )
