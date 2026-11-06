@@ -1,0 +1,53 @@
+{
+  "curatorkit_version_pinned": "0.1.21",
+  "curatorkit_DataSample_fields": {
+    "id": "uuid or stable hash; map from translation id or item_id",
+    "source_uri": "seed path or HF URI, e.g. seeds://aya_redteaming/aya_hin.jsonl#{source_id}",
+    "instruction": "prompt text for the language variant (english OR hindi OR hinglish)",
+    "input": "usually empty for prompt_only audit",
+    "output": "empty for prompt_only audit sets",
+    "task_type": "prompt_only",
+    "metadata": "HS project fields (see hs_eval_schema)",
+    "provenance_chain": "append translation step record"
+  },
+  "hs_eval_schema_used_in_curated_exports": [
+    "item_id",
+    "prompt",
+    "hs_label",
+    "source_dataset",
+    "source_id",
+    "category",
+    "lang",
+    "split",
+    "variant_of",
+    "curatorkit_id"
+  ],
+  "batch_translation_columns_kept_as_metadata": [
+    "label",
+    "category",
+    "qc_notes",
+    "method"
+  ],
+  "column_map_batch01_to_hs_eval": {
+    "id": "item_id (prefix with lang, e.g. b01-001:hi)",
+    "english": "prompt when lang=en; also store as variant family",
+    "hindi": "prompt when lang=hi",
+    "hinglish": "prompt when lang=hinglish",
+    "label": "hs_label via map harmful->harm, benign->benign",
+    "category": "category (metadata; keep)",
+    "source": "source_dataset",
+    "source_id": "source_id",
+    "qc_notes": "notes / metadata.qc_notes (sidecar if not in minimal hs_eval)"
+  },
+  "label_map": {
+    "harmful": "harm",
+    "benign": "benign"
+  },
+  "one_row_per_language_variant": true,
+  "variant_of": "shared family id across en/hi/hinglish of same seed",
+  "evidence": {
+    "curatorkit_schema": "vendor/CuratorKIT/curatorkit/schema.py DataSample",
+    "project_hs_eval_example": "data/curated/hs_harm_en/train/hs_eval.jsonl",
+    "approaches_hq": "Notion Approaches Deep Dive (CuratorKIT exports manifest.json, rejected.jsonl, lexsi_provenance.json, checksums.txt)"
+  }
+}
