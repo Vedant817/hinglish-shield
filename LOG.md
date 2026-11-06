@@ -31,3 +31,7 @@ Format per iteration: what, result, next. Times in IST. No em dashes.
 - what: Notebook records CircuitKIT SHA e71d5e17..., prompts/KL/long-spec SHA-256, and adds the 4196-token sliding-window case to the sequential fp32 original gate (short and long KL both required; missing long => incomplete). Added scripts/verify_parity_copy.py; output in runs/setup-smoke-2026-11-06/parity-copy-verify.txt.
 - result: verify script PASS. Gate dry-run: long missing => incomplete; both OK => pass; long bad => fail. nbformat OK.
 - next: comment verify output on PR #10; Vedant still runs on Kaggle.
+- what: ML Research Lead wrote H1 baseline preregistration (docs/research/PREREG_baseline.md, configs/research/baseline_prereg.yaml) and GPU options memo (docs/research/compute_options.md) on branch research/baseline-prereg.
+- result: Prereg frozen locally, not measured. Split ratio and baseline-split discrepancies with CURATION_PLAN.md and configs/eval/baseline.yaml recorded, not overridden. No compute spent.
+- next: Lead + Data Engineer decide family-grouped split; pin model revision and chat template hash at run time; Vedant picks compute option.
+- Research: logged prereg deviation D1 (free tier only, fp16 on T4, fp16 vs bf16 logit guard on 20 calibration prompts). Next: Lexsi/ML Engineer pick Colab or Kaggle on an existing account.

@@ -1,28 +1,28 @@
 {
-  "pipeline_config_hash": "5d994f2e16d46c44",
-  "run_timestamp": "2026-11-05T19:59:21.139791Z",
+  "pipeline_config_hash": "b45555aae98c718c",
+  "run_timestamp": "2026-11-06T07:24:40.889801Z",
   "source_files": [],
   "stage_counts": {
     "JSONLReader": {
-      "output_count": 335,
+      "output_count": 509,
       "rejected_count": 0
     },
     "SchemaGate": {
-      "input_count": 335,
-      "output_count": 335,
+      "input_count": 509,
+      "output_count": 509,
       "probe_recovered": 0,
       "rejected_count": 0
     },
     "ExactDeduplicator": {
-      "input_count": 335,
-      "output_count": 335
+      "input_count": 509,
+      "output_count": 509
     },
-    "TextCleaner": {
-      "input_count": 335,
-      "output_count": 335
+    "PayloadPreservingTextCleaner": {
+      "input_count": 509,
+      "output_count": 509
     },
     "PPOExporter": {
-      "exported_count": 335
+      "exported_count": 509
     }
   },
   "rejected_breakdown": {},
@@ -36,7 +36,7 @@
     "total_completion_tokens": 0,
     "total_tokens": 0
   },
-  "wall_clock_seconds": 0.01,
+  "wall_clock_seconds": 0.018,
   "tool_versions": {
     "curatorkit": "0.1.21",
     "python": "3.13.5"
@@ -49,13 +49,13 @@
     "library": "curatorkit",
     "version": "0.1.21",
     "git_sha": null,
-    "created_at": "2026-11-05T19:59:21Z",
+    "created_at": "2026-11-06T07:24:40Z",
     "base_model": null,
     "method": "curate",
     "inputs": [
       {
         "kind": "dataset",
-        "ref": "/workspace/hinglish-shield/data/interim/en/hs_harm_test.jsonl",
+        "ref": "/workspace/hinglish-shield-wt-splits/data/interim/en/hs_harm_test.jsonl",
         "config": null,
         "provenance": null
       }
@@ -68,7 +68,7 @@
         "ppo"
       ],
       "output_split": null,
-      "pipeline_config_hash": "5d994f2e16d46c44"
+      "pipeline_config_hash": "b45555aae98c718c"
     }
   }
 }
