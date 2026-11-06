@@ -1,25 +1,28 @@
 #!/usr/bin/env python3
-"""Check staging translation CSVs against DE B family-split rules.
+"""Check staging translation CSVs against DE B family-split rules (v2).
 
-Exits 0 if:
-  - DE B checker/manifest not present yet (prints SKIP), or
-  - DE B checker passes and local one-split-per-family invariant holds for filled rows.
+Uses data/splits/family_lookup.csv for local fill checks and, when present,
+DE B's python -m src.curate.check_family_splits with family_splits_v2.json.
+
+Exits 0 on SKIP (DE B artifacts absent) with local vacuous/local-ok, or on full pass.
 Exits 1 on violations.
 """
 from __future__ import annotations
 
 import csv
-import importlib.util
+import subprocess
 import sys
 from collections import defaultdict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 CHECKER = ROOT / "src" / "curate" / "check_family_splits.py"
-MANIFEST = ROOT / "data" / "splits" / "family_splits_v1.json"
+MANIFEST = ROOT / "data" / "splits" / "family_splits_v2.json"
+LOOKUP = ROOT / "data" / "splits" / "family_lookup.csv"
 CSV_PATHS = [
     ROOT / "data" / "staging" / "translations" / "batch01.csv",
     ROOT / "data" / "staging" / "translations" / "aya_hinglish" / "aya_hinglish_sample50.csv",
+    ROOT / "data" / "staging" / "review" / "vedant_review_nov7.csv",
 ]
 
 
@@ -35,7 +38,7 @@ def local_invariant(paths: list[Path]) -> list[str]:
             if not fam:
                 continue
             if not split:
-                errors.append(f"{path.name}: {r.get('id')} has family_id without split")
+                errors.append(f"{path.name}: {r.get('id') or r.get('review_id')} has family_id without split")
                 continue
             fam_splits[fam].add(split)
     for fam, splits in fam_splits.items():
@@ -45,12 +48,14 @@ def local_invariant(paths: list[Path]) -> list[str]:
 
 
 def main() -> int:
-    errors = local_invariant(CSV_PATHS)
-    if not MANIFEST.exists() or not CHECKER.exists():
+    paths = [p for p in CSV_PATHS if p.exists()]
+    errors = local_invariant(paths)
+
+    if not LOOKUP.exists() or not CHECKER.exists() or not MANIFEST.exists():
         print(
-            "SKIP: DE B manifest/checker not present yet "
-            f"(manifest={MANIFEST.exists()}, checker={CHECKER.exists()}). "
-            "Local filled-row invariant checked."
+            "SKIP: DE B v2 artifacts not present in this checkout "
+            f"(lookup={LOOKUP.exists()}, checker={CHECKER.exists()}, manifest={MANIFEST.exists()}). "
+            "Local filled-row invariant checked only."
         )
         if errors:
             print("FAIL local invariant:")
@@ -60,34 +65,23 @@ def main() -> int:
         print("OK (vacuous / local only)")
         return 0
 
-    spec = importlib.util.spec_from_file_location("check_family_splits", CHECKER)
-    mod = importlib.util.module_from_spec(spec)
-    assert spec.loader is not None
-    spec.loader.exec_module(mod)
-
-    if hasattr(mod, "check_translation_csv"):
-        for path in CSV_PATHS:
-            if path.exists():
-                mod.check_translation_csv(path)
-    elif hasattr(mod, "check_paths"):
-        mod.check_paths([p for p in CSV_PATHS if p.exists()])
-    elif hasattr(mod, "check_manifest"):
-        mod.check_manifest(MANIFEST)
-    elif hasattr(mod, "main"):
-        # best-effort: run main with no args if it self-discovers
-        rc = mod.main([]) if "argv" in (mod.main.__code__.co_varnames) else mod.main()
-        if isinstance(rc, int) and rc != 0:
-            return rc
-    else:
-        print("WARN: DE B checker present but no known API; local invariant only")
-
     if errors:
         print("FAIL local invariant:")
         for e in errors:
             print(" -", e)
         return 1
-    print("OK")
-    return 0
+
+    cmd = [
+        sys.executable,
+        "-m",
+        "src.curate.check_family_splits",
+        "--manifest",
+        str(MANIFEST),
+        *[str(p) for p in paths],
+    ]
+    print("RUNNING:", " ".join(cmd))
+    proc = subprocess.run(cmd, cwd=str(ROOT))
+    return proc.returncode
 
 
 if __name__ == "__main__":

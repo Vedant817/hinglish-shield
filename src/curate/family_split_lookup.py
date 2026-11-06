@@ -1,35 +1,49 @@
-"""Lookup family_id and split from DE B's manifest.
+"""Lookup family_id and split from DE B artifacts (no local family scheme).
 
-DE B owns: data/splits/family_splits_v1.json and src/curate/check_family_splits.py
-(branch data/family-splits). This module only reads that manifest.
+Primary: data/splits/family_lookup.csv
+  columns: source_dataset, source_id, item_id, family_id, split
 
-Expected manifest shape (tolerant):
-  {
-    "seed": 42,
-    "ratios": {"calibration": 0.2, "dev": 0.3, "test": 0.5},
-    "families": {
-      "<family_id>": {
-        "split": "calibration"|"dev"|"test",
-        "members": ["<source_dataset>:<source_id>", ...]
-      }
-    }
-  }
-or equivalently a top-level "member_index" map member -> {family_id, split}.
+Manifest (DE B owned, not vendored here): data/splits/family_splits_v2.json
+Checker (DE B owned): python -m src.curate.check_family_splits [--manifest data/splits/family_splits_v2.json] FILE...
 
-Splits are named calibration / dev / test. Test is frozen; do not sample it for new translations.
+Source names accepted (aliases normalized to DE B source_dataset):
+  xstest, harmbench, or_bench_toxic, or_bench_hard, or_bench_80k,
+  aya / aya_redteaming / aya_redteaming_hi
+
+source_id rules:
+  OR-Bench: accept "row:<i>" or "<i>" (looked up as bare index string)
+  Aya: "hin:<line>" / "eng:<line>" (0-based JSONL line). Staging alias
+  aya_redteaming_hi + bare line becomes aya_redteaming + hin:<line>.
+
+Splits: calibration / dev / test. Test is frozen; default sampling excludes it
+unless allow_test is explicitly set (needed so all language variants exist for test).
 """
 
 from __future__ import annotations
 
-import json
+import csv
 from functools import lru_cache
 from pathlib import Path
-from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_MANIFEST = ROOT / "data" / "splits" / "family_splits_v1.json"
+LOOKUP_CSV = ROOT / "data" / "splits" / "family_lookup.csv"
+DEFAULT_MANIFEST = ROOT / "data" / "splits" / "family_splits_v2.json"
 VALID_SPLITS = frozenset({"calibration", "dev", "test"})
-TRANSLATABLE_SPLITS = frozenset({"calibration", "dev"})  # test frozen until Nov 11 pass
+TRANSLATABLE_SPLITS = frozenset({"calibration", "dev"})
+
+SOURCE_ALIASES = {
+    "aya": "aya_redteaming",
+    "aya_redteaming": "aya_redteaming",
+    "aya_redteaming_hi": "aya_redteaming",
+    "aya_redteaming_hin": "aya_redteaming",
+    "aya_redteaming_eng": "aya_redteaming",
+    "aya_redteaming_en": "aya_redteaming",
+    "xstest": "xstest",
+    "harmbench": "harmbench",
+    "or_bench_toxic": "or_bench_toxic",
+    "or_bench_hard": "or_bench_hard",
+    "or_bench_80k": "or_bench_80k",
+}
 
 
 class ManifestMissingError(FileNotFoundError):
@@ -40,118 +54,101 @@ class FamilyAssignmentError(ValueError):
     pass
 
 
-def _normalize_source(source: str) -> str:
-    s = (source or "").strip()
-    # Allow DE A staging aliases to match DE B source_dataset names when identical.
-    aliases = {
-        "aya_redteaming_hi": "aya_redteaming",
-        "or_bench_toxic": "or_bench_toxic",
-        "or_bench_hard": "or_bench_hard",
-        "or_bench_80k": "or_bench_80k",
-        "xstest": "xstest",
-        "harmbench": "harmbench",
-    }
-    return aliases.get(s, s)
+def normalize_source(source: str) -> str:
+    return SOURCE_ALIASES.get((source or "").strip(), (source or "").strip())
+
+
+def normalize_source_id(source: str, source_id: str) -> tuple[str, str]:
+    """Return (source_dataset, source_id) in DE B lookup form."""
+    raw_src = (source or "").strip()
+    src = normalize_source(raw_src)
+    sid = str(source_id).strip()
+
+    if raw_src in {"aya_redteaming_hi", "aya_redteaming_hin"} and not sid.startswith(("hin:", "eng:")):
+        sid = f"hin:{sid}"
+    if raw_src in {"aya_redteaming_eng", "aya_redteaming_en"} and not sid.startswith(("hin:", "eng:")):
+        sid = f"eng:{sid}"
+
+    if src.startswith("or_bench") and sid.startswith("row:"):
+        sid = sid.split(":", 1)[1]
+
+    return src, sid
 
 
 def member_key(source: str, source_id: str) -> str:
-    return f"{_normalize_source(source)}:{str(source_id).strip()}"
-
-
-def load_manifest(path: Path | None = None) -> dict[str, Any] | None:
-    p = path or DEFAULT_MANIFEST
-    if not p.exists():
-        return None
-    return json.loads(p.read_text(encoding="utf-8"))
-
-
-def build_member_index(manifest: dict[str, Any]) -> dict[str, dict[str, str]]:
-    """Return member_key -> {family_id, split}."""
-    if "member_index" in manifest and isinstance(manifest["member_index"], dict):
-        out: dict[str, dict[str, str]] = {}
-        for k, v in manifest["member_index"].items():
-            if isinstance(v, dict):
-                out[str(k)] = {
-                    "family_id": str(v["family_id"]),
-                    "split": str(v["split"]),
-                }
-            else:
-                # rare: value is family_id only
-                fam = str(v)
-                split = str(manifest.get("families", {}).get(fam, {}).get("split", ""))
-                out[str(k)] = {"family_id": fam, "split": split}
-        return out
-
-    out = {}
-    families = manifest.get("families") or {}
-    for fam_id, meta in families.items():
-        split = str((meta or {}).get("split") or "")
-        for m in (meta or {}).get("members") or []:
-            out[str(m)] = {"family_id": str(fam_id), "split": split}
-    return out
+    src, sid = normalize_source_id(source, source_id)
+    return f"{src}:{sid}"
 
 
 @lru_cache(maxsize=4)
-def _cached_index(manifest_path: str) -> dict[str, dict[str, str]] | None:
-    p = Path(manifest_path)
-    man = load_manifest(p)
-    if man is None:
-        return None
-    return build_member_index(man)
+def _load_lookup(path_str: str) -> dict[tuple[str, str], tuple[str, str]]:
+    p = Path(path_str)
+    if not p.exists():
+        return {}
+    out: dict[tuple[str, str], tuple[str, str]] = {}
+    with p.open(encoding="utf-8", newline="") as f:
+        for r in csv.DictReader(f):
+            out[(r["source_dataset"], r["source_id"])] = (r["family_id"], r["split"])
+    return out
 
 
 def lookup_family(
     source: str,
     source_id: str,
-    manifest_path: Path | None = None,
+    lookup_csv: Path | None = None,
 ) -> tuple[str, str]:
-    """Return (family_id, split). Empty strings if manifest missing or member unknown."""
-    p = manifest_path or DEFAULT_MANIFEST
-    idx = _cached_index(str(p.resolve()) if p.exists() else str(p))
-    if idx is None:
+    """Return (family_id, split). Empty strings if lookup file missing or member unknown."""
+    p = lookup_csv or LOOKUP_CSV
+    idx = _load_lookup(str(p.resolve()) if p.exists() else str(p))
+    if not idx:
         return "", ""
-    hit = idx.get(member_key(source, source_id))
-    if not hit:
-        # try raw source without alias normalization already applied in member_key
-        hit = idx.get(f"{source}:{source_id}")
-    if not hit:
-        return "", ""
-    return hit.get("family_id", ""), hit.get("split", "")
+    src, sid = normalize_source_id(source, source_id)
+    hit = idx.get((src, sid))
+    return (hit[0], hit[1]) if hit else ("", "")
 
 
 def require_assignment(
     source: str,
     source_id: str,
-    manifest_path: Path | None = None,
+    lookup_csv: Path | None = None,
     *,
     allow_test: bool = False,
 ) -> tuple[str, str]:
-    """Raise if manifest missing or row unassigned. Blocks test split unless allow_test."""
-    p = manifest_path or DEFAULT_MANIFEST
+    p = lookup_csv or LOOKUP_CSV
     if not p.exists():
         raise ManifestMissingError(
-            f"DE B split manifest not found at {p}. "
-            "Expected data/splits/family_splits_v1.json from branch data/family-splits."
+            f"DE B family_lookup.csv not found at {p}. "
+            "Expected data/splits/family_lookup.csv from branch data/family-splits (v2)."
         )
     fam, split = lookup_family(source, source_id, p)
     if not fam or not split:
-        raise FamilyAssignmentError(
-            f"No family assignment for {member_key(source, source_id)} in {p}"
-        )
+        src, sid = normalize_source_id(source, source_id)
+        raise FamilyAssignmentError(f"No family assignment for {src}:{sid} in {p}")
     if split not in VALID_SPLITS:
         raise FamilyAssignmentError(f"Unknown split {split!r} for {fam}")
     if split == "test" and not allow_test:
         raise FamilyAssignmentError(
-            f"Family {fam} is in frozen test split; refuse for translation sampling "
-            "(test read only by Nov 11 pass)."
+            f"Family {fam} is in frozen test split; refuse for default translation sampling "
+            "(pass --include-test-families only when building full-family test language variants)."
         )
     return fam, split
 
 
-def annotate_row(row: dict, *, source_field: str = "source", id_field: str = "source_id") -> dict:
-    """Fill family_id and split columns via lookup; leave blank if manifest absent."""
+def annotate_row(
+    row: dict,
+    *,
+    source_field: str = "source",
+    id_field: str = "source_id",
+    normalize_inplace: bool = False,
+) -> dict:
     out = dict(row)
-    fam, split = lookup_family(row.get(source_field, ""), row.get(id_field, ""))
+    src_raw = out.get(source_field, "")
+    sid_raw = out.get(id_field, "")
+    src, sid = normalize_source_id(src_raw, sid_raw)
+    if normalize_inplace:
+        out[source_field] = src
+        out[id_field] = sid
+    fam, split = lookup_family(src_raw, sid_raw)
     out["family_id"] = fam
     out["split"] = split
     return out

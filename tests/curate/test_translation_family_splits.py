@@ -1,6 +1,6 @@
 """Wire DE B family-split checker onto translation staging CSVs.
 
-DE B owns src/curate/check_family_splits.py and data/splits/family_splits_v1.json.
+DE B owns src/curate/check_family_splits.py and data/splits/family_splits_v2.json.
 This test:
   - skips if the checker or manifest is not present yet
   - otherwise runs the checker against staging translation CSVs
@@ -19,7 +19,7 @@ import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
 CHECKER = ROOT / "src" / "curate" / "check_family_splits.py"
-MANIFEST = ROOT / "data" / "splits" / "family_splits_v1.json"
+MANIFEST = ROOT / "data" / "splits" / "family_splits_v2.json"
 BATCH = ROOT / "data" / "staging" / "translations" / "batch01.csv"
 AYA = ROOT / "data" / "staging" / "translations" / "aya_hinglish" / "aya_hinglish_sample50.csv"
 
@@ -39,7 +39,7 @@ def _read(path: Path) -> list[dict]:
         return list(csv.DictReader(f))
 
 
-@pytest.mark.skipif(not MANIFEST.exists(), reason="DE B family_splits_v1.json not present yet")
+@pytest.mark.skipif(not MANIFEST.exists(), reason="DE B family_splits_v2.json not present yet")
 def test_deb_checker_on_translation_csvs():
     mod = _load_checker()
     # Prefer a documented entrypoint if DE B provides one.

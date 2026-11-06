@@ -8,3 +8,5 @@
 - Fallback hinglish ids (lighter polish): 3, 6, 11, 13, 15, 18, 19, 21
 - Split path: `data/staging/translations/aya_hinglish/`
 - No em dashes.
+
+Family fill: DE B data/splits/family_lookup.csv (v2). Aya source_id remains hin:<line>.

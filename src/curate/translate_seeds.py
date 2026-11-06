@@ -4,7 +4,7 @@
 Notion task Done Criteria: each item has EN, HI, Hinglish variants.
 Expected CSV schema (data/staging/translations/):
   id, source, source_id, family_id, split, english, hindi, hinglish, label, category, qc_notes
-family_id/split come from DE B data/splits/family_splits_v1.json via family_split_lookup.
+family_id/split come from DE B data/splits/family_splits_v2.json via family_split_lookup.
 
 Integrity notes (Anti-Hallucination rules):
   - Outputs are custom EN/HI/Hinglish adaptations, not official XSTest/HarmBench/OR-Bench scores.
@@ -31,6 +31,7 @@ from pathlib import Path
 try:
     from src.curate.family_split_lookup import (
         DEFAULT_MANIFEST,
+        LOOKUP_CSV,
         FamilyAssignmentError,
         ManifestMissingError,
         TRANSLATABLE_SPLITS,
@@ -41,6 +42,7 @@ try:
 except ImportError:  # running as a sibling module under src/curate
     from family_split_lookup import (  # type: ignore
         DEFAULT_MANIFEST,
+        LOOKUP_CSV,
         FamilyAssignmentError,
         ManifestMissingError,
         TRANSLATABLE_SPLITS,
@@ -198,14 +200,14 @@ def load_or_bench(which: str) -> list[dict]:
 def sample_mix(n: int = 30, seed: int = 42, *, allow_test: bool = False) -> list[dict]:
     """Sample English seeds that have DE B family assignments.
 
-    Requires data/splits/family_splits_v1.json. Refuses unassigned members.
-    Skips frozen test-split families unless allow_test=True (not for routine translation).
+    Requires data/splits/family_lookup.csv (DE B v2). Refuses unassigned members.
+    Default: calibration/dev only. Skips frozen test-split families unless allow_test=True (explicit flag for completing all language variants of test families; test stays frozen after commit).
     """
     import random
 
-    if not DEFAULT_MANIFEST.exists():
+    if not LOOKUP_CSV.exists():
         raise ManifestMissingError(
-            f"Cannot sample translations without DE B manifest at {DEFAULT_MANIFEST}"
+            f"Cannot sample translations without DE B lookup at {LOOKUP_CSV}"
         )
 
     rng = random.Random(seed)
@@ -797,7 +799,7 @@ def cmd_write_batch01(_: argparse.Namespace) -> int:
 
 
 def cmd_sample(args: argparse.Namespace) -> int:
-    rows = sample_mix(n=args.n, seed=args.seed)
+    rows = sample_mix(n=args.n, seed=args.seed, allow_test=getattr(args, "include_test_families", False))
     # renumber ids with batch tag
     for i, r in enumerate(rows, start=1):
         r["id"] = f"{args.prefix}-{i:03d}"
@@ -826,6 +828,8 @@ def main(argv: list[str] | None = None) -> int:
     s.add_argument("--seed", type=int, default=42)
     s.add_argument("--prefix", default="bXX")
     s.add_argument("--out", default=str(TRANS / "sample_todo.csv"))
+    s.add_argument("--include-test-families", action="store_true",
+                   help="Also sample frozen test-split families (for completing language variants only)")
     s.set_defaults(func=cmd_sample)
 
     q = sub.add_parser("qc", help="Run QC checks on a translations CSV")

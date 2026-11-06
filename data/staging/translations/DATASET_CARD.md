@@ -72,7 +72,16 @@ CuratorKIT run also writes manifest.json, rejected.jsonl, lexsi_provenance.json,
 ## Family splits (Protocol / prereg)
 
 - Unit: semantic family. Ratios calibration 20% / dev 30% / test 50%, seed 42 (research/baseline-prereg 8b6af17).
-- DE B owns `data/splits/family_splits_v1.json` and `src/curate/check_family_splits.py`.
+- DE B owns `data/splits/family_splits_v2.json` and `src/curate/check_family_splits.py`.
 - Staging CSVs include `family_id` and `split` columns filled by lookup on `(source, source_id)`. Blank until the manifest exists.
 - `translate_seeds.py` samples only manifest-assigned families and refuses unassigned or frozen `test` rows.
 - Check: `make check-family-splits-translations` (skips until DE B artifacts land; then runs DE B checker).
+
+## Family split fill (v2)
+
+Filled from DE B `data/splits/family_lookup.csv` (manifest `family_splits_v2.json`, seed 42).
+Do not invent local family IDs. XSTest is never in calibration under v2.
+
+batch01 row counts after fill: calibration 2 / dev 4 / test 24 (24/30 are test-split; 0 unmapped).
+Aya sample50 and the Vedant review sheet are filled the same way.
+Default `translate_seeds.py sample` draws calibration/dev only; `--include-test-families` is required to touch test (for completing language variants; test remains frozen after commit).
