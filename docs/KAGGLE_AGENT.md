@@ -55,10 +55,10 @@ Verify flags with `kaggle kernels --help` against the installed version; docs at
 cd hinglish-shield && git checkout main && git pull
 git checkout -b runs/gpu-<run_id>
 mkdir -p runs/gpu-<run_id>
-unzip /path/to/hs_gpu_artifacts_<run_id>.zip -d runs/gpu-<run_id>/
+python scripts/ingest_gpu_artifacts.py /path/to/hs_gpu_artifacts_<run_id>.zip --run-id gpu-<run_id>
 ```
 
-- Check that no model weights, caches, or tokens landed in the folder (`rg -i "hf_[A-Za-z0-9]{20,}" runs/gpu-<run_id>` must find nothing; remove any `*.safetensors`, `*.bin`).
+- The importer rejects unexpected files, path traversal, symlinks, duplicate filenames, oversized files, nonfinite JSON, model weights and known token patterns before writing. It verifies ZIP CRC, hashes copied files, requires fixture labels for predictions/metric stubs, and recomputes the original short+long parity gate. Missing long output is incomplete even when a source JSON says pass. This is artifact inspection, not authentication of the producing machine or proof of a scored baseline. Review `ingestion.json` and the raw artifacts before committing. Imports never overwrite an existing directory.
 - If the notebook wrote a manifest with hashes, verify it (for parity copies use `python scripts/verify_parity_copy.py` as described in the runbook).
 - Read the results honestly and write them in `LOG.md`:
   - Parity: short and long KL must each be < 1e-4 to pass. If the 4196-token long case did not run, the result is `incomplete`, not a pass. Record fp32 vs bf16 fallback.

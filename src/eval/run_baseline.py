@@ -18,12 +18,19 @@ from __future__ import annotations
 
 import argparse
 import json
+import hashlib
+import re
 import subprocess
 import sys
 from pathlib import Path
 from typing import Any
 
 ROOT = Path(__file__).resolve().parents[2]
+if __package__ in {None, ""}:
+    # Support the documented direct-script CLI as well as python -m.
+    sys.path.insert(0, str(ROOT))
+
+from src.curate.family_splits import canon
 
 try:
     import yaml
@@ -113,9 +120,9 @@ def _validate_test_single_shot(
                 "(Build Plan: evaluate frozen test once; never for selection)"
             )
         datasets = cfg.get("datasets") or {}
-        if not datasets.get("dataset_hash"):
+        if not re.fullmatch(r"[0-9a-f]{64}", str(datasets.get("dataset_hash") or "")):
             problems.append(
-                "test split requires a non-null datasets.dataset_hash "
+                "test split requires a full SHA-256 datasets.dataset_hash "
                 "(partitions not frozen)"
             )
         manifest = datasets.get("split_manifest")
@@ -130,6 +137,40 @@ def _validate_test_single_shot(
                 problems.append(
                     f"test split manifest missing: {manifest}"
                 )
+            else:
+                try:
+                    raw = manifest_path.read_bytes()
+                    membership = json.loads(raw)
+                    sidecar = Path(str(manifest_path) + ".sha256")
+                    if (membership.get("frozen") is not True or not membership.get("families")
+                            or sidecar.read_text().split()[0] != hashlib.sha256(raw).hexdigest()):
+                        problems.append("test membership must be frozen and checksum-verified")
+                    exposure_path = ROOT / "data/splits/development_exposures.json"
+                    if not exposure_path.is_file():
+                        problems.append("required test exposure ledger is missing")
+                    else:
+                        exposures = json.loads(exposure_path.read_text(encoding="utf-8"))
+                        if not isinstance(exposures["entries"], list):
+                            raise ValueError("Invalid exposure entries")
+                        for entry in exposures["entries"]:
+                            source = entry["source_dataset"]
+                            source_id = entry["source_id"]
+                            if not all(isinstance(value, str) and value for value in (source, source_id)):
+                                raise ValueError("Invalid exposure identity")
+                            identity = canon(source.casefold(), source_id)
+                            family = membership["families"].get(entry["family_id"])
+                            member_in_test = any(
+                                candidate.get("split") == "test" and any(
+                                    canon(member["source_dataset"].casefold(), str(member["source_id"])) == identity
+                                    for member in candidate.get("members", [])
+                                ) for candidate in membership["families"].values()
+                            )
+                            if (family and family.get("split") == "test") or member_in_test:
+                                problems.append("test holdout contains a development-exposed family: " + entry["family_id"])
+                except (OSError, ValueError, KeyError, IndexError, TypeError, AttributeError):
+                    problems.append("test membership or exposure ledger is unreadable or invalid")
+        if not re.fullmatch(r"[0-9a-f]{40}", str(cfg.get("model_revision") or "")):
+            problems.append("test split requires a pinned full model_revision")
         prior = _prior_test_run_ids(ROOT / "runs")
         if prior:
             problems.append(

@@ -71,8 +71,7 @@ Every result JSON records dtype, load_order, hardware, and artifact_kind.
 ## Bringing artifacts home
 
 ```bash
-mkdir -p runs/gpu-<run_id>
-unzip ~/Downloads/hs_gpu_artifacts_<run_id>.zip -d runs/gpu-<run_id>/
+python scripts/ingest_gpu_artifacts.py ~/Downloads/hs_gpu_artifacts_<run_id>.zip --run-id gpu-<run_id>
 ```
 
 Append a short IST note to `LOG.md`. Do not invent metric numbers from fixtures or from this setup-smoke guard.

@@ -1,0 +1,26 @@
+[{"stream_name":"stdout","time":10.877805015,"data":"{\n"}
+,{"stream_name":"stdout","time":10.877840741,"data":"  \"artifact_kind\": \"setup-smoke\",\n"}
+,{"stream_name":"stdout","time":10.877844666,"data":"  \"status\": \"complete\",\n"}
+,{"stream_name":"stdout","time":10.87784731,"data":"  \"created_at\": \"2026-11-06T19:45:39.725924+00:00\",\n"}
+,{"stream_name":"stdout","time":10.87784993,"data":"  \"python\": \"3.13.16\",\n"}
+,{"stream_name":"stdout","time":10.877853212,"data":"  \"source_sha256\": \"d1e3b31a55ee8ba55a1d4a303d6ca786ffc4e16a3733ea2531f7f23a28266807\",\n"}
+,{"stream_name":"stdout","time":10.8778674,"data":"  \"limitations\": [\n"}
+,{"stream_name":"stdout","time":10.877871445,"data":"    \"No model or judge inference; no benchmark score\",\n"}
+,{"stream_name":"stdout","time":10.87787553,"data":"    \"Does not establish HF secret attachment or gated model access\"\n"}
+,{"stream_name":"stdout","time":10.877879182000001,"data":"  ],\n"}
+,{"stream_name":"stdout","time":10.877882849,"data":"  \"torch\": \"2.11.0+cu130\",\n"}
+,{"stream_name":"stdout","time":10.877886632,"data":"  \"cuda_available\": true,\n"}
+,{"stream_name":"stdout","time":10.87788987,"data":"  \"gpu_names\": [\n"}
+,{"stream_name":"stdout","time":10.877902698,"data":"    \"Tesla T4\",\n"}
+,{"stream_name":"stdout","time":10.877906068,"data":"    \"Tesla T4\"\n"}
+,{"stream_name":"stdout","time":10.877909273,"data":"  ],\n"}
+,{"stream_name":"stdout","time":10.87791564,"data":"  \"ram_total_bytes\": 33658155008,\n"}
+,{"stream_name":"stdout","time":10.877918194,"data":"  \"ram_available_bytes\": 32174682112\n"}
+,{"stream_name":"stdout","time":10.877920508,"data":"}\n"}
+,{"stream_name":"stderr","time":16.308628318,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":16.308655644,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":16.612216016,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":16.612247174,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":17.450696796,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":18.476155393,"data":"[NbConvertApp] Writing 279423 bytes to __results__.html\n"}
+]

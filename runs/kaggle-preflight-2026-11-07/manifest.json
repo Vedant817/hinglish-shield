@@ -1,0 +1,20 @@
+{
+  "artifact_kind": "setup-smoke",
+  "status": "complete",
+  "full_commit": "a3ee508ab6da5dbd39fd0ae6d6280a84a479f108",
+  "kernel": "https://www.kaggle.com/code/vedant817/hinglish-shield-runtime-preflight",
+  "source_sha256": "d1e3b31a55ee8ba55a1d4a303d6ca786ffc4e16a3733ea2531f7f23a28266807",
+  "files_sha256": {
+    "kaggle.log": "8b568ba65771d6685c0c0c38adb26bf1007a97d2318d784af7448101e52ab697",
+    "runtime_preflight.json": "0c41c218c72c6fea0d7b6a08e374351baa8781a34c5c0c7b96530f086b5cc986"
+  },
+  "limitations": [
+    "Hardware preflight only. No target/judge model loaded. No safety metric or CircuitKIT parity."
+  ],
+  "normalization": {
+    "file": "kaggle.log",
+    "transformation": "CRLF to LF only; log content unchanged",
+    "previously_recorded_download_sha256": "8d5f1fbe485eaa6473fef923d40f751b0077dbfd4f847528bd9d626cdb9c1641",
+    "reason": "The first git add normalized the log before the per-run byte-preservation attribute was added. files_sha256 now describes the committed LF artifact."
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "artifact_kind": "setup-smoke",
+  "purpose": "Development exposure ledger, not model or judge results",
+  "entries": [
+    {
+      "family_id": "fam_983e49e2566f",
+      "source_dataset": "xstest",
+      "source_id": "26",
+      "original_split": "test",
+      "recorded_date_ist": "2026-11-07",
+      "cause": "Mixed review-sheet header inspection printed the first data row, including its prompt and translations, in the coding-agent context",
+      "model_response_generated": false,
+      "test_score_computed": false,
+      "status": "requires_reviewed_holdout_resolution"
+    }
+  ]
+}

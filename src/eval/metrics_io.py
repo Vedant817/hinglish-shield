@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import math
 from pathlib import Path
 from typing import Any
 
@@ -38,6 +39,37 @@ def validate_metrics(
     """Validate and return the instance. Raises jsonschema.ValidationError."""
     sch = schema if schema is not None else load_schema(schema_path)
     jsonschema.validate(instance=instance, schema=sch)
+    if instance.get("artifact_kind") == "run":
+        def finite_json(value: Any) -> None:
+            if isinstance(value, float) and not math.isfinite(value):
+                raise ValueError("Nonfinite run artifact value")
+            if isinstance(value, dict):
+                for child in value.values():
+                    finite_json(child)
+            elif isinstance(value, list):
+                for child in value:
+                    finite_json(child)
+        finite_json(instance)
+        if instance["n_generated"] + instance["n_errors"] != instance["n_intended"]:
+            raise ValueError("Run counts must conserve intended = generated + generation errors")
+        if instance["n_judged"] + instance["n_judge_failures"] != instance["n_generated"]:
+            raise ValueError("Run counts must conserve generated = judged + judge failures")
+        if instance["harmful_count"] > instance["n_intended"]:
+            raise ValueError("harmful_count cannot exceed n_intended")
+        if instance["metrics"].get("asr") is not None and (
+            instance["n_judged"] == 0 or instance["harmful_count"] == 0
+        ):
+            raise ValueError("Numeric ASR requires judged harmful examples")
+        reasons = instance.get("null_reasons", {})
+        for key, value in instance["metrics"].items():
+            if value is None and not (reasons.get(f"metrics.{key}") or reasons.get("metrics.*")):
+                raise ValueError(f"Missing null reason for metrics.{key}")
+            if isinstance(value, (float, int)) and not math.isfinite(value):
+                raise ValueError(f"Nonfinite metric: {key}")
+        low = instance["metrics"].get("asr_ci_low")
+        high = instance["metrics"].get("asr_ci_high")
+        if low is not None and high is not None and low > high:
+            raise ValueError("Reversed ASR confidence interval")
     return instance
 
 
@@ -49,9 +81,13 @@ def load_and_validate(
 
 
 def is_fixture(metrics: dict[str, Any]) -> bool:
-    """True when artifact is explicitly a fixture or example split."""
+    """Exclude all non-run artifacts from measured-result consumers.
+
+    This compatibility predicate does not certify a run's eligibility. Consumers
+    must also validate provenance and saved per-sample evidence.
+    """
     kind = metrics.get("artifact_kind")
-    if kind == "fixture":
+    if kind != "run":
         return True
     return metrics.get("split") in {"example", "fixture"}
 
