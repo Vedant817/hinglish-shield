@@ -56,8 +56,19 @@ def main() -> int:
     import src.locate  # noqa: F401
     import src.repair  # noqa: F401
     import src.demo  # noqa: F401
+    from src.eval.stats import (  # noqa: F401
+        DEFAULT_BOOTSTRAP_REPS,
+        DEFAULT_BOOTSTRAP_SEED,
+        wilson_ci,
+        family_bootstrap_delta,
+    )
+    if DEFAULT_BOOTSTRAP_REPS != 2000 or DEFAULT_BOOTSTRAP_SEED != 20261106:
+        print("FAIL: bootstrap constants drifted from prereg")
+        return 1
+    # Synthetic only: prove wilson_ci import path works (not a reported result).
+    _ = wilson_ci(1, 2)
 
-    print("OK: layout present, example metrics validate, packages import")
+    print("OK: layout present, example metrics validate, packages import, stats ok")
     return 0
 
 
