@@ -70,7 +70,8 @@ def test_exposure_ledger_blocks_old_holdout_without_reading_prompts(tmp_path, mo
     raw = json.dumps({"frozen": True, "families": {"exposed": {"split": "test"}}}).encode()
     manifest.write_bytes(raw)
     manifest.with_suffix(".json.sha256").write_text(hashlib.sha256(raw).hexdigest())
-    (split_dir / "development_exposures.json").write_text(json.dumps({"entries": [{"family_id": "exposed"}]}))
+    (split_dir / "development_exposures.json").write_text(json.dumps({"entries": [
+        {"family_id": "exposed", "source_dataset": "fixture", "source_id": "one"}]}))
     config = {"model_revision": "a" * 40, "splits": ["test"],
               "datasets": {"dataset_hash": "b" * 64, "split_manifest": "data/splits/membership.json"}}
     problems = run_baseline._validate_test_single_shot(config, split="test", i_understand=True,
@@ -80,3 +81,23 @@ def test_exposure_ledger_blocks_old_holdout_without_reading_prompts(tmp_path, mo
     problems = run_baseline._validate_test_single_shot(config, split="test", i_understand=True,
                                                        config_path=tmp_path / "test_locked.yaml")
     assert any("unreadable or invalid" in p for p in problems)
+
+
+def test_exposure_guard_requires_ledger_and_tracks_source_across_family_renames(tmp_path, monkeypatch):
+    monkeypatch.setattr(run_baseline, "ROOT", tmp_path)
+    split_dir = tmp_path / "data/splits"
+    split_dir.mkdir(parents=True)
+    manifest = split_dir / "membership.json"
+    raw = json.dumps({"frozen": True, "families": {"renamed": {"split": "test", "members": [
+        {"source_dataset": "fixture", "source_id": "one"}]}}}).encode()
+    manifest.write_bytes(raw)
+    Path(str(manifest) + ".sha256").write_text(hashlib.sha256(raw).hexdigest())
+    config = {"model_revision": "a" * 40, "splits": ["test"],
+              "datasets": {"dataset_hash": "b" * 64, "split_manifest": str(manifest)}}
+    def problems():
+        return run_baseline._validate_test_single_shot(config, split="test", i_understand=True,
+                                                     config_path=tmp_path / "test_locked.yaml")
+    assert any("exposure ledger" in p for p in problems())
+    (split_dir / "development_exposures.json").write_text(json.dumps({"entries": [
+        {"family_id": "original", "source_dataset": "fixture", "source_id": "one"}]}))
+    assert any("development-exposed" in p for p in problems())

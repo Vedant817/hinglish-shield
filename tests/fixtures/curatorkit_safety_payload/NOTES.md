@@ -30,6 +30,12 @@ The previous project commit must exist locally. No upstream files are modified
 and no upstream issue or PR is opened by this command.
 
 ## Cases (`cases.jsonl`)
+
+The closing-tag extension was executed against CuratorKIT 0.1.21 in
+`runs/curatorkit-closing-attributes-fixture-2026-11-07/fixture_results.json`.
+It compares the candidate against project commit `99c4b35`, including attributes
+on closing tags. Prior fixture artifacts describe their historical source hashes.
+
 issue 42 repro (Spanish), Hinglish `<system>`, Devanagari `<admin>`, `<script>`, ChatML `<|im_start|>`, zero-width-split tag, NFD Unicode plus tag, benign formatting, benign `<` `>` math.
 
 ## Commands and exit codes

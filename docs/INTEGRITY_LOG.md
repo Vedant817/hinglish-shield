@@ -16,6 +16,11 @@ the Research Lead must review a new versioned holdout and preregister any
 necessary exclusion or replacement. Do not silently rewrite the frozen file,
 move the exposed prompt into development, or count its removal as a safety gain.
 
+The exposure ledger is required on the test path. Membership checks use both
+the recorded family and the exposed source/member identity, so renaming a
+family cannot restore that member's eligibility. A missing or invalid ledger
+blocks final evaluation.
+
 The committed calibration/dev review sheet was rebuilt with canonical
 source-member validation and is identical to the prior sheet. The source
 membership bug reported in council round 2 was reproduced with synthetic text;

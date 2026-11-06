@@ -65,6 +65,22 @@ def test_import_recomputes_threshold_instead_of_trusting_passed(tmp_path):
     assert inspect_archive(archive(tmp_path, files))[1]["original_parity"]["status"] == "fail"
 
 
+@pytest.mark.parametrize("value", [-1.0, -1e-8, 1e-4])
+@pytest.mark.parametrize("case", ["short", "long"])
+def test_invalid_kl_cannot_pass(tmp_path, value, case):
+    files = payloads()
+    report = json.loads(files["parity_original_sequential.json"])
+    if case == "short":
+        report["kl_short"][next(iter(report["kl_short"]))] = value
+    else:
+        report["kl_long"]["sliding_window_4196"] = value
+        long = json.loads(files["parity_long_prompt.json"])
+        long["kl"] = value
+        files["parity_long_prompt.json"] = json.dumps(long).encode()
+    files["parity_original_sequential.json"] = json.dumps(report).encode()
+    assert inspect_archive(archive(tmp_path, files))[1]["original_parity"]["status"] == "fail"
+
+
 @pytest.mark.parametrize("name,data", [
     ("../../escaped.json", b"{}"), ("weights.safetensors", b"weights"),
     ("env_report.json", ("hf_" + "x" * 30).encode()),

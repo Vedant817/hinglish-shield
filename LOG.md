@@ -81,3 +81,9 @@ Format per iteration: what, result, next. Times in IST. No em dashes.
 - result: PR-scoped CI-equivalent suite excluding the uncommitted dev-runner work: 95 passed, 1 skipped. Separate dev-runner fixtures remain under integration review. Smoke and family-split checks pass.
 - access: Authenticated WildGuard config retrieval now returns HTTP 200 after the owner enabled access. This proves configuration access only; judge weights and inference remain unverified. Kaggle platform secret attachment is still pending.
 - next: Fresh scoped review before merging. Actual model parity, WildGuard load/calibration, human labels, scored dev baseline and held-out acceptance remain pending.
+
+## 2026-11-07: Council round 3 follow-up
+
+- what: Reproduced negative-KL acceptance, lost attributes on closing formatting tags, and optional/family-only exposure guards with synthetic regression cases. The focused command initially reported 7 failures. The importer now rejects negative KL without clipping; the cleaner preserves attributed opening and closing tags; the locked-test guard requires the ledger and matches exposed source identities across renamed families. No parity tolerance or frozen membership was changed.
+- fixture: runs/curatorkit-closing-attributes-fixture-2026-11-07/fixture_results.json executes installed CuratorKIT and compares against project commit 99c4b35, with source hashes. This is synthetic cleaner evidence, not model safety.
+- result: PR-scoped suite excluding the separate uncommitted dev ledger: 104 passed, 1 skipped. Repaired dev-ledger synthetic suite: 33 passed, under separate integration review. Neither suite loads model weights. Codex council review was unavailable due to its usage limit; no score assigned. The user-authorized free DeepSeek fallback will provide an additional independent review.

@@ -16,13 +16,13 @@ from curatorkit.normalizers.clean import TextCleaner
 
 BENIGN_TAGS = ("b", "i", "u", "em", "strong", "p", "br", "span", "div", "small", "sup", "sub")
 _BENIGN_RE = re.compile(r"</?(?P<tag>%s)(?:\s[^<>]*)?/?>" % "|".join(BENIGN_TAGS), re.IGNORECASE)
-_FORMATTING_OPEN = re.compile(r"<(?P<tag>%s)(?=[\s/>])(?P<suffix>[^>]*)>" % "|".join(BENIGN_TAGS), re.IGNORECASE)
+_FORMATTING_TAG = re.compile(r"</?(?P<tag>%s)(?=[\s/>])(?P<suffix>[^>]*)>" % "|".join(BENIGN_TAGS), re.IGNORECASE)
 PAYLOAD_RE = re.compile(r"<\s*/?\s*[|A-Za-z][^<>]{0,200}>")
 
 
 def _protected_names(text: str) -> set[str]:
     """Attributes can carry instructions; preserve both ends of that tag name."""
-    return {m.group("tag").lower() for m in _FORMATTING_OPEN.finditer(text)
+    return {m.group("tag").lower() for m in _FORMATTING_TAG.finditer(text)
             if m.group("suffix").strip() not in {"", "/"}}
 
 

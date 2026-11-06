@@ -141,11 +141,25 @@ def _validate_test_single_shot(
                             or sidecar.read_text().split()[0] != hashlib.sha256(raw).hexdigest()):
                         problems.append("test membership must be frozen and checksum-verified")
                     exposure_path = ROOT / "data/splits/development_exposures.json"
-                    if exposure_path.exists():
+                    if not exposure_path.is_file():
+                        problems.append("required test exposure ledger is missing")
+                    else:
                         exposures = json.loads(exposure_path.read_text(encoding="utf-8"))
+                        if not isinstance(exposures["entries"], list):
+                            raise ValueError("Invalid exposure entries")
                         for entry in exposures["entries"]:
+                            source = entry["source_dataset"]
+                            source_id = entry["source_id"]
+                            if not all(isinstance(value, str) and value for value in (source, source_id)):
+                                raise ValueError("Invalid exposure identity")
                             family = membership["families"].get(entry["family_id"])
-                            if family and family.get("split") == "test":
+                            member_in_test = any(
+                                candidate.get("split") == "test" and any(
+                                    member.get("source_dataset") == source and str(member.get("source_id")) == source_id
+                                    for member in candidate.get("members", [])
+                                ) for candidate in membership["families"].values()
+                            )
+                            if (family and family.get("split") == "test") or member_in_test:
                                 problems.append("test holdout contains a development-exposed family: " + entry["family_id"])
                 except (OSError, ValueError, KeyError, IndexError, TypeError, AttributeError):
                     problems.append("test membership or exposure ledger is unreadable or invalid")

@@ -49,7 +49,7 @@ def parity_summary(files: dict[str, bytes]) -> dict:
     long = report.get("kl_long") or {}
     long_record = strict_json(files.get("parity_long_prompt.json", b"{}"))
     def finite_kls(values):
-        return all(type(v) in {int, float} and math.isfinite(v) for v in values)
+        return all(type(v) in {int, float} and math.isfinite(v) and v >= 0 for v in values)
     short_present = isinstance(short, dict) and set(short) == expected
     long_present = (report.get("long_ran") is True and isinstance(long, dict)
                     and set(long) == {"sliding_window_4196"}
