@@ -1,0 +1,5 @@
+# Preserve committed bytes for frozen manifest/config SHA-256 checks on Windows.
+data/splits/*.json text eol=lf
+data/splits/*.sha256 text eol=lf
+configs/**/*.yaml text eol=lf
+docs/research/PREREG_baseline.md text eol=lf

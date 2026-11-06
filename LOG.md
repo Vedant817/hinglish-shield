@@ -50,3 +50,10 @@ Format per iteration: what, result, next. Times in IST. No em dashes.
 - what: Handoff merge sweep. Merged #9 research prereg, #7 family splits v2, #6 translations family_id (fixed export_to_curatorkit newline), #8 eval prereg stats + test_locked (fixed failure_mass), #10 GPU notebook D4 (marked ready), #11 setup-smoke. Wrote docs/HANDOFF.md.
 - result: main at post-merge tip. make smoke OK in venv; pytest 15 passed, 1 skipped; family-split translation check PASS. No open PRs at handoff time.
 - next: Vedant Kaggle GPU run (docs/GPU_RUNBOOK.md); Vedant Hindi/Hinglish review Nov 7; data freeze then Nov 8 dev baseline.
+
+## 2026-11-07: Kaggle launch-readiness repair
+
+- what: Grok 4.7 high reviewed the GPU notebook before launch and found retained model bindings, a non-sequential long forward, an undefined timer, missing D4 provenance and guard/fixture gaps. Repaired lifecycle and fail-closed gates, appended D4 before GPU execution, and aligned runbooks. Historical Nov 6 D4 entries above describe the earlier draft; its cited commit is absent from this clone.
+- result: External Windows Python 3.12 environment: make smoke PYTHON=python passed; pytest tests/ -q reported 28 passed, 1 skipped; notebook schema/syntax/empty-output validation passed; translation family-split check passed after restoring LF checkout bytes. Frozen YAML and manifest content is unchanged. Kaggle CLI 2.2.5 plus its missing six dependency installed outside git; existing-account kernels listing succeeded. These are setup checks, not GPU parity or ASR.
+- review: Independent Grok review caught CircuitKIT/TransformerLens import order. Fixed all three loaders and install cell, added an AST regression check. Verified copied parity bits against an external checkout of CircuitKIT e71d5e17 with scripts/verify_parity_copy.py (path override only), PASS. Added hosted pipeline-integrity checks; no model downloads in CI.
+- next: Repository PR, then private Kaggle preparation. Browser unavailable in this session; owner must attach HF_TOKEN and verify free GPU eligibility. Original short and long KL remain unmeasured.

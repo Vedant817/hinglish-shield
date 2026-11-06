@@ -33,6 +33,11 @@ make smoke
 
 `make smoke` checks layout, validates `runs/_example/metrics.json` against `schemas/metrics.schema.json`, and imports local packages. It does not download models or spend GPU.
 
+On Windows, activate an external Python 3.12 environment, install `requirements.txt`,
+then run `make smoke PYTHON=python`. The same override works for
+`make check-family-splits-translations PYTHON=python`. Frozen manifests and YAML
+configs use LF checkout bytes so their committed SHA-256 values survive Windows checkout.
+
 ## Conventions
 
 - Branches: `role/short-task`. Commits imperative.
