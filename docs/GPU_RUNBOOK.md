@@ -13,7 +13,7 @@ Quota about 30 GPU hours per week (Kaggle efficient-GPU docs).
 2. Create a notebook (or upload `notebooks/gpu_parity_and_baseline.ipynb`) and set **Settings → Accelerator → GPU T4 x2**.
 3. Add secret `HF_TOKEN` (Add-ons → Secrets) for the Hugging Face account that already accepted Tiny Aya terms. Never paste the token into a cell.
 4. Optional: attach a curated prompts JSONL and set `CURATED_PROMPTS_PATH` in the config cell. Otherwise the notebook uses a labeled FIXTURE set only (not metrics).
-5. Click **Run All**. Expected wall time: roughly 45 to 150 minutes (install + sequential fp32 parity + fp16 guard + short baseline). Stop early only if a cell hard-fails.
+5. Click **Run All**. Expected wall time: roughly 60 to 240 minutes (install + sequential fp32 short + fp32 CPU long-prompt 4196-token forward + fp16 guard + short baseline). The long-prompt fp32 CPU forward alone is a rough estimate of about 20 to 90 minutes (planning guess only, not a measurement); do not skip it by default. Stop early only if a cell hard-fails.
 6. Download `hs_gpu_artifacts_<run_id>.zip` from `/kaggle/working/` and copy it into the repo as `runs/<run_id>/` (unzip so manifests are visible). Never commit tokens or model weights.
 
 ## Gate details (prereg D4, commit 99a3829)
@@ -28,6 +28,8 @@ Frozen in the notebook config cell marked **prereg D4, frozen before run**.
    compute the same KL(HF||TL) formula, threshold **KL < 1e-4**.
    Record `load_order: ["hf_fp32","tl_fp32"]`, dtype, hardware, RAM peak.
    Peak weights about **13 GiB**.
+   Short and long KL are reported separately; the gate passes only if **both** are < 1e-4. If the long case does not run, status is `incomplete`, not `pass`.
+   Provenance: prompts/KL/long-spec hashes verified by `scripts/verify_parity_copy.py` against `vendor/CircuitKIT` at the recorded SHA.
 2. **Optional dual-resident pytest** (`RUN_ORIGINAL_PYTEST=False`): holds two
    fp32 copies (~25 GiB). Off by default; will not fit free-tier RAM.
 3. **bf16 variant** (`gate_change`): auto-enabled only if sequential fp32
