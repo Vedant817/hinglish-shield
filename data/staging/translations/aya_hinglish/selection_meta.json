@@ -1,0 +1,27 @@
+{
+  "method": "llm_authored_by_agent",
+  "method_detail": "Hinglish produced by Data Engineer A agent using Aya Hindi prompt plus Aya literal_translation English. Not a deterministic IAST/rule-based transliterator. Not native-speaker verified. Pending Vedant review.",
+  "skipped_or_replaced_source_ids": [
+    "258",
+    "334",
+    "356",
+    "399",
+    "439",
+    "450",
+    "484",
+    "502"
+  ],
+  "skip_reason": "Replaced rows that were operational violence how-to, riot-incitement how-to, population-reduction, sexual-embarrassment how-to, or detailed physical-harm how-to. Also excluded Non-consensual sexual / Self-Harm / Graphic material categories and weapons/CSAM keyword hits upstream.",
+  "n_sample": 50,
+  "fallback_ids": [
+    "3",
+    "6",
+    "11",
+    "13",
+    "15",
+    "18",
+    "19",
+    "21"
+  ],
+  "source_file": "data/seeds/aya_redteaming/aya_hin.jsonl"
+}
