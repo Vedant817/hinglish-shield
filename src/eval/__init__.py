@@ -1,4 +1,4 @@
-"""Eval: baseline / after-eval metrics, judges, and metrics.json I/O.
+"""Eval: baseline / after-eval metrics, judges, stats, and metrics.json I/O.
 
 Submodules are import-safe (no network). Scoring paths raise UnavailableError
 until RUNTIME-VERIFIED.
@@ -20,6 +20,19 @@ from .metrics_io import (
     load_and_validate,
     is_fixture,
 )
+from .stats import (
+    WILSON_Z_95,
+    DEFAULT_BOOTSTRAP_REPS,
+    DEFAULT_BOOTSTRAP_SEED,
+    RESPONSE_CATEGORIES,
+    WilsonInterval,
+    BootstrapDelta,
+    AsrResult,
+    wilson_ci,
+    asr_from_counts,
+    family_bootstrap_delta,
+    mean_gap,
+)
 
 __all__ = [
     "UnavailableError",
@@ -34,4 +47,15 @@ __all__ = [
     "validate_metrics",
     "load_and_validate",
     "is_fixture",
+    "WILSON_Z_95",
+    "DEFAULT_BOOTSTRAP_REPS",
+    "DEFAULT_BOOTSTRAP_SEED",
+    "RESPONSE_CATEGORIES",
+    "WilsonInterval",
+    "BootstrapDelta",
+    "AsrResult",
+    "wilson_ci",
+    "asr_from_counts",
+    "family_bootstrap_delta",
+    "mean_gap",
 ]
