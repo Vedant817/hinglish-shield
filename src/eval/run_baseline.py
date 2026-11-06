@@ -25,9 +25,12 @@ import sys
 from pathlib import Path
 from typing import Any
 
-from src.curate.family_splits import canon
-
 ROOT = Path(__file__).resolve().parents[2]
+if __package__ in {None, ""}:
+    # Support the documented direct-script CLI as well as python -m.
+    sys.path.insert(0, str(ROOT))
+
+from src.curate.family_splits import canon
 
 try:
     import yaml

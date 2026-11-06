@@ -6,12 +6,22 @@ import json
 import hashlib
 import unittest
 import pytest
+import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
 from src.eval import run_baseline  # noqa: E402
+
+
+def test_documented_direct_script_entrypoint_outside_repo(tmp_path):
+    result = subprocess.run(
+        [sys.executable, "-I", str(ROOT / "src/eval/run_baseline.py"), "--help"],
+        cwd=tmp_path, capture_output=True, text=True,
+    )
+    assert result.returncode == 0, result.stderr
+    assert "--dry-check" in result.stdout
 
 
 class TestLockedGuards(unittest.TestCase):
