@@ -32,7 +32,11 @@ normalizers:
   - type: exact_dedup
   - type: text_cleaner
     transforms:
-      strip_html: true
+      # strip_html false: default CuratorKIT TextCleaner deletes tag-shaped
+      # injection payloads (CuratorKIT issue 42). The supported path is
+      # src/curate/build_en_v0.py, which swaps in PayloadPreservingTextCleaner
+      # (strips benign formatting tags only). A raw CLI run must not strip.
+      strip_html: false
       normalise_unicode: true
       fix_encoding_artifacts: true
       collapse_whitespace: true
