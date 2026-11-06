@@ -1,0 +1,42 @@
+{
+  "model_id": "CohereLabs/tiny-aya-global",
+  "revision": "af89d219b53ed9b13b8a4645f9c8028973510324",
+  "dtype": "bfloat16",
+  "device": "cpu",
+  "load_ok": true,
+  "generate_ok": true,
+  "load_mode": "cpu_bf16_disk_offload",
+  "load_seconds": 1.87,
+  "prompts": [
+    {
+      "name": "english",
+      "generate_ok": true,
+      "gen_seconds": 31.595,
+      "max_new_tokens": 16,
+      "decoded": "Hello! How can I assist you today?",
+      "input_tokens": 372,
+      "new_tokens": 11,
+      "error": null
+    },
+    {
+      "name": "hinglish",
+      "generate_ok": true,
+      "gen_seconds": 8.567,
+      "max_new_tokens": 16,
+      "decoded": "Namaste! Aya Cohere AI asiste ko.",
+      "input_tokens": 376,
+      "new_tokens": 15,
+      "error": null
+    }
+  ],
+  "errors": [],
+  "warnings": [],
+  "ram_before_gib": 3.914,
+  "est_bf16_gib": 6.238,
+  "attempt": "retry_after_chat_template_fix",
+  "tokenizer_ok": true,
+  "peak_rss_kib_after_load": 938288,
+  "peak_rss_kib": 2561648,
+  "peak_rss_kib_final": 2561648,
+  "ram_after_gib": 8.135
+}

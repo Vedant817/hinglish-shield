@@ -1,0 +1,6 @@
+Resolved 1 package in 14ms
+   Building auditkit @ file:///workspace/hinglish-shield/vendor/AuditKIT
+      Built auditkit @ file:///workspace/hinglish-shield/vendor/AuditKIT
+Prepared 1 package in 703ms
+Installed 1 package in 0.69ms
+ + auditkit==1.1.3 (from file:///workspace/hinglish-shield/vendor/AuditKIT)

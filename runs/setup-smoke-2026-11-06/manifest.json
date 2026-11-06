@@ -1,0 +1,96 @@
+{
+  "timestamp_ist": "2026-11-06T12:47:02.317778+05:30",
+  "python_versions": {
+    "light": "3.13.5",
+    "ml": "3.12.15"
+  },
+  "env_paths": {
+    "light": "/workspace/hinglish-shield/.venv -> /workspace/hinglish-shield-scratch/.venv",
+    "ml": "/workspace/hinglish-shield/.venv-circuitkit -> /workspace/hinglish-shield-scratch/.venv-circuitkit"
+  },
+  "packages": {
+    "curatorkit": {
+      "version": "0.1.21",
+      "env": "light",
+      "import_ok": true
+    },
+    "auditkit": {
+      "version": "1.1.3",
+      "env": "light",
+      "import_ok": true,
+      "echo_resolve_ok": true
+    },
+    "safetune": {
+      "version": "0.1.12",
+      "env": "ml",
+      "import_ok": true,
+      "apis_ok": [
+        "SafeGradTrainer",
+        "RefusalDirectionModel",
+        "apply_resta"
+      ]
+    },
+    "circuitkit": {
+      "version": "0.2.0",
+      "env": "ml",
+      "import_ok": true
+    }
+  },
+  "torch": {
+    "version": "2.15.0+cu132",
+    "cuda_available": false
+  },
+  "transformers_version": "5.22.1",
+  "model_id": "CohereLabs/tiny-aya-global",
+  "revision": "af89d219b53ed9b13b8a4645f9c8028973510324",
+  "preflight": {
+    "config_ok": true,
+    "tokenizer_ok": true,
+    "param_total": 3349227520,
+    "est_bf16_gib": 6.238,
+    "ram_available_gib_at_preflight": 2.004,
+    "disk_free_gib": 100.79
+  },
+  "load_ok": true,
+  "generate_ok": true,
+  "load_mode": "cpu_bf16_disk_offload",
+  "load_seconds": 1.87,
+  "peak_rss_kib": 2561648,
+  "prompts": [
+    {
+      "name": "english",
+      "generate_ok": true,
+      "gen_seconds": 31.595,
+      "max_new_tokens": 16,
+      "decoded": "Hello! How can I assist you today?",
+      "input_tokens": 372,
+      "new_tokens": 11,
+      "error": null
+    },
+    {
+      "name": "hinglish",
+      "generate_ok": true,
+      "gen_seconds": 8.567,
+      "max_new_tokens": 16,
+      "decoded": "Namaste! Aya Cohere AI asiste ko.",
+      "input_tokens": 376,
+      "new_tokens": 15,
+      "error": null
+    }
+  ],
+  "circuitkit_parity": {
+    "documented_command": "CIRCUITKIT_RUN_TINY_AYA=1 HF_TOKEN=... python -m pytest tests/backends/tl_compat/test_cohere_parity.py -v",
+    "real_weight_parity_verified": false,
+    "reason_skipped": "Parity fixture holds two float32 copies (~12.5 GiB each, ~25 GiB). Box has 15 GiB RAM total and no GPU. Not feasible on this host.",
+    "cheap_subset_command": "cd vendor/CircuitKIT && ../../.venv-circuitkit/bin/python -m pytest tests/backends/tl_compat/test_cohere_gqa.py tests/backends/tl_compat/test_cohere_wiring.py -q",
+    "cheap_subset_exit_code": 0,
+    "cheap_subset_summary": "25 passed in 7.30s (offline random-init GQA/wiring only; not real-weight KL parity)"
+  },
+  "errors": [],
+  "warnings": [
+    "In-memory bf16 load skipped: available RAM below est_bf16_gib+1.5 headroom. Used accelerate disk/cpu offload.",
+    "First generate attempt failed due to apply_chat_template BatchEncoding.shape AttributeError; retried with return_dict=True.",
+    "Full CircuitKIT real-weight parity not run; offline subset only."
+  ],
+  "status_recommendation": "Review"
+}

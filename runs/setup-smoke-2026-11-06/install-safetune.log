@@ -1,0 +1,53 @@
+Using Python 3.12.15 environment at: .venv-circuitkit
+Resolved 140 packages in 1.28s
+   Building word2number==1.1
+   Building safetune @ file:///workspace/hinglish-shield/vendor/SafeTune
+   Building sqlitedict==2.1.0
+Downloading tensorboard (5.3MiB)
+Downloading tiktoken (1.1MiB)
+Downloading grpcio (7.0MiB)
+Downloading lm-eval (8.7MiB)
+Downloading bitsandbytes (41.1MiB)
+Downloading tensorboard-data-server (6.3MiB)
+ Downloaded tiktoken
+   Building langdetect==1.0.9
+      Built sqlitedict==2.1.0
+      Built word2number==1.1
+ Downloaded tensorboard
+ Downloaded tensorboard-data-server
+ Downloaded grpcio
+ Downloaded bitsandbytes
+ Downloaded lm-eval
+      Built safetune @ file:///workspace/hinglish-shield/vendor/SafeTune
+      Built langdetect==1.0.9
+Prepared 28 packages in 790ms
+Installed 28 packages in 165ms
+ + bitsandbytes==0.50.2
+ + chardet==6.0.0.post1
+ + dataproperty==0.37.0
+ + dominate==3.1.0
+ + grpcio==1.85.1
+ + immutabledict==4.3.1
+ + langdetect==1.0.9
+ + lm-eval==0.4.13
+ + logbook==1.10.1
+ + markdown==3.11.2
+ + mbstrdecoder==1.1.5
+ + more-itertools==11.2.1
+ + msgfy==0.2.1
+ + nvidia-ml-py==13.615.71
+ + pathvalidate==3.3.1
+ + peft==0.21.2
+ + pytablewriter==0.38.0
+ + pytz==2026.6
+ + safetune==0.1.12 (from file:///workspace/hinglish-shield/vendor/SafeTune)
+ + sqlitedict==2.1.0
+ + tabledata==0.0.26
+ + tensorboard==2.21.0
+ + tensorboard-data-server==0.7.2
+ + tiktoken==0.14.0
+ + trl==1.14.2
+ + typepy==0.3.1
+ + werkzeug==3.1.9
+ + word2number==1.1
+warning: The package `mbstrdecoder==1.1.5` does not have an extra named `all`
