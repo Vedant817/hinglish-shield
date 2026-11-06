@@ -134,6 +134,8 @@ def ingest(archive: Path, destination: Path) -> dict:
     files, summary = inspect_archive(archive)
     # Only validated bytes are copied. A durable completion marker is written last.
     destination.mkdir(parents=True, exist_ok=False)
+    # Byte hashes must survive later Windows checkouts, including log newlines.
+    (destination / ".gitattributes").write_bytes(b"* -text\n")
     for name, data in files.items():
         (destination / name).write_bytes(data)
     marker = destination / "ingestion.json.tmp"
