@@ -37,10 +37,10 @@ These open PRs exist on the same repos but **do not** close or reference Curator
 
 **Candidate: CuratorKIT #42, safety-payload preservation under `strip_html`.**
 
-**Bounded local scope (proposed, not yet implemented in this refresh):**
+**Bounded local scope (implemented after this refresh, see PR #3):**
 - Keep vendored CuratorKIT pinned at `dd9e835…`.
-- In Hinglish Shield curation config / pipeline wrappers (for example `configs/curate/hs_harm_en.yaml`, which currently sets `strip_html: true`), turn `strip_html` **off** for safety / red-team sets, or gate it by task type, and log when cleaning would have altered tag-shaped payloads.
-- Optionally add a small local regression check: input containing `<system>…</system>` (or similar) must retain tags after the clean stage.
+- Done in PR #3 (commit 7a170f8): `configs/curate/hs_harm_en.yaml` and `hs_benign_en.yaml` set `strip_html: false` for CLI runs, and `src/curate/build_en_v0.py` uses `PayloadPreservingTextCleaner` (strips benign formatting tags only).
+- Done in PR #3: regression fixture `tests/fixtures/curatorkit_safety_payload` gates export on payload preservation.
 - Do **not** open an upstream issue or PR; do **not** wait on Lexsi-Labs merge.
 
 **Rationale vs Rank 2 (SafeTune #38 / #39):**
