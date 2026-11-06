@@ -1,0 +1,74 @@
+[transformers] `torch_dtype` is deprecated! Use `dtype` instead!
+Fetching 2 files:   0%|          | 0/2 [00:00<?, ?it/s]Fetching 2 files:  50%|█████     | 1/2 [00:06<00:06,  6.85s/it]Fetching 2 files: 100%|██████████| 2/2 [00:12<00:00,  6.26s/it]Fetching 2 files: 100%|██████████| 2/2 [00:12<00:00,  6.35s/it]
+Loading weights:   0%|          | 0/290 [00:00<?, ?it/s]Loading weights: 100%|██████████| 290/290 [00:00<00:00, 3550.95it/s]
+Some parameters are on the meta device because they were offloaded to the cpu and disk.
+Traceback (most recent call last):
+  File "/workspace/hinglish-shield/.venv-circuitkit/lib/python3.12/site-packages/transformers/tokenization_utils_base.py", line 293, in __getattr__
+    return self.data[item]
+           ~~~~~~~~~^^^^^^
+KeyError: 'shape'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "<stdin>", line 126, in <module>
+  File "/workspace/hinglish-shield/.venv-circuitkit/lib/python3.12/site-packages/transformers/tokenization_utils_base.py", line 295, in __getattr__
+    raise AttributeError
+AttributeError
+Traceback (most recent call last):
+  File "/workspace/hinglish-shield/.venv-circuitkit/lib/python3.12/site-packages/transformers/tokenization_utils_base.py", line 293, in __getattr__
+    return self.data[item]
+           ~~~~~~~~~^^^^^^
+KeyError: 'shape'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "<stdin>", line 126, in <module>
+  File "/workspace/hinglish-shield/.venv-circuitkit/lib/python3.12/site-packages/transformers/tokenization_utils_base.py", line 295, in __getattr__
+    raise AttributeError
+AttributeError
+{
+  "model_id": "CohereLabs/tiny-aya-global",
+  "revision": "af89d219b53ed9b13b8a4645f9c8028973510324",
+  "dtype": "bfloat16",
+  "device": "cpu",
+  "load_ok": true,
+  "generate_ok": false,
+  "load_mode": "cpu_bf16_disk_offload",
+  "load_seconds": 15.561,
+  "errors": [],
+  "warnings": [
+    "available_ram_gib=2.035; in_memory_bf16_skipped=True"
+  ],
+  "ram_before_gib": 2.273,
+  "est_bf16_gib": 6.238,
+  "tokenizer_ok": true,
+  "peak_rss_kib_after_load": 2122372,
+  "peak_rss_kib": 2122372,
+  "peak_rss_kib_final": 2122372,
+  "ram_after_gib": 1.738,
+  "offload_bytes": 0
+}
+PROMPTS [
+  {
+    "name": "english",
+    "generate_ok": false,
+    "gen_seconds": null,
+    "max_new_tokens": 16,
+    "decoded": null,
+    "input_tokens": null,
+    "new_tokens": null,
+    "error": "AttributeError: "
+  },
+  {
+    "name": "hinglish",
+    "generate_ok": false,
+    "gen_seconds": null,
+    "max_new_tokens": 16,
+    "decoded": null,
+    "input_tokens": null,
+    "new_tokens": null,
+    "error": "AttributeError: "
+  }
+]

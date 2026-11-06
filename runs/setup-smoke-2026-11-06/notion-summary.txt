@@ -1,0 +1,8 @@
+
+## 2026-11-06T01:31:49.921751+05:30 IST: Setup P0 smoke
+
+- what: Editable installs and sequential CPU import smokes. Light env .venv Python 3.13.5: CuratorKIT 0.1.21 PASS, AuditKIT 1.1.3 PASS with echo backend resolution. ML env .venv-circuitkit Python 3.12.15: CircuitKIT 0.2.0 PASS, SafeTune 0.1.12 PASS. SafeTune Python >=3.12 satisfied. SafeGradTrainer, RefusalDirectionModel and apply_resta import PASS; RefusalDirectionTrainer is not exported by safetune.steer. No training run.
+- result: Torch 2.15.0+cu132, CUDA unavailable, Transformers 5.22.1. ML pip check passed. Tiny Aya config/tokenizer/weights/generate BLOCKED: initial unauthenticated 401, new authenticated process returned 403, account not authorized for gated repo. Stopped HF attempts. Peak RSS config attempt 576124 KiB. No OOM or generation metric. bitsandbytes optional CPU 4-bit kernel unavailable (missing kernels), not used. No CircuitKIT real-weight parity claim. make smoke is layout-only.
+- workspace: Another process relocated original workspace to /workspace/hinglish-shield-scratch mid-run. Canonical env/vendor paths restored via symlinks. Import/API/echo tests rerun successfully. No unrelated files deleted.
+- evidence: runs/setup-smoke-2026-11-06/manifest.json, per-library logs and freeze-light.txt/freeze-ml.txt. Venvs and vendor are canonical-path symlinks to preserved scratch tree.
+- next: In Progress. Vedant via Lexsi must obtain Tiny Aya gate approval/license on HF account behind token; rerun authenticated model smoke afterward. Full CPU load remains RAM-unverified. No paid compute, accounts, Hub uploads or upstream issues.

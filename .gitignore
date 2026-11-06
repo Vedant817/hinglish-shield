@@ -20,6 +20,9 @@ huggingface/
 runs/*
 !runs/_example/
 !runs/_example/**
+!runs/setup-smoke-2026-11-06/
+!runs/setup-smoke-2026-11-06/**
+runs/setup-smoke-2026-11-06/offload/
 *.pt
 *.bin
 *.safetensors

@@ -1,0 +1,12 @@
+{
+  "model_id": "CohereLabs/tiny-aya-global",
+  "config_ok": false,
+  "tokenizer_ok": false,
+  "load_ok": false,
+  "generate_ok": false,
+  "errors": [
+    "config: You are trying to access a gated repo.\nMake sure to have access to it at https://huggingface.co/CohereLabs/tiny-aya-global.\n401 Client Error. (Request ID: Root=1-6aece037-6177be721480e5985e70718d;99983137-b695-4abd-b124-a00809cc619d)\n\nCannot access gated repo for url https://huggingface.co/CohereLabs/tiny-aya-global/resolve/af89d219b53ed9b13b8a4645f9c8028973510324/config.json.\nAccess to model CohereLabs/tiny-aya-global is restricted. You must have access to it and be authenticated to access it. Please log in.",
+    "tokenizer: You are trying to access a gated repo.\nMake sure to have access to it at https://huggingface.co/CohereLabs/tiny-aya-global.\n401 Client Error. (Request ID: Root=1-6aece037-653abfe61e65c41424d10f55;a3de3122-0d46-4bfb-96fe-7516871f4d36)\n\nCannot access gated repo for url https://huggingface.co/CohereLabs/tiny-aya-global/resolve/af89d219b53ed9b13b8a4645f9c8028973510324/config.json.\nAccess to model CohereLabs/tiny-aya-global is restricted. You must have access to it and be authenticated to access it. Please log in."
+  ],
+  "peak_rss_kib": 576220
+}
