@@ -53,7 +53,7 @@ These are pipeline integrity checks, not ASR or language-gap results.
 
 ## What is open (priority)
 
-1. **Vedant: Kaggle GPU run** using `notebooks/gpu_parity_and_baseline.ipynb` on main. Follow `docs/GPU_RUNBOOK.md`. Free tier only. Expect about 60 to 240 minutes wall time; the long fp32 4196-token case alone is a rough estimate of about 20 to 90 extra minutes. Download `hs_gpu_artifacts_*.zip` into `runs/`. Fixtures are not scored metrics.
+1. **Vedant: Kaggle GPU run** using `notebooks/gpu_parity_and_baseline.ipynb` on main. Follow `docs/GPU_RUNBOOK.md`; agents use `docs/KAGGLE_AGENT.md` (web and CLI steps, filing results, failure handling). Free tier only. Expect about 60 to 240 minutes wall time; the long fp32 4196-token case alone is a rough estimate of about 20 to 90 extra minutes. Download `hs_gpu_artifacts_*.zip` into `runs/`. Fixtures are not scored metrics.
 2. **Vedant: Hindi and Hinglish review** (Task Board Human P0, Nov 7): https://app.notion.com/40f047502f588116ab55c2304137b52d and review sheet `data/staging/review/vedant_review_nov7.csv`. Related value task: https://app.notion.com/40f047502f58817eb784dfecd51cab2c
 3. **Data freeze** before any test scoring: finish HI/Hinglish variants on calibration/dev; keep test frozen; re-run family cross-split check.
 4. **Nov 8:** preliminary H1 on **dev** only (`configs/eval/baseline.yaml`). RUNTIME-VERIFY WildGuard first.
@@ -145,7 +145,7 @@ Read first, in order:
 2. README.md, WORKSPACE.md, LOG.md
 3. docs/research/PREREG_baseline.md and configs/research/baseline_prereg.yaml
 4. docs/EVAL_PLAN.md, configs/eval/baseline.yaml, configs/eval/test_locked.yaml
-5. docs/GPU_RUNBOOK.md and notebooks/gpu_parity_and_baseline.ipynb
+5. docs/GPU_RUNBOOK.md, docs/KAGGLE_AGENT.md (step-by-step Kaggle web and CLI run for agents) and notebooks/gpu_parity_and_baseline.ipynb
 6. docs/adr/0007-finance-workload-and-preservation-gates.md
 7. data/CURATION_PLAN.md and data/splits/family_splits_v2.json (manifest only; do not rescore test)
 8. Notion pages: Anti-Hallucination and Integrity Rules, Experiment Protocol, Engineering Standards, Failure Playbook, Approaches Deep Dive (under the HQ prefix https://app.notion.com/p/40f047502f5881)
@@ -162,7 +162,7 @@ Integrity rules (non-negotiable):
 Standing permission: Vedant said agents may push, open PRs, and merge in Vedant817/hinglish-shield under the constraints above.
 
 Next work in priority order:
-1. Help Vedant finish the Kaggle GPU run (GPU_RUNBOOK.md). Ingest hs_gpu_artifacts zip under runs/. Record parity short/long KL; incomplete if long case missing. Do not treat fixtures as ASR.
+1. Run or help Vedant run the Kaggle GPU job by following docs/KAGGLE_AGENT.md (Vedant does sign-in, phone verification and typing the HF_TOKEN secret if you cannot hold it securely). Ingest hs_gpu_artifacts zip under runs/. Record parity short/long KL; incomplete if long case missing. Do not treat fixtures as ASR.
 2. Support Vedant's Nov 7 Hindi/Hinglish review of data/staging/review/vedant_review_nov7.csv; apply labeled fixes without inventing translations.
 3. Complete calibration/dev language coverage; keep test frozen; re-run scripts/check_translation_family_splits.py.
 4. RUNTIME-VERIFY WildGuard; Nov 8 preliminary baseline on dev only; write real metrics.json.
