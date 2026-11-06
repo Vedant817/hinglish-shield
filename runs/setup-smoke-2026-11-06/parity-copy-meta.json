@@ -1,0 +1,10 @@
+{
+  "upstream_path": "tests/backends/tl_compat/test_cohere_parity.py",
+  "circuitkit_sha": "e71d5e17fe6e2abfde47ec9a7fbaf31649601b78",
+  "prompts_sha256": "3ab3ad15fba852e34e08b8c485e2e3c41adc8702aa80a0bbf62215d5001fabab",
+  "kl_source_sha256": "7bef5687a6fd0194baa50c0156c8d9a6c1e827abc87f154feb7eca527079a812",
+  "long_spec_sha256": "03975892c0e2d9d70159ebbad34c883557c90eb800e4d786a115362cd60de9d1",
+  "kl_normalization": "strip(); rstrip each line; exactly one trailing newline",
+  "prompts_serialization": "json.dumps(prompts, ensure_ascii=False)",
+  "long_spec_serialization": "json.dumps(long_spec, ensure_ascii=False, sort_keys=True)"
+}
