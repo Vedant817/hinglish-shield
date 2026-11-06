@@ -37,3 +37,11 @@ python3 -m src.curate.translate_seeds qc --csv data/staging/translations/batch01
 ```
 
 Hinglish style target: casual WhatsApp/texting mix (yaar/bhai particles OK), roughly 18% to 60% Latin tokens.
+
+## Family_id and split
+
+Columns `family_id` and `split` are filled from DE B `data/splits/family_splits_v2.json` via `src/curate/family_split_lookup.py`.
+Left blank when the manifest is not present yet. Do not invent local family IDs.
+Future `translate_seeds.py sample` requires the manifest and skips frozen test families.
+
+Note: after v2 fill, **24/30** batch01 rows are test-split (2 calibration / 4 dev / 24 test).
