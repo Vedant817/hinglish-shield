@@ -1,19 +1,52 @@
 {
   "run_id": "example-000",
-  "config_hash": "placeholder",
+  "full_commit": null,
+  "config_hash": "fixture-config",
   "model_id": "CohereLabs/tiny-aya-global",
+  "model_revision": null,
+  "dataset_hash": null,
+  "method": null,
+  "calibration_language": null,
+  "eval_language": null,
   "split": "example",
+  "attack": null,
+  "query_budget": null,
+  "seed": 42,
+  "n_intended": null,
+  "n_generated": null,
+  "n_judged": null,
+  "n_errors": null,
+  "harmful_count": null,
+  "judge_version": null,
+  "latency_p50_s": null,
+  "latency_p95_s": null,
+  "tokens_per_second": null,
+  "artifact_uri": "runs/_example/metrics.json",
+  "artifact_kind": "fixture",
   "languages": ["EN", "HI", "Hinglish"],
   "metrics": {
     "asr": null,
+    "asr_ci_low": null,
+    "asr_ci_high": null,
     "strongreject": null,
+    "strongreject_mean": null,
     "over_refusal": null,
-    "capability": null
+    "capability": null,
+    "delta_vs_base": null,
+    "paired_delta_ci": null,
+    "language_gap": null
+  },
+  "null_reasons": {
+    "metrics.*": "fixture only; not a measured run",
+    "full_commit": "fixture does not claim a commit",
+    "dataset_hash": "HS-Harm / HS-Benign not frozen yet",
+    "n_intended": "fixture; no prompts executed"
   },
   "judges": [
-    { "name": "allenai/wildguard", "role": "primary" },
-    { "name": "llm_judge", "role": "secondary" }
+    { "name": "allenai/wildguard", "role": "primary", "version": null },
+    { "name": "llm_judge", "role": "secondary", "version": null },
+    { "name": "human_sample", "role": "human", "version": null }
   ],
   "created_at": "2026-11-06T00:00:00+05:30",
-  "notes": "Example placeholder only. Not a real eval. Do not cite these nulls as results."
+  "notes": "FIXTURE only (artifact_kind=fixture). Not a benchmark run. Null metrics are intentional; do not cite as results."
 }

@@ -1,0 +1,36 @@
+# Proposed judge stack (ADR-3). No measured results here.
+# StrongREJECT package: use maintained dsbowen/strong_reject
+# (NOT deprecated alexandrasouly/strongreject).
+
+primary:
+  name: allenai/wildguard
+  role: primary
+  auditkit:
+    class: GuardJudge
+    profile: wildguard
+    # default AuditKIT checkpoint: hf:allenai/wildguard
+  status: proposed  # flip to RUNTIME-VERIFIED after first successful local load
+
+secondary:
+  name: llm_judge
+  role: secondary
+  # Pin a concrete judge model only after registration/compute is green.
+  model_spec: null  # e.g. groq:... or hf:... once approved
+  rubric: harmfulness_binary_v0
+  status: proposed
+
+human_kappa:
+  role: human
+  sample_size: null  # set after baseline n_judged is known (target ~100 stratified)
+  sampling: stratified_by_language_and_attack
+  metric: cohens_kappa
+  compare:
+    - primary
+    - secondary
+  status: proposed
+
+strongreject:
+  package: dsbowen/strong_reject
+  deprecated_do_not_use: alexandrasouly/strongreject
+  field_in_metrics: strongreject_mean
+  status: proposed

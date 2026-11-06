@@ -2,14 +2,39 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://github.com/Vedant817/hinglish-shield/schemas/metrics.schema.json",
   "title": "HinglishShieldRunMetrics",
+  "description": "Run metrics contract for Experiment Protocol. Null metric values are allowed when null_reasons explains why. Do not invent scores. runs/_example is a fixture, not a benchmark run.",
   "type": "object",
   "required": ["run_id", "config_hash", "model_id", "split", "languages", "metrics", "judges", "created_at"],
   "additionalProperties": false,
   "properties": {
     "run_id": { "type": "string", "minLength": 1 },
+    "full_commit": { "type": ["string", "null"], "description": "Full git commit SHA of the evaluated code/config tree, or null if unavailable." },
     "config_hash": { "type": "string", "minLength": 1 },
     "model_id": { "type": "string", "minLength": 1 },
-    "split": { "type": "string", "enum": ["dev", "test", "example"] },
+    "model_revision": { "type": ["string", "null"], "description": "HF revision / commit / tag for the evaluated model." },
+    "dataset_hash": { "type": ["string", "null"], "description": "Content hash of the frozen eval dataset." },
+    "method": { "type": ["string", "null"], "description": "Defense or baseline method label, e.g. base, steering, lora." },
+    "calibration_language": { "type": ["string", "null"] },
+    "eval_language": { "type": ["string", "null"], "description": "Primary language for this row when reporting per-language ASR." },
+    "split": { "type": "string", "enum": ["dev", "test", "example", "fixture"] },
+    "attack": { "type": ["string", "null"], "description": "Attack family or suite id, or null for benign/capability splits." },
+    "query_budget": { "type": ["integer", "null"], "minimum": 0 },
+    "seed": { "type": ["integer", "null"] },
+    "n_intended": { "type": ["integer", "null"], "minimum": 0 },
+    "n_generated": { "type": ["integer", "null"], "minimum": 0 },
+    "n_judged": { "type": ["integer", "null"], "minimum": 0 },
+    "n_errors": { "type": ["integer", "null"], "minimum": 0 },
+    "harmful_count": { "type": ["integer", "null"], "minimum": 0 },
+    "judge_version": { "type": ["string", "null"] },
+    "latency_p50_s": { "type": ["number", "null"], "minimum": 0 },
+    "latency_p95_s": { "type": ["number", "null"], "minimum": 0 },
+    "tokens_per_second": { "type": ["number", "null"], "minimum": 0 },
+    "artifact_uri": { "type": ["string", "null"] },
+    "artifact_kind": {
+      "type": "string",
+      "enum": ["run", "fixture", "setup-smoke"],
+      "description": "fixture = schema/smoke placeholder only; never cite as a measured result."
+    },
     "languages": {
       "type": "array",
       "minItems": 1,
@@ -18,12 +43,39 @@
     "metrics": {
       "type": "object",
       "additionalProperties": false,
+      "description": "Headline scores. Prefer null over inventing numbers. Keep asr/strongreject/over_refusal/capability for backward compatibility.",
       "properties": {
         "asr": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
-        "strongreject": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "asr_ci_low": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "asr_ci_high": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "strongreject": { "type": ["number", "null"], "minimum": 0, "maximum": 1, "description": "Legacy alias; prefer strongreject_mean." },
+        "strongreject_mean": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
         "over_refusal": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
-        "capability": { "type": ["number", "null"], "minimum": 0, "maximum": 1 }
+        "capability": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "delta_vs_base": { "type": ["number", "null"] },
+        "paired_delta_ci": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "low": { "type": ["number", "null"] },
+                "high": { "type": ["number", "null"] }
+              }
+            }
+          ]
+        },
+        "language_gap": {
+          "type": ["number", "null"],
+          "description": "ASR(Hinglish) - ASR(EN) when both are measured on the same method/split."
+        }
       }
+    },
+    "null_reasons": {
+      "type": "object",
+      "description": "Map of field path to reason when a Protocol field or metric is null.",
+      "additionalProperties": { "type": "string" }
     },
     "judges": {
       "type": "array",
@@ -34,7 +86,8 @@
         "additionalProperties": false,
         "properties": {
           "name": { "type": "string" },
-          "role": { "type": "string", "enum": ["primary", "secondary", "human"] }
+          "role": { "type": "string", "enum": ["primary", "secondary", "human"] },
+          "version": { "type": ["string", "null"] }
         }
       }
     },

@@ -1,0 +1,53 @@
+# Proposed baseline eval config. No fake scores.
+# Headline: language_gap = ASR(Hinglish) - ASR(EN) on the same method/split.
+# Write results only to runs/<run_id>/metrics.json validated by schemas/metrics.schema.json.
+
+project: hinglish-shield
+status: proposed  # not runnable until datasets exist and judges are RUNTIME-VERIFIED
+
+model_id: CohereLabs/tiny-aya-global
+model_revision: null  # pin HF revision before any scored run
+fallback_model_id: CohereLabs/aya-expanse-8b
+
+method: base
+seed: 42
+query_budget: null  # set per attack suite when red-team runner is wired
+
+languages:
+  - EN
+  - HI
+  - Hinglish
+
+splits:
+  - dev
+
+datasets:
+  # Expected CuratorKIT exports (pending Data Engineer freeze):
+  hs_harm_dir: data/curated/hs_harm
+  hs_benign_dir: data/curated/hs_benign
+  dataset_hash: null  # fill after freeze
+  status: pending
+
+attacks:
+  suite_id: null  # e.g. hs-attack-v0 after native-speaker review
+  templates_dir: redteam
+
+judges_config: configs/eval/judges.yaml
+
+metrics_to_report:
+  - asr
+  - asr_ci_low
+  - asr_ci_high
+  - strongreject_mean
+  - over_refusal
+  - capability
+  - language_gap
+
+integrity:
+  never_invent_numbers: true
+  artifact_kind_for_real_runs: run
+  example_dir_is_fixture: runs/_example
+
+outputs:
+  runs_dir: runs
+  metrics_schema: schemas/metrics.schema.json
