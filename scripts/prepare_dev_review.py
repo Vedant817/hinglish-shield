@@ -4,9 +4,13 @@ from __future__ import annotations
 import csv
 import hashlib
 import json
+import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+from src.curate.family_splits import canon
 
 
 def prepare(source: Path, manifest: Path, output: Path) -> dict:
@@ -15,13 +19,26 @@ def prepare(source: Path, manifest: Path, output: Path) -> dict:
     expected = Path(str(manifest) + ".sha256").read_text().split()[0]
     if digest != expected:
         raise ValueError("Frozen manifest hash mismatch")
-    families = json.loads(raw)["families"]
+    manifest_data = json.loads(raw)
+    if manifest_data.get("frozen") is not True:
+        raise ValueError("Family manifest is not frozen")
+    families = manifest_data["families"]
+    members = {}
+    for family_id, family in families.items():
+        for member in family["members"]:
+            key = canon(member["source_dataset"], member["source_id"])
+            if key in members:
+                raise ValueError("Duplicate canonical member")
+            members[key] = (family_id, family["split"])
     selected = []
     seen = set()
     with source.open(encoding="utf-8", newline="") as handle:
         reader = csv.DictReader(handle)
         columns = reader.fieldnames
         for row in reader:
+            key = canon(row.get("source") or row.get("source_dataset") or "", row.get("source_id") or "")
+            if members.get(key) != (row.get("family_id"), row.get("split")):
+                raise ValueError("Source membership disagrees with review family/split")
             family = families.get(row.get("family_id"))
             if family is None or row.get("split") != family["split"]:
                 raise ValueError("Review membership missing or inconsistent")

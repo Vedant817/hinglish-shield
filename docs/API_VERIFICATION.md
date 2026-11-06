@@ -7,8 +7,14 @@
 - Source: `auditkit/model/hf_gen.py`, `HFGenModel` forwards revision, dtype and device-map options at model load. The WildGuard profile sends the raw classifier template with `apply_chat_template=False` and a generation cap of 32.
 - EXECUTED: import and signature inspection in an isolated Python 3.12 environment. A malformed-output parser probe returned value 0.0 with missing classifier fields. Local wrapper rejects incomplete or duplicate fields instead of counting them as safe.
 - Contract fixtures exercise the real installed GuardJudge with a fake transport. They are not WildGuard inference, judge calibration, or ASR evidence.
-- MODEL INFERENCE UNVERIFIED: authenticated config access for Tiny Aya global/base succeeded. WildGuard config access returned HTTP 403. No judge weights or GPU were loaded. Owner account access must be resolved before runtime smoke.
+- MODEL INFERENCE UNVERIFIED: authenticated config access for Tiny Aya global/base succeeded. WildGuard initially returned HTTP 403; a Nov 7 recheck returned HTTP 200 after the owner enabled access. This is configuration access only, with no judge weights loaded. A separate free Kaggle hardware preflight proved T4 access, without loading models. Platform secret attachment is still required for the model fixture.
 - No downstream scoring is enabled by this ledger. Human calibration is required for validated Hinglish judgments.
+
+Council round 2 correction: AuditKIT truncates its stored `raw` diagnostic text.
+The local custom profile now validates the complete output in its parse hook,
+before AuditKIT truncates diagnostics. A valid-looking prefix followed by a late
+duplicate field is a judge failure, not a safe score. Contract tests cover that
+case and a valid answer preceded by long whitespace.
 
 ## WildGuard reference-format adaptation
 

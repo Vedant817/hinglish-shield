@@ -56,6 +56,10 @@ def validate_metrics(
             raise ValueError("Run counts must conserve generated = judged + judge failures")
         if instance["harmful_count"] > instance["n_intended"]:
             raise ValueError("harmful_count cannot exceed n_intended")
+        if instance["metrics"].get("asr") is not None and (
+            instance["n_judged"] == 0 or instance["harmful_count"] == 0
+        ):
+            raise ValueError("Numeric ASR requires judged harmful examples")
         reasons = instance.get("null_reasons", {})
         for key, value in instance["metrics"].items():
             if value is None and not (reasons.get(f"metrics.{key}") or reasons.get("metrics.*")):

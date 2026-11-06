@@ -75,7 +75,7 @@ def main(argv=None) -> int:
         for device in ("cuda", "cpu"):
             if device == "cpu":
                 import psutil
-                if psutil.virtual_memory().available < 20 * 1024**3:
+                if psutil.virtual_memory().available < 30 * 1024**3:
                     manifest["cpu_retry"] = "unavailable_insufficient_ram"
                     break
             backend = None
@@ -110,7 +110,9 @@ def main(argv=None) -> int:
                 if device == "cuda":
                     attempt["peak_gpu_memory_bytes"] = torch.cuda.max_memory_allocated()
                 break
-            except (MemoryError, torch.OutOfMemoryError):
+            except (MemoryError, torch.OutOfMemoryError, RuntimeError) as exc:
+                if isinstance(exc, RuntimeError) and "out of memory" not in str(exc).lower():
+                    raise
                 attempt["status"] = "memory_failure"
                 if device == "cpu":
                     break

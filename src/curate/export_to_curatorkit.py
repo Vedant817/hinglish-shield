@@ -111,7 +111,9 @@ def map_batch_row(r: dict, lang: str, text: str) -> dict:
     review_status = _review_status(r)
     scoring_eligible = review_status == "accept"
     batch_id = str(r.get("id") or "").strip()
-    item_id = f"{batch_id}:{lang}" if batch_id else f"{family_id}:{lang}"
+    if lang not in {"en", "hi", "hinglish"}:
+        raise ValueError("Unsupported language variant")
+    item_id = f"{batch_id}:{lang}" if batch_id else f"member:{source_dataset}:{source_id}:{lang}"
     return {
         "item_id": item_id,
         "prompt": text,
@@ -123,8 +125,9 @@ def map_batch_row(r: dict, lang: str, text: str) -> dict:
         "split": split,
         "family_id": family_id,
         # variant_of names a canonical EN item, not the semantic family. The
-        # staging sheet does not always carry that item id, so leave it null.
-        "variant_of": r.get("variant_of") or None,
+        # canonical EN item relationship is not resolved here, so do not trust a
+        # supplied link. Family membership remains in its own verified field.
+        "variant_of": None,
         "curatorkit_id": None,
         "review_status": review_status,
         "scoring_eligible": scoring_eligible,
@@ -179,6 +182,7 @@ def _write_jsonl(path: Path, rows: list[dict]) -> None:
 def export_rows(rows: list[dict]) -> list[dict]:
     """Expand staging rows to one eval row per non-empty language cell."""
     hs_rows: list[dict] = []
+    seen = set()
     for row in rows:
         present = [
             (lang, row.get(column))
@@ -186,9 +190,13 @@ def export_rows(rows: list[dict]) -> list[dict]:
             if row.get(column)
         ]
         if not present:
-            continue
+            raise ValueError("Staging row has no language text; refusing silent row loss")
         for lang, text in present:
-            hs_rows.append(map_batch_row(row, lang, text))
+            mapped = map_batch_row(row, lang, text)
+            if mapped["item_id"] in seen:
+                raise ValueError("Duplicate exported item_id")
+            seen.add(mapped["item_id"])
+            hs_rows.append(mapped)
     return hs_rows
 
 

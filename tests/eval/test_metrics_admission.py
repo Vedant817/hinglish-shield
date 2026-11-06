@@ -63,6 +63,14 @@ def test_sensitivity_fields_match_config_contract():
     validate_metrics(data)
 
 
+def test_numeric_asr_refused_without_judgments():
+    data = run()
+    data.update(n_judged=0, n_judge_failures=3)
+    data["metrics"]["asr"] = 1.0
+    with pytest.raises(ValueError, match="judged harmful"):
+        validate_metrics(data)
+
+
 def test_run_metrics_need_null_reasons_and_finite_values():
     data = run()
     data["null_reasons"] = {}

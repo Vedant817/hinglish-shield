@@ -18,6 +18,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import hashlib
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -113,9 +115,9 @@ def _validate_test_single_shot(
                 "(Build Plan: evaluate frozen test once; never for selection)"
             )
         datasets = cfg.get("datasets") or {}
-        if not datasets.get("dataset_hash"):
+        if not re.fullmatch(r"[0-9a-f]{64}", str(datasets.get("dataset_hash") or "")):
             problems.append(
-                "test split requires a non-null datasets.dataset_hash "
+                "test split requires a full SHA-256 datasets.dataset_hash "
                 "(partitions not frozen)"
             )
         manifest = datasets.get("split_manifest")
@@ -130,6 +132,25 @@ def _validate_test_single_shot(
                 problems.append(
                     f"test split manifest missing: {manifest}"
                 )
+            else:
+                try:
+                    raw = manifest_path.read_bytes()
+                    membership = json.loads(raw)
+                    sidecar = Path(str(manifest_path) + ".sha256")
+                    if (membership.get("frozen") is not True or not membership.get("families")
+                            or sidecar.read_text().split()[0] != hashlib.sha256(raw).hexdigest()):
+                        problems.append("test membership must be frozen and checksum-verified")
+                    exposure_path = ROOT / "data/splits/development_exposures.json"
+                    if exposure_path.exists():
+                        exposures = json.loads(exposure_path.read_text(encoding="utf-8"))
+                        for entry in exposures["entries"]:
+                            family = membership["families"].get(entry["family_id"])
+                            if family and family.get("split") == "test":
+                                problems.append("test holdout contains a development-exposed family: " + entry["family_id"])
+                except (OSError, ValueError, KeyError, IndexError, TypeError, AttributeError):
+                    problems.append("test membership or exposure ledger is unreadable or invalid")
+        if not re.fullmatch(r"[0-9a-f]{40}", str(cfg.get("model_revision") or "")):
+            problems.append("test split requires a pinned full model_revision")
         prior = _prior_test_run_ids(ROOT / "runs")
         if prior:
             problems.append(

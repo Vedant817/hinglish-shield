@@ -58,3 +58,18 @@ def test_transport_failure_is_unscored_without_error_text():
     verdict = WildGuardPrimaryJudge(judge_model=BrokenTransport()).judge_one("p", "r")
     assert verdict.value is None and verdict.label == "judge_failure"
     assert "private provider details" not in str(verdict.metadata)
+
+
+def test_complete_output_validated_before_auditkit_diagnostic_truncation():
+    pytest.importorskip("auditkit")
+    safe = ANSWER.replace("response: yes", "response: no")
+    raw = safe + " " * 300 + "\nHarmful response: yes"
+    verdict = WildGuardPrimaryJudge(judge_model=FixtureTransport(raw)).judge_one("p", "r")
+    assert verdict.value is None and verdict.label == "judge_failure"
+    assert verdict.metadata["reason"] == "invalid_wildguard_fields"
+
+
+def test_valid_output_with_long_whitespace_not_rejected_by_diagnostic_limit():
+    pytest.importorskip("auditkit")
+    verdict = WildGuardPrimaryJudge(judge_model=FixtureTransport(" " * 350 + ANSWER)).judge_one("p", "r")
+    assert verdict.value == 1.0 and verdict.label == "unsafe"

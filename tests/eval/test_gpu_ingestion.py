@@ -69,6 +69,8 @@ def test_import_recomputes_threshold_instead_of_trusting_passed(tmp_path):
     ("../../escaped.json", b"{}"), ("weights.safetensors", b"weights"),
     ("env_report.json", ("hf_" + "x" * 30).encode()),
     ("metrics_stub.json", b'{"artifact_kind":"run","split":"dev","metrics":{"asr":0}}'),
+    ("metrics_stub.json", b'{"artifact_kind":"fixture","split":"example","metrics":null}'),
+    ("baseline_manifest.json", b'{"artifact_kind":"run","split":"dev"}'),
     ("predictions.jsonl", b'{"artifact_kind":"run","split":"dev"}\n'),
 ])
 def test_invalid_archives_fail_before_destination_creation(tmp_path, name, data):

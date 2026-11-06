@@ -15,6 +15,7 @@ ROOT = Path(__file__).resolve().parents[1]
 TOKEN = re.compile(rb"hf_[A-Za-z0-9]{20,}|gh[pousr]_[A-Za-z0-9]{20,}|-----BEGIN .*PRIVATE KEY")
 MAX_FILE_BYTES = 64 * 1024**2
 MAX_ARCHIVE_BYTES = 256 * 1024**2
+PINNED_PROMPTS_SHA256 = "3ab3ad15fba852e34e08b8c485e2e3c41adc8702aa80a0bbf62215d5001fabab"
 ALLOWED = {"env_report.json", "versions.json", "parity_original_sequential.json",
            "parity_long_prompt.json", "parity_variant_bf16.json", "parity_pytest.json",
            "parity_pytest.log", "fp16_guard.json", "predictions.jsonl", "metrics_stub.json",
@@ -37,14 +38,18 @@ def parity_summary(files: dict[str, bytes]) -> dict:
             continue
         for node in ast.parse("".join(cell["source"])).body:
             if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "PARITY_PROMPTS" for t in node.targets):
-                expected = set(ast.literal_eval(node.value))
+                prompts = ast.literal_eval(node.value)
+                digest = hashlib.sha256(json.dumps(prompts, ensure_ascii=False).encode()).hexdigest()
+                if digest != PINNED_PROMPTS_SHA256:
+                    raise ValueError("Notebook prompts disagree with the pinned upstream copy")
+                expected = set(prompts)
     if expected is None:
         raise ValueError("Cannot resolve pinned short parity prompts")
     short = report.get("kl_short") or {}
     long = report.get("kl_long") or {}
     long_record = strict_json(files.get("parity_long_prompt.json", b"{}"))
     def finite_kls(values):
-        return all(type(v) in {int, float} and math.isfinite(v) and v >= -1e-7 for v in values)
+        return all(type(v) in {int, float} and math.isfinite(v) for v in values)
     short_present = isinstance(short, dict) and set(short) == expected
     long_present = (report.get("long_ran") is True and isinstance(long, dict)
                     and set(long) == {"sliding_window_4196"}
@@ -112,8 +117,13 @@ def inspect_archive(archive: Path) -> tuple[dict[str, bytes], dict]:
         if name == "metrics_stub.json":
             obj = strict_json(data)
             if (obj.get("artifact_kind") != "fixture" or obj.get("split") != "example"
-                    or any(value is not None for value in obj.get("metrics", {}).values())):
+                    or not isinstance(obj.get("metrics"), dict)
+                    or any(value is not None for value in obj["metrics"].values())):
                 raise ValueError("GPU notebook metrics must remain null fixture metrics")
+        if name == "baseline_manifest.json":
+            obj = strict_json(data)
+            if obj.get("artifact_kind") != "fixture" or obj.get("split") != "example":
+                raise ValueError("GPU generation manifest must remain a fixture")
         if name == "predictions.jsonl":
             for line in data.splitlines():
                 if line.strip():

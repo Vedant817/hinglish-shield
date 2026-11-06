@@ -88,6 +88,25 @@ def test_unreviewed_row_is_not_scoring_eligible() -> None:
     assert "vedant_verdict" not in ck["metadata"]
 
 
+def test_fallback_ids_distinguish_members_and_reject_duplicate_staging_ids(monkeypatch) -> None:
+    monkeypatch.setattr("src.curate.export_to_curatorkit._lookup_verified", lambda *args: ("fixture-family", "dev"))
+    member = {"source_dataset": "fixture", "source_id": "one", "family_id": "fixture-family", "split": "dev"}
+    first = _batch(member, id="", english="synthetic one")
+    second = _batch(member, id="", source_id="two", english="synthetic two")
+    rows = export_rows([first, second])
+    assert len({row["item_id"] for row in rows}) == 2
+    first["id"] = second["id"] = "collision"
+    with pytest.raises(ValueError, match="Duplicate"):
+        export_rows([first, second])
+
+
+def test_unverified_variant_of_never_becomes_accepted_lineage() -> None:
+    member = _member()
+    row = map_batch_row(_batch(member, vedant_verdict="accept", variant_of="not-an-en-item"), "hinglish", "synthetic")
+    assert row["variant_of"] is None
+    assert to_curatorkit(row)["metadata"]["variant_of"] is None
+
+
 def test_explicit_accept_is_preserved_and_not_invented() -> None:
     member = _member()
     accepted = map_batch_row(

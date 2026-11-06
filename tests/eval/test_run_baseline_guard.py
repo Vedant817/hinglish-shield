@@ -2,6 +2,8 @@
 from __future__ import annotations
 
 import sys
+import json
+import hashlib
 import unittest
 from pathlib import Path
 
@@ -58,3 +60,23 @@ class TestLockedGuards(unittest.TestCase):
 
 if __name__ == "__main__":
     raise SystemExit(unittest.main())
+
+
+def test_exposure_ledger_blocks_old_holdout_without_reading_prompts(tmp_path, monkeypatch):
+    monkeypatch.setattr(run_baseline, "ROOT", tmp_path)
+    split_dir = tmp_path / "data/splits"
+    split_dir.mkdir(parents=True)
+    manifest = split_dir / "membership.json"
+    raw = json.dumps({"frozen": True, "families": {"exposed": {"split": "test"}}}).encode()
+    manifest.write_bytes(raw)
+    manifest.with_suffix(".json.sha256").write_text(hashlib.sha256(raw).hexdigest())
+    (split_dir / "development_exposures.json").write_text(json.dumps({"entries": [{"family_id": "exposed"}]}))
+    config = {"model_revision": "a" * 40, "splits": ["test"],
+              "datasets": {"dataset_hash": "b" * 64, "split_manifest": "data/splits/membership.json"}}
+    problems = run_baseline._validate_test_single_shot(config, split="test", i_understand=True,
+                                                       config_path=tmp_path / "test_locked.yaml")
+    assert any("development-exposed" in p for p in problems)
+    (split_dir / "development_exposures.json").write_text("{")
+    problems = run_baseline._validate_test_single_shot(config, split="test", i_understand=True,
+                                                       config_path=tmp_path / "test_locked.yaml")
+    assert any("unreadable or invalid" in p for p in problems)
