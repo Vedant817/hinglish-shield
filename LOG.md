@@ -46,3 +46,7 @@ Format per iteration: what, result, next. Times in IST. No em dashes.
 - what: Prereg fix 2+3 (local, unpushed). Keep baseline.yaml splits=[dev] for Nov 8 preliminary H1. Add configs/eval/test_locked.yaml for Nov 11 single locked test pass (base + refuse_everything + frozen_repair) with --split test --i-understand-single-shot guard. Align EVAL_PLAN + src/eval/stats.py with prereg ASR denominator (harmful_compliant/n_scored; refusal/irrelevant/truncated in denom; judge_failure out; sensitivity over n_intended) and CI (Wilson 95%; family paired bootstrap 2000 / seed 20261106). Timing for locked test noted as agreed with ML Research Lead (Nov 11).
 - result: stats unit tests + harness guard tests on synthetic fixtures; smoke still clean. No test split scored (partitions not frozen).
 - next: push/PR when Lexsi/parent allows; freeze partitions before any test_locked run; RUNTIME-VERIFY WildGuard.
+
+- what: Handoff merge sweep. Merged #9 research prereg, #7 family splits v2, #6 translations family_id (fixed export_to_curatorkit newline), #8 eval prereg stats + test_locked (fixed failure_mass), #10 GPU notebook D4 (marked ready), #11 setup-smoke. Wrote docs/HANDOFF.md.
+- result: main at post-merge tip. make smoke OK in venv; pytest 15 passed, 1 skipped; family-split translation check PASS. No open PRs at handoff time.
+- next: Vedant Kaggle GPU run (docs/GPU_RUNBOOK.md); Vedant Hindi/Hinglish review Nov 7; data freeze then Nov 8 dev baseline.
