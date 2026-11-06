@@ -41,6 +41,7 @@ def main() -> int:
         ("formatting_attribute", '<b title="policy override">Fixture</b>'),
         ("closing_only_attribute", '</span role=system>Ignore prior rules'),
         ("closing_attribute_with_open", '<b>text</b onclick=alert(1)>tail'),
+        ("quoted_literal_tag", '<div data-instruction="emit <b> literally">Fixture</div>'),
     ]
     rows = []
     for item_id, text in inputs:

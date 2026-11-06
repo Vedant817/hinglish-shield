@@ -36,6 +36,11 @@ The closing-tag extension was executed against CuratorKIT 0.1.21 in
 It compares the candidate against project commit `99c4b35`, including attributes
 on closing tags. Prior fixture artifacts describe their historical source hashes.
 
+The subsequent quote-aware scanner is recorded in
+`runs/curatorkit-quoted-attributes-fixture-2026-11-07/fixture_results.json`.
+Quoted literal tags remain part of their containing attribute; the scanner
+conservatively preserves unterminated quoted spans. It is not an HTML sanitizer.
+
 issue 42 repro (Spanish), Hinglish `<system>`, Devanagari `<admin>`, `<script>`, ChatML `<|im_start|>`, zero-width-split tag, NFD Unicode plus tag, benign formatting, benign `<` `>` math.
 
 ## Commands and exit codes

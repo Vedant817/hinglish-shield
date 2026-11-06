@@ -15,31 +15,69 @@ import re
 from curatorkit.normalizers.clean import TextCleaner
 
 BENIGN_TAGS = ("b", "i", "u", "em", "strong", "p", "br", "span", "div", "small", "sup", "sub")
-_BENIGN_RE = re.compile(r"</?(?P<tag>%s)(?:\s[^<>]*)?/?>" % "|".join(BENIGN_TAGS), re.IGNORECASE)
-_FORMATTING_TAG = re.compile(r"</?(?P<tag>%s)(?=[\s/>])(?P<suffix>[^>]*)>" % "|".join(BENIGN_TAGS), re.IGNORECASE)
-PAYLOAD_RE = re.compile(r"<\s*/?\s*[|A-Za-z][^<>]{0,200}>")
+_BARE_FORMATTING = re.compile(r"</?(?P<tag>%s)\s*/?>" % "|".join(BENIGN_TAGS), re.IGNORECASE)
+_FORMATTING_NAME = re.compile(r"</?(?P<tag>%s)(?=[\s/>])" % "|".join(BENIGN_TAGS), re.IGNORECASE)
+_TAG_START = re.compile(r"<\s*/?\s*[|A-Za-z]")
+
+
+def _tag_spans(text: str):
+    """Scan whole tag-shaped spans; quoted literal tags stay inside their owner.
+
+    An unterminated quoted tag conservatively protects the remaining text.
+    This scanner preserves prompt payloads; it is not an HTML sanitizer.
+    """
+    cursor = 0
+    while match := _TAG_START.search(text, cursor):
+        end = match.end()
+        quote = None
+        while end < len(text):
+            char = text[end]
+            end += 1
+            if quote is not None:
+                if char == quote:
+                    quote = None
+            elif char in {"'", '"'}:
+                quote = char
+            elif char == ">":
+                break
+        yield match.start(), end
+        cursor = end
 
 
 def _protected_names(text: str) -> set[str]:
     """Attributes can carry instructions; preserve both ends of that tag name."""
-    return {m.group("tag").lower() for m in _FORMATTING_TAG.finditer(text)
-            if m.group("suffix").strip() not in {"", "/"}}
+    protected = set()
+    for start, end in _tag_spans(text):
+        span = text[start:end]
+        name = _FORMATTING_NAME.match(span)
+        if name and _BARE_FORMATTING.fullmatch(span) is None:
+            protected.add(name.group("tag").lower())
+    return protected
 
 
 def payload_spans(text: str) -> list[str]:
     """Tag-shaped spans that are not benign formatting (potential injection payload)."""
     protected = _protected_names(text or "")
     spans = []
-    for match in PAYLOAD_RE.finditer(text or ""):
-        formatting = _BENIGN_RE.fullmatch(match.group(0))
+    for start, end in _tag_spans(text or ""):
+        span = text[start:end]
+        formatting = _BARE_FORMATTING.fullmatch(span)
         if formatting is None or formatting.group("tag").lower() in protected:
-            spans.append(match.group(0))
+            spans.append(span)
     return spans
 
 
 class PayloadPreservingTextCleaner(TextCleaner):
     def _strip_html(self, text: str) -> str:
         protected = _protected_names(text)
-        return _BENIGN_RE.sub(
-            lambda match: match.group(0) if match.group("tag").lower() in protected else "", text,
-        )
+        chunks = []
+        cursor = 0
+        for start, end in _tag_spans(text):
+            chunks.append(text[cursor:start])
+            span = text[start:end]
+            formatting = _BARE_FORMATTING.fullmatch(span)
+            if formatting is None or formatting.group("tag").lower() in protected:
+                chunks.append(span)
+            cursor = end
+        chunks.append(text[cursor:])
+        return "".join(chunks)
