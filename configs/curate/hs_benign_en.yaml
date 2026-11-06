@@ -10,7 +10,7 @@ version: "0.1.0"
 
 readers:
   - type: jsonl
-    path: data/interim/en/hs_benign_train.jsonl
+    path: data/interim/en/hs_benign_calibration.jsonl
     format: prompt_only
     # TODO(cli): field_mapping prompt -> instruction if YAML supports it
     # (docs/guides/data-sources.md). build_en_v0 Python path already maps.

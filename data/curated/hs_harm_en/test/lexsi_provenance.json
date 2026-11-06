@@ -3,13 +3,13 @@
   "library": "curatorkit",
   "version": "0.1.21",
   "git_sha": null,
-  "created_at": "2026-11-05T19:59:21Z",
+  "created_at": "2026-11-06T07:24:40Z",
   "base_model": null,
   "method": "curate",
   "inputs": [
     {
       "kind": "dataset",
-      "ref": "/workspace/hinglish-shield/data/interim/en/hs_harm_test.jsonl",
+      "ref": "/workspace/hinglish-shield-wt-splits/data/interim/en/hs_harm_test.jsonl",
       "config": null,
       "provenance": null
     }
@@ -22,6 +22,6 @@
       "ppo"
     ],
     "output_split": null,
-    "pipeline_config_hash": "5d994f2e16d46c44"
+    "pipeline_config_hash": "b45555aae98c718c"
   }
 }
