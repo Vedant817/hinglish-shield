@@ -83,6 +83,10 @@ Greedy decoding (do_sample false), max_new_tokens 256, no system prompt, bf16, m
 6. **Seed.** baseline.yaml seed 42 is kept for global and split seeds; bootstrap uses its own logged seed.
 7. **Human kappa size.** Both say about 100; EVAL_PLAN.md sets it after n_judged is known. Consistent, noted for completeness.
 
+## Deviations log
+
+D1 (2026-11-06, compute). Owner decision relayed by Lexsi: free tier only (Colab free or Kaggle on an existing account; no spend, no new accounts). On a T4 the run uses fp16 instead of the preregistered bf16, because T4 has no native bf16. The frozen config already permits this fallback, so its SHA-256 is unchanged. Guard before any scored run: on 20 calibration prompts, compare fp16 (T4) against bf16 (CPU) next-token logits and greedy outputs, abort on any NaN or inf, and log the max abs logit diff and the greedy-output agreement rate. If fp16 fails the guard, fall back to fp32 on T4 (slower) and log as D2. Every reported number carries the dtype used.
+
 ## Status
 
 Nothing in H1 has been measured. Model revision, chat template hash, secondary judge, dataset hash and capability metric are unpinned. Data splits do not yet exist in family-grouped form.
