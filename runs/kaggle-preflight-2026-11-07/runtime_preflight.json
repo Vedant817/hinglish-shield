@@ -1,0 +1,19 @@
+{
+  "artifact_kind": "setup-smoke",
+  "status": "complete",
+  "created_at": "2026-11-06T19:45:39.725924+00:00",
+  "python": "3.13.16",
+  "source_sha256": "d1e3b31a55ee8ba55a1d4a303d6ca786ffc4e16a3733ea2531f7f23a28266807",
+  "limitations": [
+    "No model or judge inference; no benchmark score",
+    "Does not establish HF secret attachment or gated model access"
+  ],
+  "torch": "2.11.0+cu130",
+  "cuda_available": true,
+  "gpu_names": [
+    "Tesla T4",
+    "Tesla T4"
+  ],
+  "ram_total_bytes": 33658155008,
+  "ram_available_bytes": 32174682112
+}
