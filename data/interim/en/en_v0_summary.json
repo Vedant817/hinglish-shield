@@ -1,0 +1,126 @@
+{
+  "split_seed": 42,
+  "sample_seed": 42,
+  "split_frac": {
+    "train": 0.5,
+    "val": 0.15,
+    "test": 0.35
+  },
+  "include_or_toxic": true,
+  "hs_harm": {
+    "n": 943,
+    "sources": {
+      "aya_redteaming": 250,
+      "harmbench": 393,
+      "or_bench_toxic": 100,
+      "xstest": 200
+    },
+    "splits": {
+      "train": 465,
+      "val": 143,
+      "test": 335
+    }
+  },
+  "hs_benign": {
+    "n": 750,
+    "sources": {
+      "or_bench_80k": 250,
+      "or_bench_hard": 250,
+      "xstest": 250
+    },
+    "splits": {
+      "train": 365,
+      "val": 117,
+      "test": 268
+    }
+  },
+  "curatorkit_ran": true,
+  "compute_hold": "lifted for CPU CuratorKIT clean/dedup/export only; no GPU, no HF push, no GitHub push",
+  "curatorkit": {
+    "version": "0.1.21",
+    "mode": "cpu_clean_dedup_export",
+    "command": ".venv/bin/python -m src.curate.build_en_v0 --include-or-toxic --run-curatorkit",
+    "exit_code": 0,
+    "ran_at_ist": "2026-11-06T01:29:51+05:30",
+    "env": {
+      "CUDA_VISIBLE_DEVICES": "",
+      "HF_HUB_OFFLINE": "1",
+      "TRANSFORMERS_OFFLINE": "1",
+      "torch_present": false
+    },
+    "hs_harm_en": {
+      "interim_n": 943,
+      "passed_n": 943,
+      "rejected_n": 0,
+      "test_frac": 0.355,
+      "splits": {
+        "train": {
+          "passed_hs_eval": 465,
+          "passed_ppo": 465,
+          "rejected": 0,
+          "output_dir": "data/curated/hs_harm_en/train",
+          "manifest": "data/curated/hs_harm_en/train/manifest.json",
+          "lexsi_provenance": "data/curated/hs_harm_en/train/lexsi_provenance.json"
+        },
+        "val": {
+          "passed_hs_eval": 143,
+          "passed_ppo": 143,
+          "rejected": 0,
+          "output_dir": "data/curated/hs_harm_en/val",
+          "manifest": "data/curated/hs_harm_en/val/manifest.json",
+          "lexsi_provenance": "data/curated/hs_harm_en/val/lexsi_provenance.json"
+        },
+        "test": {
+          "passed_hs_eval": 335,
+          "passed_ppo": 335,
+          "rejected": 0,
+          "output_dir": "data/curated/hs_harm_en/test",
+          "manifest": "data/curated/hs_harm_en/test/manifest.json",
+          "lexsi_provenance": "data/curated/hs_harm_en/test/lexsi_provenance.json"
+        }
+      }
+    },
+    "hs_benign_en": {
+      "interim_n": 750,
+      "passed_n": 750,
+      "rejected_n": 0,
+      "test_frac": 0.357,
+      "splits": {
+        "train": {
+          "passed_hs_eval": 365,
+          "passed_ppo": 365,
+          "rejected": 0,
+          "output_dir": "data/curated/hs_benign_en/train",
+          "manifest": "data/curated/hs_benign_en/train/manifest.json",
+          "lexsi_provenance": "data/curated/hs_benign_en/train/lexsi_provenance.json"
+        },
+        "val": {
+          "passed_hs_eval": 117,
+          "passed_ppo": 117,
+          "rejected": 0,
+          "output_dir": "data/curated/hs_benign_en/val",
+          "manifest": "data/curated/hs_benign_en/val/manifest.json",
+          "lexsi_provenance": "data/curated/hs_benign_en/val/lexsi_provenance.json"
+        },
+        "test": {
+          "passed_hs_eval": 268,
+          "passed_ppo": 268,
+          "rejected": 0,
+          "output_dir": "data/curated/hs_benign_en/test",
+          "manifest": "data/curated/hs_benign_en/test/manifest.json",
+          "lexsi_provenance": "data/curated/hs_benign_en/test/lexsi_provenance.json"
+        }
+      }
+    },
+    "seeds_unchanged": true,
+    "hf_push": false,
+    "github_push": false,
+    "limitations": [
+      "Exact dedup ran per split, not cross-split; prep script already exact-deduped across sources before split.",
+      "Zero rows rejected by SchemaGate/ExactDedup/TextCleaner on this run (rejected.jsonl empty in all splits).",
+      "Set-level lexsi_provenance/manifest live under each train|val|test folder (CuratorKIT per-split runs), not a single set root file.",
+      "YAML configs still have TODO for field_mapping; Python API path used successfully.",
+      "No HF dataset push; write_hf_readme wrote local README.md only."
+    ]
+  }
+}
