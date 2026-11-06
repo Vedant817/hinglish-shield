@@ -104,7 +104,8 @@ Written under `data/interim/en/*.jsonl` before CuratorKIT. One JSON object per l
 | `source_id` | str | yes | Upstream id or hash of prompt |
 | `category` | str | yes | Semantic / harm / OR category (or `unknown`) |
 | `lang` | str | yes | `en` / `hi` / `hinglish` |
-| `split` | str | yes | `train` / `val` / `test` (assigned in prep; see below) |
+| `split` | str | yes | `calibration` / `dev` / `test` (inherited from family; see below) |
+| `family_id` | str | yes | Semantic family id from `data/splits/family_splits_v2.json` |
 | `variant_of` | str/null | no | EN `item_id` for translated rows |
 | `functional_category` | str | no | HarmBench only |
 | `xstest_type` | str | no | XSTest type |
@@ -147,21 +148,46 @@ Do not invent generation / judge API calls. v0 is clean + dedup + export only (R
 
 ---
 
-## Split recipe (dev/test, seed, >=30% test)
+## Split recipe (family-level, per preregistration)
 
-CuratorKIT `output_split` is a **global shuffle** (`output_split_seed`), not stratified. For Track 2 we **assign splits in the prep script**, then run CuratorKIT per split directory (or one run per split file).
+Authority: `configs/research/baseline_prereg.yaml` and `docs/research/PREREG_baseline.md` on `research/baseline-prereg@8b6af17`.
 
-| Split | Fraction | Allowed uses |
+**Discrepancy resolved (2026-11-06):** this plan previously used item-level train/val/test 0.50/0.15/0.35. The prereg wins: splits are now by semantic family, calibration/dev/test 0.20/0.30/0.50, assigned before translation. The item-level mode survives only as `build_en_v0.py --split-mode item` for reproducing the old export; default is `--split-mode family`.
+
+| Split | Fraction (families) | Allowed uses |
 | --- | ---: | --- |
-| `train` | 0.50 | Optional harden / SafeTune later |
-| `val` | 0.15 | Locate + steer sweeps (dev) |
-| `test` | **0.35** | Final AFTER only; never direction extraction or training |
+| `calibration` | 0.20 | Locate + repair (direction extraction, calibration) |
+| `dev` | 0.30 | Locate + repair sweeps, selection |
+| `test` | **0.50** | **Frozen.** Read only by the Nov 11 final frozen-arm pass. Never used for selection, tuning or direction extraction. |
 
-- Seed: `42` (`SPLIT_SEED` in `build_en_v0.py`).
-- Stratify keys: `(hs_label, source_dataset, category)` within each set.
-- Same `item_id` keeps the same split across EN / HI / Hinglish once translations exist (split assigned on EN, copied via `variant_of`).
+- Unit: semantic family = harmful prompt + benign near-neighbors + all language variants (EN, HI, Hinglish).
+- `assigned_before_translation: true`. Translations, paraphrases and attack derivatives inherit the family split (DE A looks up `family_id`/`split` by `(source, source_id)`).
+- **v2 XSTest calibration exclusion:** every family containing an XSTest prompt goes to dev or test only (dev:test 30:50, largest remainder). XSTest calibration count is 0. Non-XSTest families keep 0.20/0.30/0.50, so realized overall ratios are below 0.20 for calibration (see manifest `realized_ratios`).
+- Harm share check: per-split harm item share must be within 2 points of overall. With `(hs_label, category)` at seed 42 calibration was +2.35 points, so v2 re-stratifies by `(is_xstest, hs_label, source_dataset, category)` and iterates seeds from 42; the first passing seed was 42 (all tries in manifest `seed_search`).
+- Originally stratified by `(hs_label, category)`; hs_label is `harm`, `benign` or `mixed` (family with both, e.g. XSTest safe + contrast). Largest-remainder quotas per stratum, seed `42`.
+- No family may cross splits.
 
-After CuratorKIT, verify test share >= 0.30 of accepted rows per set.
+Family rules (full detail in the `src/curate/family_splits.py` docstring):
+1. XSTest (heuristic): k-th safe prompt of a type pairs with the k-th prompt of its contrast type, kept ONLY when the `focus` column agrees (200 of 250 positional pairs). The 50 mismatched pairs are not merged; both prompts stay singleton families and each rejected pair is logged in the audit with `reason=focus_mismatch`.
+2. HarmBench: one family per BehaviorID.
+3. Aya: one family per seed row; `aya_eng` and `aya_hin` are separate collections, so HI rows are matched to EN via `literal_translation` in rule 5 only.
+4. OR-Bench: one family per prompt.
+5. Merge (heuristic): exact normalized-text hash, then char 5-gram Jaccard >= 0.80 (MinHash LSH candidates, exact verification). Every merge is in `data/splits/family_merge_audit.jsonl`; chained families are kept, and each merged family has a `family_summary` record with exact `min_pairwise_jaccard` over all member pairs. sklearn is absent from the venv, so TF-IDF cosine was not used.
+
+Pool: all HarmBench text, all XSTest, all OR-Bench hard and toxic, the sampled OR-Bench 80k rows, all Aya eng and ALL Aya hin rows.
+
+Manifest (v2, seed 42): `data/splits/family_splits_v2.json`, SHA-256 `334e7151edfd9fe958afcded67417b9315d2d26b693b51f91b998c5d9638b531` (sidecar `family_splits_v2.json.sha256`), seed 42, `frozen: true`, `test_access: nov11_final_pass_only`. Per-split family and item counts by language and by hs_label x category are in its `counts` block. Lookup table: `data/splits/family_lookup.csv`.
+
+Check (exit non-zero on any family crossing splits, split mismatch, unmapped row, or manifest hash mismatch):
+
+```bash
+python -m src.curate.check_family_splits data/curated/hs_*_en/*/hs_eval.jsonl data/staging/translations/batch01.csv
+python -m src.curate.family_splits lookup --source aya --source-id hin:12
+```
+
+**v1 superseded:** `family_splits_v1.json` (commit 76c9063) is removed from the branch and superseded by v2 after ML Research Lead review. Build and check default to v2.
+
+**Test freeze:** the test split is frozen at the commit that introduced `family_splits_v2.json`. Rebuilding the manifest changes its SHA-256 and must be treated as a new version (v3), never a silent overwrite.
 
 ---
 
@@ -190,7 +216,7 @@ data/
       README.md
   curated/                  # CuratorKIT HF-loadable folders
     hs_harm_en/
-      train|val|test/
+      calibration|dev|test/
         ppo.jsonl
         hs_eval.jsonl       # enriched: prompt + labels + metadata
       manifest.json
@@ -226,10 +252,10 @@ ds = load_dataset("data/curated/hs_harm_en", "ppo")  # if README configs present
 ### Can run now (EN-only)
 
 1. Sample + normalize HarmBench, Aya eng, XSTest, OR hard, OR 80k sample, optional OR toxic into `data/interim/en/`.
-2. Stratified train/val/test assignment (seed 42, test 35%).
+2. Family-level calibration/dev/test assignment from the frozen manifest (seed 42, 0.20/0.30/0.50).
 3. CuratorKIT clean + exact dedup + SchemaGate + PPO export into `data/curated/hs_*_en/`.
 4. Write `hs_eval.jsonl` from `result.passed` metadata.
-5. Spot-check counts >= 300 accepted per set; test fraction >= 0.30.
+5. Spot-check counts >= 300 accepted per set; test fraction near 0.50 of families.
 
 ### Blocked / waiting on DE A
 
@@ -254,7 +280,7 @@ from curatorkit import Curator, CuratorConfig
 
 result = Curator(CuratorConfig(
     name="hs_harm_en",
-    dataset="data/interim/en/hs_harm_train.jsonl",  # or list of split files
+    dataset="data/interim/en/hs_harm_calibration.jsonl",  # or list of split files
     format="prompt_only",
     field_mapping={"prompt": "instruction"},
     dedup="exact",
@@ -263,7 +289,7 @@ result = Curator(CuratorConfig(
     schema_gate=True,
     toxicity_gate=False,
     export_formats=["ppo"],
-    output_dir="data/curated/hs_harm_en/train",
+    output_dir="data/curated/hs_harm_en/calibration",
 )).run()
 ```
 

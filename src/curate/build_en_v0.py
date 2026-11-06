@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Build English v0 interim JSONL for HS-Harm and HS-Benign.
 
-Prep-only by default: samples seeds, normalizes schema, assigns stratified
-train/val/test splits, writes data/interim/en/*.jsonl.
+Prep-only by default: samples seeds, normalizes schema, assigns splits
+(default: family-level calibration/dev/test from data/splits/family_splits_v2.json;
+legacy item-level train/val/test via --split-mode item), writes data/interim/en/*.jsonl.
 
 CuratorKIT clean/dedup/export is OFF unless --run-curatorkit is passed
 (CPU-only path; still gated until Lexsi registration greenlight).
@@ -108,7 +109,7 @@ def load_aya_eng(n: int, rng: random.Random) -> list[dict]:
                     "prompt": obj["prompt"],
                     "hs_label": "harm",
                     "source_dataset": "aya_redteaming",
-                    "source_id": str(i),
+                    "source_id": f"eng:{i}",
                     "category": primary,
                     "lang": "en",
                     "variant_of": None,
@@ -283,7 +284,7 @@ def source_counts(rows: list[dict]) -> dict[str, int]:
     return dict(c)
 
 
-def build_harm(rng: random.Random, include_or_toxic: bool) -> list[dict]:
+def build_harm_rows(rng: random.Random, include_or_toxic: bool) -> list[dict]:
     rows: list[dict] = []
     rows.extend(load_harmbench())
     rows.extend(load_aya_eng(N_AYA_ENG, rng))
@@ -291,11 +292,10 @@ def build_harm(rng: random.Random, include_or_toxic: bool) -> list[dict]:
     if include_or_toxic:
         toxic = load_or_bench("or-bench-toxic.csv", "or_bench_toxic", "harm")
         rows.extend(stratified_sample_rows(toxic, N_OR_TOXIC, rng))
-    rows = dedup_exact(rows)
-    return assign_splits(rows, random.Random(SPLIT_SEED))
+    return dedup_exact(rows)
 
 
-def build_benign(rng: random.Random) -> list[dict]:
+def build_benign_rows(rng: random.Random) -> list[dict]:
     hard = load_or_bench("or-bench-hard-1k.csv", "or_bench_hard", "benign")
     hard_sample = stratified_sample_rows(hard, N_OR_HARD, rng)
     hard_norms = {normalize_text(r["prompt"]) for r in hard}  # exclude all hard from 80k
@@ -310,17 +310,59 @@ def build_benign(rng: random.Random) -> list[dict]:
     rows = load_xstest("safe") + hard_sample + sample_80k
     rows = dedup_exact(rows)
     # Safety: never allow toxic source name here
-    rows = [r for r in rows if r["source_dataset"] != "or_bench_toxic"]
+    return [r for r in rows if r["source_dataset"] != "or_bench_toxic"]
+
+
+def candidate_rows(include_or_toxic: bool = True) -> tuple[list[dict], list[dict]]:
+    """Pre-split EN rows exactly as sampled for HS-Harm and HS-Benign (deterministic)."""
+    harm = build_harm_rows(random.Random(SAMPLE_SEED), include_or_toxic=include_or_toxic)
+    benign = build_benign_rows(random.Random(SAMPLE_SEED + 1))
+    return harm, benign
+
+
+def assign_family_splits(rows: list[dict]) -> list[dict]:
+    """Each row inherits its family split from data/splits/family_splits_v2.json."""
+    from src.curate.family_splits import load_lookup
+    table = load_lookup()
+    out, missing = [], []
+    for r in rows:
+        hit = table.get((r["source_dataset"], r["source_id"]))
+        if hit is None:
+            missing.append(r["item_id"])
+            continue
+        r2 = dict(r)
+        r2["family_id"], r2["split"] = hit
+        out.append(r2)
+    if missing:
+        raise SystemExit(f"ABORT: {len(missing)} rows have no family in manifest, e.g. {missing[:5]}")
+    return out
+
+
+def build_harm(rng: random.Random, include_or_toxic: bool, split_mode: str = "family") -> list[dict]:
+    rows = build_harm_rows(rng, include_or_toxic)
+    if split_mode == "family":
+        return assign_family_splits(rows)
     return assign_splits(rows, random.Random(SPLIT_SEED))
 
 
-def write_split_files(prefix: str, rows: list[dict]) -> dict[str, Path]:
+def build_benign(rng: random.Random, split_mode: str = "family") -> list[dict]:
+    rows = build_benign_rows(rng)
+    if split_mode == "family":
+        return assign_family_splits(rows)
+    return assign_splits(rows, random.Random(SPLIT_SEED))
+
+
+FAMILY_SPLITS = ("calibration", "dev", "test")
+LEGACY_SPLITS = ("train", "val", "test")
+
+
+def write_split_files(prefix: str, rows: list[dict], splits=FAMILY_SPLITS) -> dict[str, Path]:
     paths = {}
     # Combined
     combined = INTERIM / f"{prefix}.jsonl"
     write_jsonl(combined, rows)
     paths["all"] = combined
-    for split in ("train", "val", "test"):
+    for split in splits:
         part = [r for r in rows if r["split"] == split]
         path = INTERIM / f"{prefix}_{split}.jsonl"
         write_jsonl(path, part)
@@ -422,6 +464,7 @@ def run_curatorkit_for_set(set_name: str, split_paths: dict[str, Path]) -> None:
                     "lang": s.metadata.get("lang", "en"),
                     "split": split,
                     "variant_of": s.metadata.get("variant_of"),
+                    "family_id": s.metadata.get("family_id"),
                     "curatorkit_id": s.id,
                 }
                 f.write(json.dumps(rec, ensure_ascii=False) + "\n")
@@ -445,11 +488,18 @@ def main() -> None:
         action="store_true",
         help="Print planned counts only; do not write files",
     )
+    ap.add_argument(
+        "--split-mode",
+        choices=["family", "item"],
+        default="family",
+        help="family (default, prereg): inherit split from data/splits/family_splits_v2.json; item: legacy 50/15/35",
+    )
     args = ap.parse_args()
+    splits = FAMILY_SPLITS if args.split_mode == "family" else LEGACY_SPLITS
 
     rng = random.Random(SAMPLE_SEED)
-    harm = build_harm(rng, include_or_toxic=args.include_or_toxic)
-    benign = build_benign(random.Random(SAMPLE_SEED + 1))
+    harm = build_harm(rng, include_or_toxic=args.include_or_toxic, split_mode=args.split_mode)
+    benign = build_benign(random.Random(SAMPLE_SEED + 1), split_mode=args.split_mode)
 
     print("=== HS-Harm EN ===")
     print("n=", len(harm), "sources=", source_counts(harm), "splits=", split_counts(harm))
@@ -471,8 +521,8 @@ def main() -> None:
         return
 
     INTERIM.mkdir(parents=True, exist_ok=True)
-    harm_paths = write_split_files("hs_harm", harm)
-    benign_paths = write_split_files("hs_benign", benign)
+    harm_paths = write_split_files("hs_harm", harm, splits)
+    benign_paths = write_split_files("hs_benign", benign, splits)
     print("Wrote interim:")
     for p in list(harm_paths.values()) + list(benign_paths.values()):
         print(" ", p)
@@ -480,7 +530,9 @@ def main() -> None:
     summary = {
         "split_seed": SPLIT_SEED,
         "sample_seed": SAMPLE_SEED,
-        "split_frac": SPLIT_FRAC,
+        "split_mode": args.split_mode,
+        "split_frac": ({"calibration": 0.20, "dev": 0.30, "test": 0.50} if args.split_mode == "family" else SPLIT_FRAC),
+        "split_manifest": "data/splits/family_splits_v2.json" if args.split_mode == "family" else None,
         "include_or_toxic": args.include_or_toxic,
         "hs_harm": {"n": len(harm), "sources": source_counts(harm), "splits": split_counts(harm)},
         "hs_benign": {
