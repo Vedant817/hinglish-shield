@@ -2,9 +2,9 @@
 
 ## Summary
 
-- **Run timestamp**: 2026-11-05T19:59:21.140561Z
+- **Run timestamp**: 2026-11-06T07:21:11.675557Z
 - **Wall clock time**: 0.0s
-- **Pipeline config hash**: `5d994f2e16d46c44`
+- **Pipeline config hash**: `b45555aae98c718c`
 
 ## Source Documents
 
@@ -14,16 +14,16 @@
 
 | Step | Input | Passed | Recovered | Rejected | Forward |
 |------|-------|--------|-----------|----------|---------|
-| JSONLReader | 335 | 335 | — | 0 | 335 |
-| SchemaGate | 335 | 335 | 0 | 0 | 335 |
-| ExactDeduplicator | 335 | 335 | — | — | 335 |
-| TextCleaner | 335 | 335 | — | — | 335 |
-| PPOExporter | — | 335 | — | — | 335 |
+| JSONLReader | 475 | 475 | - | 0 | 475 |
+| SchemaGate | 475 | 475 | 0 | 0 | 475 |
+| ExactDeduplicator | 475 | 475 | - | - | 475 |
+| PayloadPreservingTextCleaner | 475 | 475 | - | - | 475 |
+| PPOExporter | - | 475 | - | - | 475 |
 
 ## Gate Pass Rates and Rejection Breakdown
 
-- **JSONLReader**: 335/0 passed (N/A), 0 rejected
-- **SchemaGate**: 335/335 passed (100.0%), 0 rejected
+- **JSONLReader**: 475/0 passed (N/A), 0 rejected
+- **SchemaGate**: 475/475 passed (100.0%), 0 rejected
 
 
 **Rejection reasons:**
@@ -54,3 +54,10 @@ curatorkit run pipeline.yaml --output-dir ./out/
 
 - **curatorkit**: 0.1.21
 - **python**: 3.13.5
+
+## Hinglish Shield split note (family_splits_v1)
+
+- Split: test (family-level calibration/dev/test 0.20/0.30/0.50, seed 42, stratified by hs_label x category), per preregistration research/baseline-prereg@8b6af17.
+- Every row inherits its split from its semantic family in data/splits/family_splits_v1.json (sha256 803790ea867c3c7b58c23aa180e47e0eaabb0f7d5583853bee73c0cd34a065b9). No family crosses splits; verify with: python -m src.curate.check_family_splits data/curated/hs_harm_en/test/hs_eval.jsonl
+- frozen: true. test_access: nov11_final_pass_only. This split is read ONLY by the Nov 11 final frozen-arm pass; never used for locate, repair, selection or tuning.
+- The CuratorKIT-generated HF config label "train" above is the exporter's default config name, not the Hinglish Shield split.
