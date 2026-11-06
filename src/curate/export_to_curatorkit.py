@@ -66,12 +66,10 @@ def main():
     Path(args.out_hs).parent.mkdir(parents=True, exist_ok=True)
     with open(args.out_hs, "w", encoding="utf-8") as f:
         for h in hs_rows:
-            f.write(json.dumps(h, ensure_ascii=False) + "
-")
+            f.write(json.dumps(h, ensure_ascii=False) + "\n")
     with open(args.out_ck, "w", encoding="utf-8") as f:
         for h in hs_rows:
-            f.write(json.dumps(to_curatorkit(h), ensure_ascii=False) + "
-")
+            f.write(json.dumps(to_curatorkit(h), ensure_ascii=False) + "\n")
     print({"hs_rows": len(hs_rows), "out_hs": args.out_hs, "out_ck": args.out_ck})
 
 if __name__ == "__main__":
