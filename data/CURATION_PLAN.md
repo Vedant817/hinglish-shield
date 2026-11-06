@@ -105,7 +105,7 @@ Written under `data/interim/en/*.jsonl` before CuratorKIT. One JSON object per l
 | `category` | str | yes | Semantic / harm / OR category (or `unknown`) |
 | `lang` | str | yes | `en` / `hi` / `hinglish` |
 | `split` | str | yes | `calibration` / `dev` / `test` (inherited from family; see below) |
-| `family_id` | str | yes | Semantic family id from `data/splits/family_splits_v1.json` |
+| `family_id` | str | yes | Semantic family id from `data/splits/family_splits_v2.json` |
 | `variant_of` | str/null | no | EN `item_id` for translated rows |
 | `functional_category` | str | no | HarmBench only |
 | `xstest_type` | str | no | XSTest type |
@@ -162,19 +162,21 @@ Authority: `configs/research/baseline_prereg.yaml` and `docs/research/PREREG_bas
 
 - Unit: semantic family = harmful prompt + benign near-neighbors + all language variants (EN, HI, Hinglish).
 - `assigned_before_translation: true`. Translations, paraphrases and attack derivatives inherit the family split (DE A looks up `family_id`/`split` by `(source, source_id)`).
-- Stratified by `(hs_label, category)`; hs_label is `harm`, `benign` or `mixed` (family with both, e.g. XSTest safe + contrast). Largest-remainder quotas per stratum, seed `42`.
+- **v2 XSTest calibration exclusion:** every family containing an XSTest prompt goes to dev or test only (dev:test 30:50, largest remainder). XSTest calibration count is 0. Non-XSTest families keep 0.20/0.30/0.50, so realized overall ratios are below 0.20 for calibration (see manifest `realized_ratios`).
+- Harm share check: per-split harm item share must be within 2 points of overall. With `(hs_label, category)` at seed 42 calibration was +2.35 points, so v2 re-stratifies by `(is_xstest, hs_label, source_dataset, category)` and iterates seeds from 42; the first passing seed was 42 (all tries in manifest `seed_search`).
+- Originally stratified by `(hs_label, category)`; hs_label is `harm`, `benign` or `mixed` (family with both, e.g. XSTest safe + contrast). Largest-remainder quotas per stratum, seed `42`.
 - No family may cross splits.
 
 Family rules (full detail in the `src/curate/family_splits.py` docstring):
-1. XSTest (heuristic): k-th safe prompt of a type pairs with the k-th prompt of its contrast type; discr and privacy contrast blocks each pair with two safe types (3-member families).
+1. XSTest (heuristic): k-th safe prompt of a type pairs with the k-th prompt of its contrast type, kept ONLY when the `focus` column agrees (200 of 250 positional pairs). The 50 mismatched pairs are not merged; both prompts stay singleton families and each rejected pair is logged in the audit with `reason=focus_mismatch`.
 2. HarmBench: one family per BehaviorID.
 3. Aya: one family per seed row; `aya_eng` and `aya_hin` are separate collections, so HI rows are matched to EN via `literal_translation` in rule 5 only.
 4. OR-Bench: one family per prompt.
-5. Merge (heuristic): exact normalized-text hash, then char 5-gram Jaccard >= 0.80 (MinHash LSH candidates, exact verification). Every merge is in `data/splits/family_merge_audit.jsonl`.
+5. Merge (heuristic): exact normalized-text hash, then char 5-gram Jaccard >= 0.80 (MinHash LSH candidates, exact verification). Every merge is in `data/splits/family_merge_audit.jsonl`; chained families are kept, and each merged family has a `family_summary` record with exact `min_pairwise_jaccard` over all member pairs. sklearn is absent from the venv, so TF-IDF cosine was not used.
 
 Pool: all HarmBench text, all XSTest, all OR-Bench hard and toxic, the sampled OR-Bench 80k rows, all Aya eng and ALL Aya hin rows.
 
-Manifest: `data/splits/family_splits_v1.json`, SHA-256 `803790ea867c3c7b58c23aa180e47e0eaabb0f7d5583853bee73c0cd34a065b9` (sidecar `family_splits_v1.json.sha256`), seed 42, `frozen: true`, `test_access: nov11_final_pass_only`. Per-split family and item counts by language and by hs_label x category are in its `counts` block. Lookup table: `data/splits/family_lookup.csv`.
+Manifest (v2, seed 42): `data/splits/family_splits_v2.json`, SHA-256 `334e7151edfd9fe958afcded67417b9315d2d26b693b51f91b998c5d9638b531` (sidecar `family_splits_v2.json.sha256`), seed 42, `frozen: true`, `test_access: nov11_final_pass_only`. Per-split family and item counts by language and by hs_label x category are in its `counts` block. Lookup table: `data/splits/family_lookup.csv`.
 
 Check (exit non-zero on any family crossing splits, split mismatch, unmapped row, or manifest hash mismatch):
 
@@ -183,7 +185,9 @@ python -m src.curate.check_family_splits data/curated/hs_*_en/*/hs_eval.jsonl da
 python -m src.curate.family_splits lookup --source aya --source-id hin:12
 ```
 
-**Test freeze:** the test split is frozen at the commit that introduced `family_splits_v1.json`. Rebuilding the manifest changes its SHA-256 and must be treated as a new version (v2), never a silent overwrite.
+**v1 superseded:** `family_splits_v1.json` (commit 76c9063) is removed from the branch and superseded by v2 after ML Research Lead review. Build and check default to v2.
+
+**Test freeze:** the test split is frozen at the commit that introduced `family_splits_v2.json`. Rebuilding the manifest changes its SHA-256 and must be treated as a new version (v3), never a silent overwrite.
 
 ---
 

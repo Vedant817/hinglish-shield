@@ -2,7 +2,7 @@
 """Build English v0 interim JSONL for HS-Harm and HS-Benign.
 
 Prep-only by default: samples seeds, normalizes schema, assigns splits
-(default: family-level calibration/dev/test from data/splits/family_splits_v1.json;
+(default: family-level calibration/dev/test from data/splits/family_splits_v2.json;
 legacy item-level train/val/test via --split-mode item), writes data/interim/en/*.jsonl.
 
 CuratorKIT clean/dedup/export is OFF unless --run-curatorkit is passed
@@ -321,7 +321,7 @@ def candidate_rows(include_or_toxic: bool = True) -> tuple[list[dict], list[dict
 
 
 def assign_family_splits(rows: list[dict]) -> list[dict]:
-    """Each row inherits its family split from data/splits/family_splits_v1.json."""
+    """Each row inherits its family split from data/splits/family_splits_v2.json."""
     from src.curate.family_splits import load_lookup
     table = load_lookup()
     out, missing = [], []
@@ -492,7 +492,7 @@ def main() -> None:
         "--split-mode",
         choices=["family", "item"],
         default="family",
-        help="family (default, prereg): inherit split from data/splits/family_splits_v1.json; item: legacy 50/15/35",
+        help="family (default, prereg): inherit split from data/splits/family_splits_v2.json; item: legacy 50/15/35",
     )
     args = ap.parse_args()
     splits = FAMILY_SPLITS if args.split_mode == "family" else LEGACY_SPLITS
@@ -532,7 +532,7 @@ def main() -> None:
         "sample_seed": SAMPLE_SEED,
         "split_mode": args.split_mode,
         "split_frac": ({"calibration": 0.20, "dev": 0.30, "test": 0.50} if args.split_mode == "family" else SPLIT_FRAC),
-        "split_manifest": "data/splits/family_splits_v1.json" if args.split_mode == "family" else None,
+        "split_manifest": "data/splits/family_splits_v2.json" if args.split_mode == "family" else None,
         "include_or_toxic": args.include_or_toxic,
         "hs_harm": {"n": len(harm), "sources": source_counts(harm), "splits": split_counts(harm)},
         "hs_benign": {

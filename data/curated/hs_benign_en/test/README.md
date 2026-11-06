@@ -4,7 +4,7 @@ tags:
 configs:
 - config_name: ppo
   default: true
-  description: curatorkit ppo export, sha256 c696fbb99aec87649c28f4d581d22d2e02dd706b6a1e4620a21ff2af15b11f75
+  description: curatorkit ppo export, sha256 4e27fc58eaf667526fb10daee445e5d15b87b1c3acec7d4e661ae80efa2abd1d
   data_files:
   - split: train
     path: ppo.jsonl
@@ -14,7 +14,7 @@ configs:
 
 ## Summary
 
-- **Run timestamp**: 2026-11-06T07:21:11.714369Z
+- **Run timestamp**: 2026-11-06T07:24:40.924597Z
 - **Wall clock time**: 0.0s
 - **Pipeline config hash**: `b95b36bd57e089ee`
 
@@ -26,16 +26,16 @@ configs:
 
 | Step | Input | Passed | Recovered | Rejected | Forward |
 |------|-------|--------|-----------|----------|---------|
-| JSONLReader | 369 | 369 | - | 0 | 369 |
-| SchemaGate | 369 | 369 | 0 | 0 | 369 |
-| ExactDeduplicator | 369 | 369 | - | - | 369 |
-| PayloadPreservingTextCleaner | 369 | 369 | - | - | 369 |
-| PPOExporter | - | 369 | - | - | 369 |
+| JSONLReader | 413 | 413 | - | 0 | 413 |
+| SchemaGate | 413 | 413 | 0 | 0 | 413 |
+| ExactDeduplicator | 413 | 413 | - | - | 413 |
+| PayloadPreservingTextCleaner | 413 | 413 | - | - | 413 |
+| PPOExporter | - | 413 | - | - | 413 |
 
 ## Gate Pass Rates and Rejection Breakdown
 
-- **JSONLReader**: 369/0 passed (N/A), 0 rejected
-- **SchemaGate**: 369/369 passed (100.0%), 0 rejected
+- **JSONLReader**: 413/0 passed (N/A), 0 rejected
+- **SchemaGate**: 413/413 passed (100.0%), 0 rejected
 
 
 **Rejection reasons:**
@@ -73,11 +73,11 @@ Load one with `datasets.load_dataset("<this folder or Hub repo>", "<config>")`.
 
 | Config | Splits (rows) | Columns |
 |--------|---------------|---------|
-| `ppo` | train (369) | `prompt`: string |
+| `ppo` | train (413) | `prompt`: string |
 
-## Hinglish Shield split note (family_splits_v1)
+## Hinglish Shield split note (family_splits_v2)
 
-- Split: test (family-level calibration/dev/test 0.20/0.30/0.50, seed 42, stratified by hs_label x category), per preregistration research/baseline-prereg@8b6af17.
-- Every row inherits its split from its semantic family in data/splits/family_splits_v1.json (sha256 803790ea867c3c7b58c23aa180e47e0eaabb0f7d5583853bee73c0cd34a065b9). No family crosses splits; verify with: python -m src.curate.check_family_splits data/curated/hs_benign_en/test/hs_eval.jsonl
+- Split: test. Family-level, per preregistration research/baseline-prereg@8b6af17. Non-XSTest families calibration/dev/test 0.20/0.30/0.50; XSTest families dev:test 30:50 only (excluded from calibration). Seed 42, stratified by (is_xstest, hs_label, source_dataset, category).
+- Every row inherits its split from its semantic family in data/splits/family_splits_v2.json (sha256 334e7151edfd9fe958afcded67417b9315d2d26b693b51f91b998c5d9638b531). No family crosses splits; verify with: python -m src.curate.check_family_splits data/curated/hs_benign_en/test/hs_eval.jsonl
 - frozen: true. test_access: nov11_final_pass_only. This split is read ONLY by the Nov 11 final frozen-arm pass; never used for locate, repair, selection or tuning.
 - The CuratorKIT-generated HF config label "train" above is the exporter's default config name, not the Hinglish Shield split.

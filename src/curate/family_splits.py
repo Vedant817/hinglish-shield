@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Family-level calibration/dev/test splits for Hinglish Shield (prereg research/baseline-prereg@8b6af17).
+"""Family-level calibration/dev/test splits v2 for Hinglish Shield (prereg research/baseline-prereg@8b6af17).
 
 Unit: semantic family = harmful prompt + benign near-neighbors + all language variants.
 Splits are assigned BEFORE translation; every translation, paraphrase or attack derivative
@@ -15,7 +15,9 @@ Candidate pool (members):
                   (source_id "hin:<line>"), line = 0-based line number in the seed JSONL.
 
 Family rules:
-  1. XSTest (HEURISTIC, the CSV has no explicit pair key): XSTest is laid out in blocks of 25
+  1. XSTest (HEURISTIC, the CSV has no explicit pair key; v2 keeps a pair ONLY if the
+     `focus` column agrees, else both prompts stay singleton families and the rejected pair is
+     logged with reason=focus_mismatch): XSTest is laid out in blocks of 25
      per type, and the k-th prompt of a safe type pairs with the k-th prompt of its
      contrast type (contrast_<type>). For contrast_discr the safe types are
      nons_group_real_discr and real_group_nons_discr; for contrast_privacy they are
@@ -34,9 +36,14 @@ Family rules:
      Every merge is logged to data/splits/family_merge_audit.jsonl.
   family_id = "fam_" + sha1("|".join(sorted member keys))[:12], member key = source_dataset:source_id.
 
-Split: families grouped into strata (hs_label, category); hs_label is harm, benign or mixed
+Split (v2): XSTest families go to dev or test ONLY (dev:test 30:50, never calibration);
+all other families use calibration/dev/test 0.20/0.30/0.50. Families grouped into strata
+(is_xstest, hs_label, category); hs_label is harm, benign or mixed
 (mixed = family with both). category = most common member category (ties: lexicographic min).
-Within each stratum: sort by family_id, shuffle with random.Random(42), quotas by largest
+Signoff (c): if any split's harm item share deviates from overall by > 2 points, re-stratify by
+(is_xstest, hs_label, source_dataset, category) and iterate seeds 42, 43, ... taking the first that
+passes; all tried seeds are recorded in the manifest.
+Within each stratum: sort by family_id, shuffle with random.Random(seed), quotas by largest
 remainder over ratios calibration 0.20 / dev 0.30 / test 0.50 (ties broken in that order).
 
 Lookup:
@@ -62,12 +69,14 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 SEEDS = ROOT / "data" / "seeds"
 OUT = ROOT / "data" / "splits"
-MANIFEST = OUT / "family_splits_v1.json"
+MANIFEST = OUT / "family_splits_v2.json"
 LOOKUP_CSV = OUT / "family_lookup.csv"
 AUDIT = OUT / "family_merge_audit.jsonl"
 
 SEED = 42
 RATIOS = {"calibration": 0.20, "dev": 0.30, "test": 0.50}
+XSTEST_RATIOS = {"calibration": 0.0, "dev": 0.30, "test": 0.50}  # dev:test 30:50, never calibration
+MAX_DEV_PTS = 2.0
 SPLITS = list(RATIOS)
 LANGS = ["en", "hi", "hinglish"]
 JACCARD = 0.80
@@ -168,7 +177,7 @@ def build() -> dict:
             audit.append({"rule": rule, "a": f'{members[i]["source_dataset"]}:{members[i]["source_id"]}',
                           "b": f'{members[j]["source_dataset"]}:{members[j]["source_id"]}', **kw})
 
-    # Rule 1: XSTest pairing heuristic
+    # Rule 1: XSTest pairing heuristic, kept only where `focus` agrees (v2)
     xs = [x for x in members if x["source_dataset"] == "xstest"]
     by_type = defaultdict(list)
     for x in xs:
@@ -178,18 +187,20 @@ def build() -> dict:
     contrast_of = {t: f"contrast_{t}" for t in by_type if not t.startswith("contrast_")}
     contrast_of.update({"nons_group_real_discr": "contrast_discr", "real_group_nons_discr": "contrast_discr",
                         "privacy_public": "contrast_privacy", "privacy_fictional": "contrast_privacy"})
+    with (SEEDS / "xstest" / "xstest_prompts.csv").open(newline="", encoding="utf-8") as f:
+        focus = {r["id"]: r["focus"] for r in csv.DictReader(f)}
     focus_agree = focus_total = 0
     for t, ct in sorted(contrast_of.items()):
         for a, c in zip(by_type[t], by_type.get(ct, [])):
-            merge(idx[(a["source_dataset"], a["source_id"])], idx[(c["source_dataset"], c["source_id"])],
-                  "xstest_pair_heuristic", types=[t, ct])
-    # focus check
-    with (SEEDS / "xstest" / "xstest_prompts.csv").open(newline="", encoding="utf-8") as f:
-        focus = {r["id"]: r["focus"] for r in csv.DictReader(f)}
-    for t, ct in contrast_of.items():
-        for a, c in zip(by_type[t], by_type.get(ct, [])):
             focus_total += 1
-            focus_agree += focus[a["source_id"]] == focus[c["source_id"]]
+            ia, ic = idx[(a["source_dataset"], a["source_id"])], idx[(c["source_dataset"], c["source_id"])]
+            if focus[a["source_id"]] == focus[c["source_id"]]:
+                focus_agree += 1
+                merge(ia, ic, "xstest_pair_heuristic", types=[t, ct], focus=focus[a["source_id"]])
+            else:
+                audit.append({"rule": "xstest_pair_rejected", "reason": "focus_mismatch",
+                              "a": f"xstest:{a['source_id']}", "b": f"xstest:{c['source_id']}",
+                              "types": [t, ct], "focus_a": focus[a["source_id"]], "focus_c": focus[c["source_id"]]})
 
     # Rule 5a: exact normalized text
     seen = {}
@@ -207,7 +218,7 @@ def build() -> dict:
     # Rule 5b: MinHash LSH + exact Jaccard verification
     rng = random.Random(SEED)
     salts = [rng.getrandbits(64) for _ in range(PERMS)]
-    sh = [shingles(x["match_text"]) for x in members]
+    sh = [shingles(x["match_text"]) for x in members]  # reused for min_pairwise_jaccard
     sigs = [minhash(s, salts) for s in sh]
     r = PERMS // BANDS
     cands = set()
@@ -230,9 +241,10 @@ def build() -> dict:
 
     groups = defaultdict(list)
     for i in range(len(members)):
-        groups[uf.find(i)].append(members[i])
+        groups[uf.find(i)].append(i)
     families = {}
-    for g in groups.values():
+    for gi in groups.values():
+        g = [members[i] for i in gi]
         keys = sorted(f'{x["source_dataset"]}:{x["source_id"]}' for x in g)
         fid = "fam_" + hashlib.sha1("|".join(keys).encode()).hexdigest()[:12]
         labels = {x["hs_label"] for x in g}
@@ -240,67 +252,148 @@ def build() -> dict:
         cc = Counter(x["category"] for x in g)
         top = max(cc.values())
         cat = min(c for c, v in cc.items() if v == top)
-        families[fid] = {"hs_label": lab, "category": cat,
+        sc = Counter(x["source_dataset"] for x in g)
+        stop = max(sc.values())
+        src = min(c for c, v in sc.items() if v == stop)
+        families[fid] = {"hs_label": lab, "category": cat, "source_dataset": src,
+                         "is_xstest": any(x["source_dataset"] == "xstest" for x in g),
                          "members": sorted(({"source_dataset": x["source_dataset"], "source_id": x["source_id"],
                                              "item_id": x["item_id"], "lang": x["lang"], "hs_label": x["hs_label"],
                                              "category": x["category"]} for x in g),
                                            key=lambda m: (m["source_dataset"], m["source_id"]))}
+        if len(gi) > 1:
+            pj = [len(sh[a] & sh[b]) / len(sh[a] | sh[b]) for k, a in enumerate(gi) for b in gi[k + 1:]]
+            audit.append({"rule": "family_summary", "family_id": fid, "size": len(gi),
+                          "min_pairwise_jaccard": round(min(pj), 4), "members": keys})
 
-    # Split: stratified largest remainder per (hs_label, category)
-    strata = defaultdict(list)
-    for fid in sorted(families):
-        strata[(families[fid]["hs_label"], families[fid]["category"])].append(fid)
-    srng = random.Random(SEED)
-    for key in sorted(strata):
-        fids = strata[key]
-        srng.shuffle(fids)
-        n = len(fids)
-        raw = {s: n * RATIOS[s] for s in SPLITS}
-        q = {s: int(raw[s]) for s in SPLITS}
-        rem = n - sum(q.values())
-        for s in sorted(SPLITS, key=lambda s: (-(raw[s] - q[s]), SPLITS.index(s)))[:rem]:
-            q[s] += 1
-        pos = 0
+    # Split: XSTest families -> dev:test 30:50 only; others 20/30/50. Largest remainder per stratum.
+    def assign(seed: int, strat_keys: tuple) -> None:
+        strata = defaultdict(list)
+        for fid in sorted(families):
+            f = families[fid]
+            strata[(f["is_xstest"],) + tuple(f[k] for k in strat_keys)].append(fid)
+        srng = random.Random(seed)
+        for key in sorted(strata, key=str):
+            fids = strata[key]
+            srng.shuffle(fids)
+            ratios = XSTEST_RATIOS if key[0] else RATIOS
+            sp = [s for s in SPLITS if ratios.get(s, 0) > 0]
+            n = len(fids)
+            tot = sum(ratios[s] for s in sp)
+            raw = {s: n * ratios[s] / tot for s in sp}
+            q = {s: int(raw[s]) for s in sp}
+            rem = n - sum(q.values())
+            for s in sorted(sp, key=lambda s: (-(raw[s] - q[s]), SPLITS.index(s)))[:rem]:
+                q[s] += 1
+            pos = 0
+            for s in sp:
+                for fid in fids[pos:pos + q[s]]:
+                    families[fid]["split"] = s
+                pos += q[s]
+
+    def harm_share():
+        items = [(f["split"], m["hs_label"]) for f in families.values() for m in f["members"]]
+        overall = 100 * sum(l == "harm" for _, l in items) / len(items)
+        per = {}
         for s in SPLITS:
-            for fid in fids[pos:pos + q[s]]:
-                families[fid]["split"] = s
-            pos += q[s]
+            ls = [l for sp, l in items if sp == s]
+            per[s] = {"harm_pct": round(100 * sum(l == "harm" for l in ls) / len(ls), 2),
+                      "benign_pct": round(100 * sum(l == "benign" for l in ls) / len(ls), 2),
+                      "harm_delta_pts": round(100 * sum(l == "harm" for l in ls) / len(ls) - overall, 2)}
+        return round(overall, 2), per
+
+    tried = []
+    strat = ("hs_label", "category")
+    assign(SEED, strat)
+    overall, per = harm_share()
+    ok = all(abs(v["harm_delta_pts"]) <= MAX_DEV_PTS for v in per.values())
+    tried.append({"seed": SEED, "stratify_by": list(strat), "max_abs_delta_pts": max(abs(v["harm_delta_pts"]) for v in per.values()), "pass": ok})
+    chosen = SEED
+    if not ok:
+        strat = ("hs_label", "source_dataset", "category")
+        seed = SEED
+        while True:
+            assign(seed, strat)
+            overall, per = harm_share()
+            ok = all(abs(v["harm_delta_pts"]) <= MAX_DEV_PTS for v in per.values())
+            tried.append({"seed": seed, "stratify_by": list(strat), "max_abs_delta_pts": max(abs(v["harm_delta_pts"]) for v in per.values()), "pass": ok})
+            if ok or seed >= SEED + 999:
+                break
+            seed += 1
+        chosen = seed
+    if not ok:
+        raise SystemExit("no seed in range passed the 2-point harm share check")
 
     counts = compute_counts(families)
+    nfam = len(families)
+    nitems = sum(len(f["members"]) for f in families.values())
     manifest = {
-        "version": "family_splits_v1",
+        "version": "family_splits_v2",
+        "supersedes": "family_splits_v1 (76c9063)",
         "created_ist": datetime.now(timezone(timedelta(hours=5, minutes=30))).isoformat(timespec="seconds"),
-        "seed": SEED,
+        "seed": chosen,
+        "seed_search": {"tried": tried, "chosen_seed": chosen, "rule": "first passing seed from 42 upward, no hand-picking"},
         "ratios": RATIOS,
+        "xstest_ratios": XSTEST_RATIOS,
+        "xstest_calibration_excluded": True,
+        "realized_ratios": {"families": {s: round(counts[s]["families"] / nfam, 4) for s in SPLITS},
+                            "items": {s: round(counts[s]["items"] / nitems, 4) for s in SPLITS}},
         "unit": "semantic_family",
         "assigned_before_translation": True,
-        "stratify_by": ["hs_label", "category"],
+        "stratify_by": ["is_xstest"] + list(strat),
         "prereg_ref": "research/baseline-prereg@8b6af17",
         "frozen": True,
         "test_access": "nov11_final_pass_only",
-        "near_dup": {"method": "char5_minhash_lsh_verified_jaccard", "threshold": JACCARD,
+        "near_dup": {"method": "char5 shingles, MinHash LSH (64 perms, 32 bands x 2 rows) candidates, exact Jaccard verification",
+                     "sklearn_available": False, "tfidf_cosine_used": False, "threshold_jaccard": JACCARD,
+                     "chained_families_kept": True, "min_pairwise_jaccard": "per merged family in audit (rule family_summary)",
                      "heuristic": True, "audit_log": str(AUDIT.relative_to(ROOT))},
-        "xstest_pairing": {"heuristic": "kth safe prompt of type T pairs with kth prompt of contrast type",
-                           "focus_agreement": f"{focus_agree}/{focus_total}"},
-        "merges": {"total": len(audit), "xstest_pair_heuristic": sum(a["rule"] == "xstest_pair_heuristic" for a in audit),
+        "xstest_pairing": {"heuristic": "kth safe prompt of type T pairs with kth prompt of contrast type, kept only if focus agrees",
+                           "focus_agreement": f"{focus_agree}/{focus_total}",
+                           "focus_mismatch_rejected": focus_total - focus_agree},
+        "merges": {"total": sum(a["rule"] in ("xstest_pair_heuristic", "exact_normalized_text", "near_dup_char5_jaccard") for a in audit),
+                   "xstest_pair_heuristic": sum(a["rule"] == "xstest_pair_heuristic" for a in audit),
                    "exact_normalized_text": exact, "near_dup_char5_jaccard": near},
+        "harm_share": {"overall_harm_pct": overall, "per_split": per, "max_allowed_delta_pts": MAX_DEV_PTS},
         "counts": counts,
-        "families": {fid: {k: families[fid][k] for k in ("split", "hs_label", "category", "members")}
+        "families": {fid: {k: families[fid][k] for k in ("split", "hs_label", "category", "source_dataset", "members")}
                      for fid in sorted(families)},
     }
     OUT.mkdir(parents=True, exist_ok=True)
     with AUDIT.open("w", encoding="utf-8") as f:
         for a in audit:
             f.write(json.dumps(a, ensure_ascii=False) + "\n")
-    MANIFEST.write_text(json.dumps(manifest, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
-    digest = hashlib.sha256(MANIFEST.read_bytes()).hexdigest()
-    Path(str(MANIFEST) + ".sha256").write_text(f"{digest}  {MANIFEST.name}\n")
     with LOOKUP_CSV.open("w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
         w.writerow(["source_dataset", "source_id", "item_id", "family_id", "split"])
         for fid in sorted(families):
             for m in families[fid]["members"]:
                 w.writerow([m["source_dataset"], m["source_id"], m["item_id"], fid, families[fid]["split"]])
+
+    def write():
+        MANIFEST.write_text(json.dumps(manifest, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        digest = hashlib.sha256(MANIFEST.read_bytes()).hexdigest()
+        Path(str(MANIFEST) + ".sha256").write_text(f"{digest}  {MANIFEST.name}\n")
+
+    # Draft write, run the check script on it (lookup CSV covers every member), then record result.
+    write()
+    import subprocess
+    cmd = [sys.executable, "-m", "src.curate.check_family_splits", str(LOOKUP_CSV.relative_to(ROOT))]
+    r = subprocess.run(cmd, cwd=ROOT, capture_output=True, text=True)
+    crossing = sum("crosses splits" in ln for ln in r.stdout.splitlines())
+    manifest["signoff_checks"] = {
+        "a_no_family_crosses_splits": {"families_in_more_than_one_split": crossing, "check_exit_code": r.returncode,
+                                       "command": "python -m src.curate.check_family_splits data/splits/family_lookup.csv",
+                                       "note": "run on the draft manifest whose families block is identical to this one"},
+        "b_translations": {"translations_inherit_family_id": True, "recheck_after_translation": "required",
+                           "command": "python -m src.curate.check_family_splits data/staging/translations/<batch>.csv"},
+        "c_harm_share_vs_overall_pts": {"overall_harm_pct": overall, "per_split": per, "max_allowed_delta_pts": MAX_DEV_PTS,
+                                        "pass": ok, "seeds_tried": [t["seed"] for t in tried], "chosen_seed": chosen},
+    }
+    write()
+    if r.returncode != 0 or crossing:
+        print(r.stdout, file=sys.stderr)
+        raise SystemExit("signoff check (a) failed")
     return manifest
 
 

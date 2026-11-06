@@ -2,7 +2,7 @@
 """Check that no semantic family crosses splits (prereg research/baseline-prereg@8b6af17).
 
 Usage:
-  python -m src.curate.check_family_splits [--manifest data/splits/family_splits_v1.json] FILE [FILE ...]
+  python -m src.curate.check_family_splits [--manifest data/splits/family_splits_v2.json] FILE [FILE ...]
 
 FILE is JSONL or CSV. A row is resolved by (family_id) if present, else by (source, source_id)
 or (source_dataset, source_id) via the manifest lookup. If the row has a `split` column it must
@@ -40,7 +40,7 @@ def rows_of(path: Path):
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--manifest", default=str(ROOT / "data/splits/family_splits_v1.json"))
+    ap.add_argument("--manifest", default=str(ROOT / "data/splits/family_splits_v2.json"))
     ap.add_argument("files", nargs="*")
     a = ap.parse_args()
     mpath = Path(a.manifest)

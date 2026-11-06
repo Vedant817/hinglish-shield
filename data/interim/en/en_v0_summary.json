@@ -7,7 +7,7 @@
     "dev": 0.3,
     "test": 0.5
   },
-  "split_manifest": "data/splits/family_splits_v1.json",
+  "split_manifest": "data/splits/family_splits_v2.json",
   "include_or_toxic": true,
   "hs_harm": {
     "n": 943,
@@ -18,9 +18,9 @@
       "or_bench_toxic": 100
     },
     "splits": {
-      "dev": 283,
-      "test": 475,
-      "calibration": 185
+      "calibration": 138,
+      "dev": 296,
+      "test": 509
     }
   },
   "hs_benign": {
@@ -31,9 +31,9 @@
       "or_bench_80k": 250
     },
     "splits": {
-      "calibration": 144,
-      "test": 369,
-      "dev": 237
+      "test": 413,
+      "dev": 245,
+      "calibration": 92
     }
   },
   "curatorkit_ran": true,

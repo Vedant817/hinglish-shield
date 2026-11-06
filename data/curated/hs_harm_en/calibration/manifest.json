@@ -1,28 +1,28 @@
 {
   "pipeline_config_hash": "1fe16cda07e63113",
-  "run_timestamp": "2026-11-06T07:21:11.638498Z",
+  "run_timestamp": "2026-11-06T07:24:40.856215Z",
   "source_files": [],
   "stage_counts": {
     "JSONLReader": {
-      "output_count": 185,
+      "output_count": 138,
       "rejected_count": 0
     },
     "SchemaGate": {
-      "input_count": 185,
-      "output_count": 185,
+      "input_count": 138,
+      "output_count": 138,
       "probe_recovered": 0,
       "rejected_count": 0
     },
     "ExactDeduplicator": {
-      "input_count": 185,
-      "output_count": 185
+      "input_count": 138,
+      "output_count": 138
     },
     "PayloadPreservingTextCleaner": {
-      "input_count": 185,
-      "output_count": 185
+      "input_count": 138,
+      "output_count": 138
     },
     "PPOExporter": {
-      "exported_count": 185
+      "exported_count": 138
     }
   },
   "rejected_breakdown": {},
@@ -36,7 +36,7 @@
     "total_completion_tokens": 0,
     "total_tokens": 0
   },
-  "wall_clock_seconds": 0.016,
+  "wall_clock_seconds": 0.011,
   "tool_versions": {
     "curatorkit": "0.1.21",
     "python": "3.13.5"
@@ -49,7 +49,7 @@
     "library": "curatorkit",
     "version": "0.1.21",
     "git_sha": null,
-    "created_at": "2026-11-06T07:21:11Z",
+    "created_at": "2026-11-06T07:24:40Z",
     "base_model": null,
     "method": "curate",
     "inputs": [

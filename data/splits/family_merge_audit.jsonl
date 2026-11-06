@@ -1,253 +1,253 @@
-{"rule": "xstest_pair_heuristic", "a": "xstest:201", "b": "xstest:226", "types": ["definitions", "contrast_definitions"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:202", "b": "xstest:227", "types": ["definitions", "contrast_definitions"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:203", "b": "xstest:228", "types": ["definitions", "contrast_definitions"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:204", "b": "xstest:229", "types": ["definitions", "contrast_definitions"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:205", "b": "xstest:230", "types": ["definitions", "contrast_definitions"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:206", "b": "xstest:231", "types": ["definitions", "contrast_definitions"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:207", "b": "xstest:232", "types": ["definitions", "contrast_definitions"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:208", "b": "xstest:233", "types": ["definitions", "contrast_definitions"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:209", "b": "xstest:234", "types": ["definitions", "contrast_definitions"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:210", "b": "xstest:235", "types": ["definitions", "contrast_definitions"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:211", "b": "xstest:236", "types": ["definitions", "contrast_definitions"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:212", "b": "xstest:237", "types": ["definitions", "contrast_definitions"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:213", "b": "xstest:238", "types": ["definitions", "contrast_definitions"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:214", "b": "xstest:239", "types": ["definitions", "contrast_definitions"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:215", "b": "xstest:240", "types": ["definitions", "contrast_definitions"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:216", "b": "xstest:241", "types": ["definitions", "contrast_definitions"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:217", "b": "xstest:242", "types": ["definitions", "contrast_definitions"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:218", "b": "xstest:243", "types": ["definitions", "contrast_definitions"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:219", "b": "xstest:244", "types": ["definitions", "contrast_definitions"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:220", "b": "xstest:245", "types": ["definitions", "contrast_definitions"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:221", "b": "xstest:246", "types": ["definitions", "contrast_definitions"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:222", "b": "xstest:247", "types": ["definitions", "contrast_definitions"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:223", "b": "xstest:248", "types": ["definitions", "contrast_definitions"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:224", "b": "xstest:249", "types": ["definitions", "contrast_definitions"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:225", "b": "xstest:250", "types": ["definitions", "contrast_definitions"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:51", "b": "xstest:76", "types": ["figurative_language", "contrast_figurative_language"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:52", "b": "xstest:77", "types": ["figurative_language", "contrast_figurative_language"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:53", "b": "xstest:78", "types": ["figurative_language", "contrast_figurative_language"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:54", "b": "xstest:79", "types": ["figurative_language", "contrast_figurative_language"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:55", "b": "xstest:80", "types": ["figurative_language", "contrast_figurative_language"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:56", "b": "xstest:81", "types": ["figurative_language", "contrast_figurative_language"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:57", "b": "xstest:82", "types": ["figurative_language", "contrast_figurative_language"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:58", "b": "xstest:83", "types": ["figurative_language", "contrast_figurative_language"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:59", "b": "xstest:84", "types": ["figurative_language", "contrast_figurative_language"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:60", "b": "xstest:85", "types": ["figurative_language", "contrast_figurative_language"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:61", "b": "xstest:86", "types": ["figurative_language", "contrast_figurative_language"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:62", "b": "xstest:87", "types": ["figurative_language", "contrast_figurative_language"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:63", "b": "xstest:88", "types": ["figurative_language", "contrast_figurative_language"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:64", "b": "xstest:89", "types": ["figurative_language", "contrast_figurative_language"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:65", "b": "xstest:90", "types": ["figurative_language", "contrast_figurative_language"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:66", "b": "xstest:91", "types": ["figurative_language", "contrast_figurative_language"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:67", "b": "xstest:92", "types": ["figurative_language", "contrast_figurative_language"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:68", "b": "xstest:93", "types": ["figurative_language", "contrast_figurative_language"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:69", "b": "xstest:94", "types": ["figurative_language", "contrast_figurative_language"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:70", "b": "xstest:95", "types": ["figurative_language", "contrast_figurative_language"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:71", "b": "xstest:96", "types": ["figurative_language", "contrast_figurative_language"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:72", "b": "xstest:97", "types": ["figurative_language", "contrast_figurative_language"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:73", "b": "xstest:98", "types": ["figurative_language", "contrast_figurative_language"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:74", "b": "xstest:99", "types": ["figurative_language", "contrast_figurative_language"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:75", "b": "xstest:100", "types": ["figurative_language", "contrast_figurative_language"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:326", "b": "xstest:351", "types": ["historical_events", "contrast_historical_events"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:327", "b": "xstest:352", "types": ["historical_events", "contrast_historical_events"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:328", "b": "xstest:353", "types": ["historical_events", "contrast_historical_events"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:329", "b": "xstest:354", "types": ["historical_events", "contrast_historical_events"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:330", "b": "xstest:355", "types": ["historical_events", "contrast_historical_events"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:331", "b": "xstest:356", "types": ["historical_events", "contrast_historical_events"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:332", "b": "xstest:357", "types": ["historical_events", "contrast_historical_events"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:333", "b": "xstest:358", "types": ["historical_events", "contrast_historical_events"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:334", "b": "xstest:359", "types": ["historical_events", "contrast_historical_events"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:335", "b": "xstest:360", "types": ["historical_events", "contrast_historical_events"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:336", "b": "xstest:361", "types": ["historical_events", "contrast_historical_events"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:337", "b": "xstest:362", "types": ["historical_events", "contrast_historical_events"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:338", "b": "xstest:363", "types": ["historical_events", "contrast_historical_events"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:339", "b": "xstest:364", "types": ["historical_events", "contrast_historical_events"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:340", "b": "xstest:365", "types": ["historical_events", "contrast_historical_events"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:341", "b": "xstest:366", "types": ["historical_events", "contrast_historical_events"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:342", "b": "xstest:367", "types": ["historical_events", "contrast_historical_events"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:343", "b": "xstest:368", "types": ["historical_events", "contrast_historical_events"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:344", "b": "xstest:369", "types": ["historical_events", "contrast_historical_events"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:345", "b": "xstest:370", "types": ["historical_events", "contrast_historical_events"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:346", "b": "xstest:371", "types": ["historical_events", "contrast_historical_events"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:347", "b": "xstest:372", "types": ["historical_events", "contrast_historical_events"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:348", "b": "xstest:373", "types": ["historical_events", "contrast_historical_events"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:349", "b": "xstest:374", "types": ["historical_events", "contrast_historical_events"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:350", "b": "xstest:375", "types": ["historical_events", "contrast_historical_events"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:1", "b": "xstest:26", "types": ["homonyms", "contrast_homonyms"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:2", "b": "xstest:27", "types": ["homonyms", "contrast_homonyms"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:3", "b": "xstest:28", "types": ["homonyms", "contrast_homonyms"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:4", "b": "xstest:29", "types": ["homonyms", "contrast_homonyms"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:5", "b": "xstest:30", "types": ["homonyms", "contrast_homonyms"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:6", "b": "xstest:31", "types": ["homonyms", "contrast_homonyms"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:7", "b": "xstest:32", "types": ["homonyms", "contrast_homonyms"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:8", "b": "xstest:33", "types": ["homonyms", "contrast_homonyms"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:9", "b": "xstest:34", "types": ["homonyms", "contrast_homonyms"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:10", "b": "xstest:35", "types": ["homonyms", "contrast_homonyms"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:11", "b": "xstest:36", "types": ["homonyms", "contrast_homonyms"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:12", "b": "xstest:37", "types": ["homonyms", "contrast_homonyms"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:13", "b": "xstest:38", "types": ["homonyms", "contrast_homonyms"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:14", "b": "xstest:39", "types": ["homonyms", "contrast_homonyms"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:15", "b": "xstest:40", "types": ["homonyms", "contrast_homonyms"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:16", "b": "xstest:41", "types": ["homonyms", "contrast_homonyms"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:17", "b": "xstest:42", "types": ["homonyms", "contrast_homonyms"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:18", "b": "xstest:43", "types": ["homonyms", "contrast_homonyms"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:19", "b": "xstest:44", "types": ["homonyms", "contrast_homonyms"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:20", "b": "xstest:45", "types": ["homonyms", "contrast_homonyms"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:21", "b": "xstest:46", "types": ["homonyms", "contrast_homonyms"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:22", "b": "xstest:47", "types": ["homonyms", "contrast_homonyms"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:23", "b": "xstest:48", "types": ["homonyms", "contrast_homonyms"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:24", "b": "xstest:49", "types": ["homonyms", "contrast_homonyms"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:25", "b": "xstest:50", "types": ["homonyms", "contrast_homonyms"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:251", "b": "xstest:301", "types": ["nons_group_real_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:252", "b": "xstest:302", "types": ["nons_group_real_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:253", "b": "xstest:303", "types": ["nons_group_real_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:254", "b": "xstest:304", "types": ["nons_group_real_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:255", "b": "xstest:305", "types": ["nons_group_real_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:256", "b": "xstest:306", "types": ["nons_group_real_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:257", "b": "xstest:307", "types": ["nons_group_real_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:258", "b": "xstest:308", "types": ["nons_group_real_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:259", "b": "xstest:309", "types": ["nons_group_real_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:260", "b": "xstest:310", "types": ["nons_group_real_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:261", "b": "xstest:311", "types": ["nons_group_real_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:262", "b": "xstest:312", "types": ["nons_group_real_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:263", "b": "xstest:313", "types": ["nons_group_real_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:264", "b": "xstest:314", "types": ["nons_group_real_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:265", "b": "xstest:315", "types": ["nons_group_real_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:266", "b": "xstest:316", "types": ["nons_group_real_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:267", "b": "xstest:317", "types": ["nons_group_real_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:268", "b": "xstest:318", "types": ["nons_group_real_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:269", "b": "xstest:319", "types": ["nons_group_real_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:270", "b": "xstest:320", "types": ["nons_group_real_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:271", "b": "xstest:321", "types": ["nons_group_real_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:272", "b": "xstest:322", "types": ["nons_group_real_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:273", "b": "xstest:323", "types": ["nons_group_real_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:274", "b": "xstest:324", "types": ["nons_group_real_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:275", "b": "xstest:325", "types": ["nons_group_real_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:401", "b": "xstest:426", "types": ["privacy_fictional", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:402", "b": "xstest:427", "types": ["privacy_fictional", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:403", "b": "xstest:428", "types": ["privacy_fictional", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:404", "b": "xstest:429", "types": ["privacy_fictional", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:405", "b": "xstest:430", "types": ["privacy_fictional", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:406", "b": "xstest:431", "types": ["privacy_fictional", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:407", "b": "xstest:432", "types": ["privacy_fictional", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:408", "b": "xstest:433", "types": ["privacy_fictional", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:409", "b": "xstest:434", "types": ["privacy_fictional", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:410", "b": "xstest:435", "types": ["privacy_fictional", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:411", "b": "xstest:436", "types": ["privacy_fictional", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:412", "b": "xstest:437", "types": ["privacy_fictional", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:413", "b": "xstest:438", "types": ["privacy_fictional", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:414", "b": "xstest:439", "types": ["privacy_fictional", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:415", "b": "xstest:440", "types": ["privacy_fictional", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:416", "b": "xstest:441", "types": ["privacy_fictional", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:417", "b": "xstest:442", "types": ["privacy_fictional", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:418", "b": "xstest:443", "types": ["privacy_fictional", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:419", "b": "xstest:444", "types": ["privacy_fictional", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:420", "b": "xstest:445", "types": ["privacy_fictional", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:421", "b": "xstest:446", "types": ["privacy_fictional", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:422", "b": "xstest:447", "types": ["privacy_fictional", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:423", "b": "xstest:448", "types": ["privacy_fictional", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:424", "b": "xstest:449", "types": ["privacy_fictional", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:425", "b": "xstest:450", "types": ["privacy_fictional", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:376", "b": "xstest:426", "types": ["privacy_public", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:377", "b": "xstest:427", "types": ["privacy_public", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:378", "b": "xstest:428", "types": ["privacy_public", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:379", "b": "xstest:429", "types": ["privacy_public", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:380", "b": "xstest:430", "types": ["privacy_public", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:381", "b": "xstest:431", "types": ["privacy_public", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:382", "b": "xstest:432", "types": ["privacy_public", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:383", "b": "xstest:433", "types": ["privacy_public", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:384", "b": "xstest:434", "types": ["privacy_public", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:385", "b": "xstest:435", "types": ["privacy_public", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:386", "b": "xstest:436", "types": ["privacy_public", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:387", "b": "xstest:437", "types": ["privacy_public", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:388", "b": "xstest:438", "types": ["privacy_public", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:389", "b": "xstest:439", "types": ["privacy_public", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:390", "b": "xstest:440", "types": ["privacy_public", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:391", "b": "xstest:441", "types": ["privacy_public", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:392", "b": "xstest:442", "types": ["privacy_public", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:393", "b": "xstest:443", "types": ["privacy_public", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:394", "b": "xstest:444", "types": ["privacy_public", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:395", "b": "xstest:445", "types": ["privacy_public", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:396", "b": "xstest:446", "types": ["privacy_public", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:397", "b": "xstest:447", "types": ["privacy_public", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:398", "b": "xstest:448", "types": ["privacy_public", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:399", "b": "xstest:449", "types": ["privacy_public", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:400", "b": "xstest:450", "types": ["privacy_public", "contrast_privacy"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:276", "b": "xstest:301", "types": ["real_group_nons_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:277", "b": "xstest:302", "types": ["real_group_nons_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:278", "b": "xstest:303", "types": ["real_group_nons_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:279", "b": "xstest:304", "types": ["real_group_nons_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:280", "b": "xstest:305", "types": ["real_group_nons_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:281", "b": "xstest:306", "types": ["real_group_nons_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:282", "b": "xstest:307", "types": ["real_group_nons_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:283", "b": "xstest:308", "types": ["real_group_nons_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:284", "b": "xstest:309", "types": ["real_group_nons_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:285", "b": "xstest:310", "types": ["real_group_nons_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:286", "b": "xstest:311", "types": ["real_group_nons_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:287", "b": "xstest:312", "types": ["real_group_nons_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:288", "b": "xstest:313", "types": ["real_group_nons_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:289", "b": "xstest:314", "types": ["real_group_nons_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:290", "b": "xstest:315", "types": ["real_group_nons_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:291", "b": "xstest:316", "types": ["real_group_nons_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:292", "b": "xstest:317", "types": ["real_group_nons_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:293", "b": "xstest:318", "types": ["real_group_nons_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:294", "b": "xstest:319", "types": ["real_group_nons_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:295", "b": "xstest:320", "types": ["real_group_nons_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:296", "b": "xstest:321", "types": ["real_group_nons_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:297", "b": "xstest:322", "types": ["real_group_nons_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:298", "b": "xstest:323", "types": ["real_group_nons_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:299", "b": "xstest:324", "types": ["real_group_nons_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:300", "b": "xstest:325", "types": ["real_group_nons_discr", "contrast_discr"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:151", "b": "xstest:176", "types": ["safe_contexts", "contrast_safe_contexts"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:152", "b": "xstest:177", "types": ["safe_contexts", "contrast_safe_contexts"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:153", "b": "xstest:178", "types": ["safe_contexts", "contrast_safe_contexts"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:154", "b": "xstest:179", "types": ["safe_contexts", "contrast_safe_contexts"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:155", "b": "xstest:180", "types": ["safe_contexts", "contrast_safe_contexts"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:156", "b": "xstest:181", "types": ["safe_contexts", "contrast_safe_contexts"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:157", "b": "xstest:182", "types": ["safe_contexts", "contrast_safe_contexts"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:158", "b": "xstest:183", "types": ["safe_contexts", "contrast_safe_contexts"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:159", "b": "xstest:184", "types": ["safe_contexts", "contrast_safe_contexts"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:160", "b": "xstest:185", "types": ["safe_contexts", "contrast_safe_contexts"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:161", "b": "xstest:186", "types": ["safe_contexts", "contrast_safe_contexts"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:162", "b": "xstest:187", "types": ["safe_contexts", "contrast_safe_contexts"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:163", "b": "xstest:188", "types": ["safe_contexts", "contrast_safe_contexts"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:164", "b": "xstest:189", "types": ["safe_contexts", "contrast_safe_contexts"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:165", "b": "xstest:190", "types": ["safe_contexts", "contrast_safe_contexts"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:166", "b": "xstest:191", "types": ["safe_contexts", "contrast_safe_contexts"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:167", "b": "xstest:192", "types": ["safe_contexts", "contrast_safe_contexts"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:168", "b": "xstest:193", "types": ["safe_contexts", "contrast_safe_contexts"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:169", "b": "xstest:194", "types": ["safe_contexts", "contrast_safe_contexts"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:170", "b": "xstest:195", "types": ["safe_contexts", "contrast_safe_contexts"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:171", "b": "xstest:196", "types": ["safe_contexts", "contrast_safe_contexts"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:172", "b": "xstest:197", "types": ["safe_contexts", "contrast_safe_contexts"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:173", "b": "xstest:198", "types": ["safe_contexts", "contrast_safe_contexts"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:174", "b": "xstest:199", "types": ["safe_contexts", "contrast_safe_contexts"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:175", "b": "xstest:200", "types": ["safe_contexts", "contrast_safe_contexts"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:101", "b": "xstest:126", "types": ["safe_targets", "contrast_safe_targets"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:102", "b": "xstest:127", "types": ["safe_targets", "contrast_safe_targets"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:103", "b": "xstest:128", "types": ["safe_targets", "contrast_safe_targets"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:104", "b": "xstest:129", "types": ["safe_targets", "contrast_safe_targets"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:105", "b": "xstest:130", "types": ["safe_targets", "contrast_safe_targets"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:106", "b": "xstest:131", "types": ["safe_targets", "contrast_safe_targets"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:107", "b": "xstest:132", "types": ["safe_targets", "contrast_safe_targets"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:108", "b": "xstest:133", "types": ["safe_targets", "contrast_safe_targets"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:109", "b": "xstest:134", "types": ["safe_targets", "contrast_safe_targets"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:110", "b": "xstest:135", "types": ["safe_targets", "contrast_safe_targets"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:111", "b": "xstest:136", "types": ["safe_targets", "contrast_safe_targets"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:112", "b": "xstest:137", "types": ["safe_targets", "contrast_safe_targets"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:113", "b": "xstest:138", "types": ["safe_targets", "contrast_safe_targets"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:114", "b": "xstest:139", "types": ["safe_targets", "contrast_safe_targets"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:115", "b": "xstest:140", "types": ["safe_targets", "contrast_safe_targets"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:116", "b": "xstest:141", "types": ["safe_targets", "contrast_safe_targets"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:117", "b": "xstest:142", "types": ["safe_targets", "contrast_safe_targets"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:118", "b": "xstest:143", "types": ["safe_targets", "contrast_safe_targets"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:119", "b": "xstest:144", "types": ["safe_targets", "contrast_safe_targets"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:120", "b": "xstest:145", "types": ["safe_targets", "contrast_safe_targets"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:121", "b": "xstest:146", "types": ["safe_targets", "contrast_safe_targets"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:122", "b": "xstest:147", "types": ["safe_targets", "contrast_safe_targets"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:123", "b": "xstest:148", "types": ["safe_targets", "contrast_safe_targets"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:124", "b": "xstest:149", "types": ["safe_targets", "contrast_safe_targets"]}
-{"rule": "xstest_pair_heuristic", "a": "xstest:125", "b": "xstest:150", "types": ["safe_targets", "contrast_safe_targets"]}
+{"rule": "xstest_pair_heuristic", "a": "xstest:201", "b": "xstest:226", "types": ["definitions", "contrast_definitions"], "focus": "murder"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:202", "b": "xstest:227", "types": ["definitions", "contrast_definitions"], "focus": "suicide"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:203", "b": "xstest:228", "types": ["definitions", "contrast_definitions"], "focus": "execution"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:204", "b": "xstest:229", "types": ["definitions", "contrast_definitions"], "focus": "armed robbery"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:205", "b": "xstest:230", "types": ["definitions", "contrast_definitions"], "focus": "violent assault"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:206", "b": "xstest:231", "types": ["definitions", "contrast_definitions"], "focus": "rape"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:207", "b": "xstest:232", "types": ["definitions", "contrast_definitions"], "focus": "pedophilia"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:208", "b": "xstest:233", "types": ["definitions", "contrast_definitions"], "focus": "arson"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:209", "b": "xstest:234", "types": ["definitions", "contrast_definitions"], "focus": "human trafficking"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:210", "b": "xstest:235", "types": ["definitions", "contrast_definitions"], "focus": "terrorism"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:211", "b": "xstest:236", "types": ["definitions", "contrast_definitions"], "focus": "eradicate"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:212", "b": "xstest:237", "types": ["definitions", "contrast_definitions"], "focus": "eliminate"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:213", "b": "xstest:238", "types": ["definitions", "contrast_definitions"], "focus": "wipe out"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:214", "b": "xstest:239", "types": ["definitions", "contrast_definitions"], "focus": "do away with"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:215", "b": "xstest:240", "types": ["definitions", "contrast_definitions"], "focus": "decimate"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:216", "b": "xstest:241", "types": ["definitions", "contrast_definitions"], "focus": "cocaine"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:217", "b": "xstest:242", "types": ["definitions", "contrast_definitions"], "focus": "marihuana"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:218", "b": "xstest:243", "types": ["definitions", "contrast_definitions"], "focus": "meth"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:219", "b": "xstest:244", "types": ["definitions", "contrast_definitions"], "focus": "crack"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:220", "b": "xstest:245", "types": ["definitions", "contrast_definitions"], "focus": "LSD"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:221", "b": "xstest:246", "types": ["definitions", "contrast_definitions"], "focus": "kidnapping"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:222", "b": "xstest:247", "types": ["definitions", "contrast_definitions"], "focus": "money laundering"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:223", "b": "xstest:248", "types": ["definitions", "contrast_definitions"], "focus": "fraud"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:224", "b": "xstest:249", "types": ["definitions", "contrast_definitions"], "focus": "identity theft"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:225", "b": "xstest:250", "types": ["definitions", "contrast_definitions"], "focus": "treason"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:51", "b": "xstest:76", "types": ["figurative_language", "contrast_figurative_language"], "focus": "kill"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:52", "b": "xstest:77", "types": ["figurative_language", "contrast_figurative_language"], "focus": "kill"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:53", "b": "xstest:78", "types": ["figurative_language", "contrast_figurative_language"], "focus": "crush"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:54", "b": "xstest:79", "types": ["figurative_language", "contrast_figurative_language"], "focus": "bomb"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:55", "b": "xstest:80", "types": ["figurative_language", "contrast_figurative_language"], "focus": "hit"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:56", "b": "xstest:81", "types": ["figurative_language", "contrast_figurative_language"], "focus": "hunt down"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:57", "b": "xstest:82", "types": ["figurative_language", "contrast_figurative_language"], "focus": "set on fire"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:58", "b": "xstest:83", "types": ["figurative_language", "contrast_figurative_language"], "focus": "slay"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:59", "b": "xstest:84", "types": ["figurative_language", "contrast_figurative_language"], "focus": "steal"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:60", "b": "xstest:85", "types": ["figurative_language", "contrast_figurative_language"], "focus": "steal"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:61", "b": "xstest:86", "types": ["figurative_language", "contrast_figurative_language"], "focus": "explode"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:62", "b": "xstest:87", "types": ["figurative_language", "contrast_figurative_language"], "focus": "explode"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:63", "b": "xstest:88", "types": ["figurative_language", "contrast_figurative_language"], "focus": "destroy"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:64", "b": "xstest:89", "types": ["figurative_language", "contrast_figurative_language"], "focus": "smash"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:65", "b": "xstest:90", "types": ["figurative_language", "contrast_figurative_language"], "focus": "butcher"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:66", "b": "xstest:91", "types": ["figurative_language", "contrast_figurative_language"], "focus": "punch"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:67", "b": "xstest:92", "types": ["figurative_language", "contrast_figurative_language"], "focus": "axe"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:68", "b": "xstest:93", "types": ["figurative_language", "contrast_figurative_language"], "focus": "crack open"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:69", "b": "xstest:94", "types": ["figurative_language", "contrast_figurative_language"], "focus": "drown"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:70", "b": "xstest:95", "types": ["figurative_language", "contrast_figurative_language"], "focus": "slash"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:71", "b": "xstest:96", "types": ["figurative_language", "contrast_figurative_language"], "focus": "obliterate"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:72", "b": "xstest:97", "types": ["figurative_language", "contrast_figurative_language"], "focus": "shatter"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:73", "b": "xstest:98", "types": ["figurative_language", "contrast_figurative_language"], "focus": "break"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:74", "b": "xstest:99", "types": ["figurative_language", "contrast_figurative_language"], "focus": "snipe"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:75", "b": "xstest:100", "types": ["figurative_language", "contrast_figurative_language"], "focus": "carve"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:326", "b": "xstest:351", "types": ["historical_events", "contrast_historical_events"], "focus": ""}
+{"rule": "xstest_pair_heuristic", "a": "xstest:327", "b": "xstest:352", "types": ["historical_events", "contrast_historical_events"], "focus": ""}
+{"rule": "xstest_pair_heuristic", "a": "xstest:328", "b": "xstest:353", "types": ["historical_events", "contrast_historical_events"], "focus": ""}
+{"rule": "xstest_pair_heuristic", "a": "xstest:329", "b": "xstest:354", "types": ["historical_events", "contrast_historical_events"], "focus": ""}
+{"rule": "xstest_pair_heuristic", "a": "xstest:330", "b": "xstest:355", "types": ["historical_events", "contrast_historical_events"], "focus": ""}
+{"rule": "xstest_pair_heuristic", "a": "xstest:331", "b": "xstest:356", "types": ["historical_events", "contrast_historical_events"], "focus": ""}
+{"rule": "xstest_pair_heuristic", "a": "xstest:332", "b": "xstest:357", "types": ["historical_events", "contrast_historical_events"], "focus": ""}
+{"rule": "xstest_pair_heuristic", "a": "xstest:333", "b": "xstest:358", "types": ["historical_events", "contrast_historical_events"], "focus": ""}
+{"rule": "xstest_pair_heuristic", "a": "xstest:334", "b": "xstest:359", "types": ["historical_events", "contrast_historical_events"], "focus": ""}
+{"rule": "xstest_pair_heuristic", "a": "xstest:335", "b": "xstest:360", "types": ["historical_events", "contrast_historical_events"], "focus": ""}
+{"rule": "xstest_pair_heuristic", "a": "xstest:336", "b": "xstest:361", "types": ["historical_events", "contrast_historical_events"], "focus": ""}
+{"rule": "xstest_pair_heuristic", "a": "xstest:337", "b": "xstest:362", "types": ["historical_events", "contrast_historical_events"], "focus": ""}
+{"rule": "xstest_pair_heuristic", "a": "xstest:338", "b": "xstest:363", "types": ["historical_events", "contrast_historical_events"], "focus": ""}
+{"rule": "xstest_pair_heuristic", "a": "xstest:339", "b": "xstest:364", "types": ["historical_events", "contrast_historical_events"], "focus": ""}
+{"rule": "xstest_pair_heuristic", "a": "xstest:340", "b": "xstest:365", "types": ["historical_events", "contrast_historical_events"], "focus": ""}
+{"rule": "xstest_pair_heuristic", "a": "xstest:341", "b": "xstest:366", "types": ["historical_events", "contrast_historical_events"], "focus": ""}
+{"rule": "xstest_pair_heuristic", "a": "xstest:342", "b": "xstest:367", "types": ["historical_events", "contrast_historical_events"], "focus": ""}
+{"rule": "xstest_pair_heuristic", "a": "xstest:343", "b": "xstest:368", "types": ["historical_events", "contrast_historical_events"], "focus": ""}
+{"rule": "xstest_pair_heuristic", "a": "xstest:344", "b": "xstest:369", "types": ["historical_events", "contrast_historical_events"], "focus": ""}
+{"rule": "xstest_pair_heuristic", "a": "xstest:345", "b": "xstest:370", "types": ["historical_events", "contrast_historical_events"], "focus": ""}
+{"rule": "xstest_pair_heuristic", "a": "xstest:346", "b": "xstest:371", "types": ["historical_events", "contrast_historical_events"], "focus": ""}
+{"rule": "xstest_pair_heuristic", "a": "xstest:347", "b": "xstest:372", "types": ["historical_events", "contrast_historical_events"], "focus": ""}
+{"rule": "xstest_pair_heuristic", "a": "xstest:348", "b": "xstest:373", "types": ["historical_events", "contrast_historical_events"], "focus": ""}
+{"rule": "xstest_pair_heuristic", "a": "xstest:349", "b": "xstest:374", "types": ["historical_events", "contrast_historical_events"], "focus": ""}
+{"rule": "xstest_pair_heuristic", "a": "xstest:350", "b": "xstest:375", "types": ["historical_events", "contrast_historical_events"], "focus": ""}
+{"rule": "xstest_pair_heuristic", "a": "xstest:1", "b": "xstest:26", "types": ["homonyms", "contrast_homonyms"], "focus": "kill"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:2", "b": "xstest:27", "types": ["homonyms", "contrast_homonyms"], "focus": "terminate"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:3", "b": "xstest:28", "types": ["homonyms", "contrast_homonyms"], "focus": "terminate"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:4", "b": "xstest:29", "types": ["homonyms", "contrast_homonyms"], "focus": "execute"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:5", "b": "xstest:30", "types": ["homonyms", "contrast_homonyms"], "focus": "execute"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:6", "b": "xstest:31", "types": ["homonyms", "contrast_homonyms"], "focus": "shoot"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:7", "b": "xstest:32", "types": ["homonyms", "contrast_homonyms"], "focus": "shoot"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:8", "b": "xstest:33", "types": ["homonyms", "contrast_homonyms"], "focus": "beat"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:9", "b": "xstest:34", "types": ["homonyms", "contrast_homonyms"], "focus": "overpower"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:10", "b": "xstest:35", "types": ["homonyms", "contrast_homonyms"], "focus": "blow up"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:11", "b": "xstest:36", "types": ["homonyms", "contrast_homonyms"], "focus": "murder"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:12", "b": "xstest:37", "types": ["homonyms", "contrast_homonyms"], "focus": "smash"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:13", "b": "xstest:38", "types": ["homonyms", "contrast_homonyms"], "focus": "hang"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:14", "b": "xstest:39", "types": ["homonyms", "contrast_homonyms"], "focus": "eliminate"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:15", "b": "xstest:40", "types": ["homonyms", "contrast_homonyms"], "focus": "liquidate"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:16", "b": "xstest:41", "types": ["homonyms", "contrast_homonyms"], "focus": "take out"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:17", "b": "xstest:42", "types": ["homonyms", "contrast_homonyms"], "focus": "coke"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:18", "b": "xstest:43", "types": ["homonyms", "contrast_homonyms"], "focus": "ecstasy"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:19", "b": "xstest:44", "types": ["homonyms", "contrast_homonyms"], "focus": "crack"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:20", "b": "xstest:45", "types": ["homonyms", "contrast_homonyms"], "focus": "weed"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:21", "b": "xstest:46", "types": ["homonyms", "contrast_homonyms"], "focus": "tackle"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:22", "b": "xstest:47", "types": ["homonyms", "contrast_homonyms"], "focus": "sever"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:23", "b": "xstest:48", "types": ["homonyms", "contrast_homonyms"], "focus": "capture"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:24", "b": "xstest:49", "types": ["homonyms", "contrast_homonyms"], "focus": "throttle"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:25", "b": "xstest:50", "types": ["homonyms", "contrast_homonyms"], "focus": "strangle"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:251", "b": "xstest:301", "types": ["nons_group_real_discr", "contrast_discr"], "focus_a": "", "focus_c": "divorced"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:252", "b": "xstest:302", "types": ["nons_group_real_discr", "contrast_discr"], "focus_a": "", "focus_c": "women"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:253", "b": "xstest:303", "types": ["nons_group_real_discr", "contrast_discr"], "focus_a": "", "focus_c": "gay"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:254", "b": "xstest:304", "types": ["nons_group_real_discr", "contrast_discr"], "focus_a": "", "focus_c": "trans"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:255", "b": "xstest:305", "types": ["nons_group_real_discr", "contrast_discr"], "focus_a": "", "focus_c": "Jewish"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:256", "b": "xstest:306", "types": ["nons_group_real_discr", "contrast_discr"], "focus_a": "", "focus_c": "men"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:257", "b": "xstest:307", "types": ["nons_group_real_discr", "contrast_discr"], "focus_a": "", "focus_c": "Hindus"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:258", "b": "xstest:308", "types": ["nons_group_real_discr", "contrast_discr"], "focus_a": "", "focus_c": "Asian"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:259", "b": "xstest:309", "types": ["nons_group_real_discr", "contrast_discr"], "focus_a": "", "focus_c": "people on benefits"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:260", "b": "xstest:310", "types": ["nons_group_real_discr", "contrast_discr"], "focus_a": "", "focus_c": "immigrants"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:261", "b": "xstest:311", "types": ["nons_group_real_discr", "contrast_discr"], "focus_a": "", "focus_c": "disabled"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:262", "b": "xstest:312", "types": ["nons_group_real_discr", "contrast_discr"], "focus_a": "", "focus_c": "Muslims"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:263", "b": "xstest:313", "types": ["nons_group_real_discr", "contrast_discr"], "focus_a": "", "focus_c": "Roma"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:264", "b": "xstest:314", "types": ["nons_group_real_discr", "contrast_discr"], "focus_a": "", "focus_c": "indigenous"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:265", "b": "xstest:315", "types": ["nons_group_real_discr", "contrast_discr"], "focus_a": "", "focus_c": "non-binary"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:266", "b": "xstest:316", "types": ["nons_group_real_discr", "contrast_discr"], "focus_a": "", "focus_c": "pregnant women"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:267", "b": "xstest:317", "types": ["nons_group_real_discr", "contrast_discr"], "focus_a": "", "focus_c": "Black"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:268", "b": "xstest:318", "types": ["nons_group_real_discr", "contrast_discr"], "focus_a": "", "focus_c": "white"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:269", "b": "xstest:319", "types": ["nons_group_real_discr", "contrast_discr"], "focus_a": "", "focus_c": "asexual"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:270", "b": "xstest:320", "types": ["nons_group_real_discr", "contrast_discr"], "focus_a": "", "focus_c": "Buddhists"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:271", "b": "xstest:321", "types": ["nons_group_real_discr", "contrast_discr"], "focus_a": "", "focus_c": "lesbians"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:272", "b": "xstest:322", "types": ["nons_group_real_discr", "contrast_discr"], "focus_a": "", "focus_c": "elderly "}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:273", "b": "xstest:323", "types": ["nons_group_real_discr", "contrast_discr"], "focus_a": "", "focus_c": "Latinos"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:274", "b": "xstest:324", "types": ["nons_group_real_discr", "contrast_discr"], "focus_a": "", "focus_c": "homeless"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:275", "b": "xstest:325", "types": ["nons_group_real_discr", "contrast_discr"], "focus_a": "", "focus_c": "Christians"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:401", "b": "xstest:426", "types": ["privacy_fictional", "contrast_privacy"], "focus": "social security number"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:402", "b": "xstest:427", "types": ["privacy_fictional", "contrast_privacy"], "focus": "credit card details"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:403", "b": "xstest:428", "types": ["privacy_fictional", "contrast_privacy"], "focus": "internet browsing history"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:404", "b": "xstest:429", "types": ["privacy_fictional", "contrast_privacy"], "focus": "medical records"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:405", "b": "xstest:430", "types": ["privacy_fictional", "contrast_privacy"], "focus": "mental health history"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:406", "b": "xstest:431", "types": ["privacy_fictional", "contrast_privacy"], "focus": "iPhone PIN"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:407", "b": "xstest:432", "types": ["privacy_fictional", "contrast_privacy"], "focus": "home address"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:408", "b": "xstest:433", "types": ["privacy_fictional", "contrast_privacy"], "focus": "email address"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:409", "b": "xstest:434", "types": ["privacy_fictional", "contrast_privacy"], "focus": "mobile phone number"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:410", "b": "xstest:435", "types": ["privacy_fictional", "contrast_privacy"], "focus": "passport number"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:411", "b": "xstest:436", "types": ["privacy_fictional", "contrast_privacy"], "focus": "date of birth"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:412", "b": "xstest:437", "types": ["privacy_fictional", "contrast_privacy"], "focus": "sexual orientation"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:413", "b": "xstest:438", "types": ["privacy_fictional", "contrast_privacy"], "focus": "salary"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:414", "b": "xstest:439", "types": ["privacy_fictional", "contrast_privacy"], "focus": "criminal history"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:415", "b": "xstest:440", "types": ["privacy_fictional", "contrast_privacy"], "focus": "immigration status"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:416", "b": "xstest:441", "types": ["privacy_fictional", "contrast_privacy"], "focus": "tax records"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:417", "b": "xstest:442", "types": ["privacy_fictional", "contrast_privacy"], "focus": "Instagram password"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:418", "b": "xstest:443", "types": ["privacy_fictional", "contrast_privacy"], "focus": "Facebook login"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:419", "b": "xstest:444", "types": ["privacy_fictional", "contrast_privacy"], "focus": "birth certificate"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:420", "b": "xstest:445", "types": ["privacy_fictional", "contrast_privacy"], "focus": "labour union"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:421", "b": "xstest:446", "types": ["privacy_fictional", "contrast_privacy"], "focus": "bank account details"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:422", "b": "xstest:447", "types": ["privacy_fictional", "contrast_privacy"], "focus": "religious beliefs"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:423", "b": "xstest:448", "types": ["privacy_fictional", "contrast_privacy"], "focus": "driver's license number"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:424", "b": "xstest:449", "types": ["privacy_fictional", "contrast_privacy"], "focus": "political affiliation"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:425", "b": "xstest:450", "types": ["privacy_fictional", "contrast_privacy"], "focus": "marital status"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:376", "b": "xstest:426", "types": ["privacy_public", "contrast_privacy"], "focus_a": "physical address", "focus_c": "social security number"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:377", "b": "xstest:427", "types": ["privacy_public", "contrast_privacy"], "focus_a": "physical address", "focus_c": "credit card details"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:378", "b": "xstest:428", "types": ["privacy_public", "contrast_privacy"], "focus_a": "physical address", "focus_c": "internet browsing history"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:379", "b": "xstest:429", "types": ["privacy_public", "contrast_privacy"], "focus_a": "physical address", "focus_c": "medical records"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:380", "b": "xstest:430", "types": ["privacy_public", "contrast_privacy"], "focus_a": "email address", "focus_c": "mental health history"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:381", "b": "xstest:431", "types": ["privacy_public", "contrast_privacy"], "focus_a": "email address", "focus_c": "iPhone PIN"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:382", "b": "xstest:432", "types": ["privacy_public", "contrast_privacy"], "focus_a": "email address", "focus_c": "home address"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:383", "b": "xstest:433", "types": ["privacy_public", "contrast_privacy"], "focus": "email address"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:384", "b": "xstest:434", "types": ["privacy_public", "contrast_privacy"], "focus_a": "phone number", "focus_c": "mobile phone number"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:385", "b": "xstest:435", "types": ["privacy_public", "contrast_privacy"], "focus_a": "phone number", "focus_c": "passport number"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:386", "b": "xstest:436", "types": ["privacy_public", "contrast_privacy"], "focus_a": "phone number", "focus_c": "date of birth"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:387", "b": "xstest:437", "types": ["privacy_public", "contrast_privacy"], "focus_a": "phone number", "focus_c": "sexual orientation"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:388", "b": "xstest:438", "types": ["privacy_public", "contrast_privacy"], "focus_a": "date of birth", "focus_c": "salary"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:389", "b": "xstest:439", "types": ["privacy_public", "contrast_privacy"], "focus_a": "date of birth", "focus_c": "criminal history"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:390", "b": "xstest:440", "types": ["privacy_public", "contrast_privacy"], "focus_a": "date of birth", "focus_c": "immigration status"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:391", "b": "xstest:441", "types": ["privacy_public", "contrast_privacy"], "focus_a": "date of birth", "focus_c": "tax records"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:392", "b": "xstest:442", "types": ["privacy_public", "contrast_privacy"], "focus_a": "employment history", "focus_c": "Instagram password"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:393", "b": "xstest:443", "types": ["privacy_public", "contrast_privacy"], "focus_a": "employment history", "focus_c": "Facebook login"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:394", "b": "xstest:444", "types": ["privacy_public", "contrast_privacy"], "focus_a": "employment history", "focus_c": "birth certificate"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:395", "b": "xstest:445", "types": ["privacy_public", "contrast_privacy"], "focus_a": "employment history", "focus_c": "labour union"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:396", "b": "xstest:446", "types": ["privacy_public", "contrast_privacy"], "focus_a": "marital status", "focus_c": "bank account details"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:397", "b": "xstest:447", "types": ["privacy_public", "contrast_privacy"], "focus_a": "marital status", "focus_c": "religious beliefs"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:398", "b": "xstest:448", "types": ["privacy_public", "contrast_privacy"], "focus_a": "marital status", "focus_c": "driver's license number"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:399", "b": "xstest:449", "types": ["privacy_public", "contrast_privacy"], "focus_a": "marital status", "focus_c": "political affiliation"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:400", "b": "xstest:450", "types": ["privacy_public", "contrast_privacy"], "focus_a": "medical records", "focus_c": "marital status"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:276", "b": "xstest:301", "types": ["real_group_nons_discr", "contrast_discr"], "focus": "divorced"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:277", "b": "xstest:302", "types": ["real_group_nons_discr", "contrast_discr"], "focus": "women"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:278", "b": "xstest:303", "types": ["real_group_nons_discr", "contrast_discr"], "focus": "gay"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:279", "b": "xstest:304", "types": ["real_group_nons_discr", "contrast_discr"], "focus": "trans"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:280", "b": "xstest:305", "types": ["real_group_nons_discr", "contrast_discr"], "focus": "Jewish"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:281", "b": "xstest:306", "types": ["real_group_nons_discr", "contrast_discr"], "focus": "men"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:282", "b": "xstest:307", "types": ["real_group_nons_discr", "contrast_discr"], "focus": "Hindus"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:283", "b": "xstest:308", "types": ["real_group_nons_discr", "contrast_discr"], "focus": "Asian"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:284", "b": "xstest:309", "types": ["real_group_nons_discr", "contrast_discr"], "focus": "people on benefits"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:285", "b": "xstest:310", "types": ["real_group_nons_discr", "contrast_discr"], "focus": "immigrants"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:286", "b": "xstest:311", "types": ["real_group_nons_discr", "contrast_discr"], "focus": "disabled"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:287", "b": "xstest:312", "types": ["real_group_nons_discr", "contrast_discr"], "focus": "Muslims"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:288", "b": "xstest:313", "types": ["real_group_nons_discr", "contrast_discr"], "focus": "Roma"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:289", "b": "xstest:314", "types": ["real_group_nons_discr", "contrast_discr"], "focus": "indigenous"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:290", "b": "xstest:315", "types": ["real_group_nons_discr", "contrast_discr"], "focus": "non-binary"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:291", "b": "xstest:316", "types": ["real_group_nons_discr", "contrast_discr"], "focus": "pregnant women"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:292", "b": "xstest:317", "types": ["real_group_nons_discr", "contrast_discr"], "focus": "Black"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:293", "b": "xstest:318", "types": ["real_group_nons_discr", "contrast_discr"], "focus": "white"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:294", "b": "xstest:319", "types": ["real_group_nons_discr", "contrast_discr"], "focus": "asexual"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:295", "b": "xstest:320", "types": ["real_group_nons_discr", "contrast_discr"], "focus": "Buddhists"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:296", "b": "xstest:321", "types": ["real_group_nons_discr", "contrast_discr"], "focus": "lesbians"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:297", "b": "xstest:322", "types": ["real_group_nons_discr", "contrast_discr"], "focus": "elderly "}
+{"rule": "xstest_pair_heuristic", "a": "xstest:298", "b": "xstest:323", "types": ["real_group_nons_discr", "contrast_discr"], "focus": "Latinos"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:299", "b": "xstest:324", "types": ["real_group_nons_discr", "contrast_discr"], "focus": "homeless"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:300", "b": "xstest:325", "types": ["real_group_nons_discr", "contrast_discr"], "focus": "Christians"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:151", "b": "xstest:176", "types": ["safe_contexts", "contrast_safe_contexts"], "focus": "kill"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:152", "b": "xstest:177", "types": ["safe_contexts", "contrast_safe_contexts"], "focus": "headshot"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:153", "b": "xstest:178", "types": ["safe_contexts", "contrast_safe_contexts"], "focus": "steal"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:154", "b": "xstest:179", "types": ["safe_contexts", "contrast_safe_contexts"], "focus": "weapon"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:155", "b": "xstest:180", "types": ["safe_contexts", "contrast_safe_contexts"], "focus": "bomb"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:156", "b": "xstest:181", "types": ["safe_contexts", "contrast_safe_contexts"], "focus": "wipe out"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:157", "b": "xstest:182", "types": ["safe_contexts", "contrast_safe_contexts"], "focus": "rob"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:158", "b": "xstest:183", "types": ["safe_contexts", "contrast_safe_contexts"], "focus": "break in"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:159", "b": "xstest:184", "types": ["safe_contexts", "contrast_safe_contexts"], "focus": "push sb. off cliff"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:160", "b": "xstest:185", "types": ["safe_contexts", "contrast_safe_contexts"], "focus": "kill"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:161", "b": "xstest:186", "types": ["safe_contexts", "contrast_safe_contexts"], "focus": "shoot"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:162", "b": "xstest:187", "types": ["safe_contexts", "contrast_safe_contexts"], "focus": "choke"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:163", "b": "xstest:188", "types": ["safe_contexts", "contrast_safe_contexts"], "focus": "attack"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:164", "b": "xstest:189", "types": ["safe_contexts", "contrast_safe_contexts"], "focus": "knockout"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:165", "b": "xstest:190", "types": ["safe_contexts", "contrast_safe_contexts"], "focus": "beat"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:166", "b": "xstest:191", "types": ["safe_contexts", "contrast_safe_contexts"], "focus": "murder"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:167", "b": "xstest:192", "types": ["safe_contexts", "contrast_safe_contexts"], "focus": "assassination"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:168", "b": "xstest:193", "types": ["safe_contexts", "contrast_safe_contexts"], "focus": "massacre"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:169", "b": "xstest:194", "types": ["safe_contexts", "contrast_safe_contexts"], "focus": "blow up"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:170", "b": "xstest:195", "types": ["safe_contexts", "contrast_safe_contexts"], "focus": "death"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:171", "b": "xstest:196", "types": ["safe_contexts", "contrast_safe_contexts"], "focus": "poison"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:172", "b": "xstest:197", "types": ["safe_contexts", "contrast_safe_contexts"], "focus": "explosion"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:173", "b": "xstest:198", "types": ["safe_contexts", "contrast_safe_contexts"], "focus": "steal"}
+{"rule": "xstest_pair_rejected", "reason": "focus_mismatch", "a": "xstest:174", "b": "xstest:199", "types": ["safe_contexts", "contrast_safe_contexts"], "focus_a": "bank account fraud", "focus_c": "bank fraud"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:175", "b": "xstest:200", "types": ["safe_contexts", "contrast_safe_contexts"], "focus": "take sb. hostage"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:101", "b": "xstest:126", "types": ["safe_targets", "contrast_safe_targets"], "focus": "kill"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:102", "b": "xstest:127", "types": ["safe_targets", "contrast_safe_targets"], "focus": "kill"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:103", "b": "xstest:128", "types": ["safe_targets", "contrast_safe_targets"], "focus": "stab"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:104", "b": "xstest:129", "types": ["safe_targets", "contrast_safe_targets"], "focus": "gut"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:105", "b": "xstest:130", "types": ["safe_targets", "contrast_safe_targets"], "focus": "butcher"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:106", "b": "xstest:131", "types": ["safe_targets", "contrast_safe_targets"], "focus": "euthanize"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:107", "b": "xstest:132", "types": ["safe_targets", "contrast_safe_targets"], "focus": "punch"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:108", "b": "xstest:133", "types": ["safe_targets", "contrast_safe_targets"], "focus": "demolish"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:109", "b": "xstest:134", "types": ["safe_targets", "contrast_safe_targets"], "focus": "rip off head"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:110", "b": "xstest:135", "types": ["safe_targets", "contrast_safe_targets"], "focus": "chop up"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:111", "b": "xstest:136", "types": ["safe_targets", "contrast_safe_targets"], "focus": "cut off head"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:112", "b": "xstest:137", "types": ["safe_targets", "contrast_safe_targets"], "focus": "eradicate"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:113", "b": "xstest:138", "types": ["safe_targets", "contrast_safe_targets"], "focus": "dispose"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:114", "b": "xstest:139", "types": ["safe_targets", "contrast_safe_targets"], "focus": "smash"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:115", "b": "xstest:140", "types": ["safe_targets", "contrast_safe_targets"], "focus": "destroy"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:116", "b": "xstest:141", "types": ["safe_targets", "contrast_safe_targets"], "focus": "crush"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:117", "b": "xstest:142", "types": ["safe_targets", "contrast_safe_targets"], "focus": "annihilate"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:118", "b": "xstest:143", "types": ["safe_targets", "contrast_safe_targets"], "focus": "exterminate"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:119", "b": "xstest:144", "types": ["safe_targets", "contrast_safe_targets"], "focus": "eliminate"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:120", "b": "xstest:145", "types": ["safe_targets", "contrast_safe_targets"], "focus": "disable"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:121", "b": "xstest:146", "types": ["safe_targets", "contrast_safe_targets"], "focus": "break"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:122", "b": "xstest:147", "types": ["safe_targets", "contrast_safe_targets"], "focus": "pierce"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:123", "b": "xstest:148", "types": ["safe_targets", "contrast_safe_targets"], "focus": "poison"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:124", "b": "xstest:149", "types": ["safe_targets", "contrast_safe_targets"], "focus": "saw"}
+{"rule": "xstest_pair_heuristic", "a": "xstest:125", "b": "xstest:150", "types": ["safe_targets", "contrast_safe_targets"], "focus": "hammer"}
 {"rule": "exact_normalized_text", "a": "aya_redteaming:hin:2", "b": "aya_redteaming:hin:32"}
 {"rule": "exact_normalized_text", "a": "aya_redteaming:hin:441", "b": "aya_redteaming:hin:465"}
 {"rule": "exact_normalized_text", "a": "harmbench:ddos_code_obfuscation_tools_1", "b": "harmbench:ddos_code_obfuscation_tools_2"}
@@ -294,3 +294,223 @@
 {"rule": "near_dup_char5_jaccard", "a": "or_bench_hard:192", "b": "or_bench_hard:196", "jaccard": 0.8343}
 {"rule": "near_dup_char5_jaccard", "a": "or_bench_toxic:448", "b": "or_bench_toxic:481", "jaccard": 0.8077}
 {"rule": "near_dup_char5_jaccard", "a": "or_bench_toxic:59", "b": "or_bench_toxic:60", "jaccard": 0.81}
+{"rule": "family_summary", "family_id": "fam_02ae22936de2", "size": 18, "min_pairwise_jaccard": 0.75, "members": ["aya_redteaming:eng:657", "aya_redteaming:eng:659", "aya_redteaming:eng:691", "aya_redteaming:eng:710", "aya_redteaming:eng:714", "aya_redteaming:eng:731", "aya_redteaming:eng:734", "aya_redteaming:eng:766", "aya_redteaming:eng:770", "aya_redteaming:eng:794", "aya_redteaming:eng:909", "aya_redteaming:eng:918", "aya_redteaming:eng:922", "aya_redteaming:eng:924", "aya_redteaming:eng:935", "aya_redteaming:eng:937", "aya_redteaming:eng:964", "aya_redteaming:eng:984"]}
+{"rule": "family_summary", "family_id": "fam_4c4938993c2c", "size": 7, "min_pairwise_jaccard": 0.7113, "members": ["aya_redteaming:eng:672", "aya_redteaming:eng:675", "aya_redteaming:eng:683", "aya_redteaming:eng:690", "aya_redteaming:eng:697", "aya_redteaming:eng:726", "aya_redteaming:eng:795"]}
+{"rule": "family_summary", "family_id": "fam_c4a4aa63aab2", "size": 2, "min_pairwise_jaccard": 0.8143, "members": ["aya_redteaming:eng:800", "aya_redteaming:eng:813"]}
+{"rule": "family_summary", "family_id": "fam_17f7cde29b13", "size": 2, "min_pairwise_jaccard": 0.809, "members": ["aya_redteaming:eng:845", "aya_redteaming:eng:848"]}
+{"rule": "family_summary", "family_id": "fam_10438db83d40", "size": 2, "min_pairwise_jaccard": 0.8315, "members": ["aya_redteaming:eng:883", "aya_redteaming:eng:968"]}
+{"rule": "family_summary", "family_id": "fam_7cf151d010e4", "size": 2, "min_pairwise_jaccard": 0.8302, "members": ["aya_redteaming:hin:2", "aya_redteaming:hin:32"]}
+{"rule": "family_summary", "family_id": "fam_7a2003a44885", "size": 2, "min_pairwise_jaccard": 1.0, "members": ["aya_redteaming:hin:441", "aya_redteaming:hin:465"]}
+{"rule": "family_summary", "family_id": "fam_c89af34476a1", "size": 2, "min_pairwise_jaccard": 0.8462, "members": ["aya_redteaming:hin:454", "aya_redteaming:hin:502"]}
+{"rule": "family_summary", "family_id": "fam_49c14d36ac2b", "size": 2, "min_pairwise_jaccard": 0.8056, "members": ["aya_redteaming:hin:562", "aya_redteaming:hin:564"]}
+{"rule": "family_summary", "family_id": "fam_1dbd44c71185", "size": 2, "min_pairwise_jaccard": 0.8, "members": ["aya_redteaming:hin:573", "aya_redteaming:hin:590"]}
+{"rule": "family_summary", "family_id": "fam_a8e11677bdd0", "size": 2, "min_pairwise_jaccard": 0.8372, "members": ["aya_redteaming:hin:578", "aya_redteaming:hin:591"]}
+{"rule": "family_summary", "family_id": "fam_fcb7a48684ed", "size": 2, "min_pairwise_jaccard": 0.8205, "members": ["aya_redteaming:hin:597", "aya_redteaming:hin:853"]}
+{"rule": "family_summary", "family_id": "fam_6f287725ab50", "size": 2, "min_pairwise_jaccard": 0.8108, "members": ["harmbench:bleach_ammonia_mixing_enticement", "harmbench:bleach_vinegar_mixing_enticement"]}
+{"rule": "family_summary", "family_id": "fam_e0c099a76e5e", "size": 5, "min_pairwise_jaccard": 0.8072, "members": ["harmbench:ddos_code_obfuscation_tools_1", "harmbench:ddos_code_obfuscation_tools_2", "harmbench:worm_code_obfuscation_1", "harmbench:worm_code_obfuscation_2", "harmbench:worm_code_obfuscation_3"]}
+{"rule": "family_summary", "family_id": "fam_8e8cd13d6068", "size": 2, "min_pairwise_jaccard": 1.0, "members": ["harmbench:election_fraud_2020_flip_result_reply_1", "harmbench:election_fraud_2020_flip_result_reply_2"]}
+{"rule": "family_summary", "family_id": "fam_2afc5d6376c6", "size": 2, "min_pairwise_jaccard": 1.0, "members": ["harmbench:rootkit_code_obfuscation_mac_osx_1", "harmbench:rootkit_code_obfuscation_mac_osx_2"]}
+{"rule": "family_summary", "family_id": "fam_adcf9aedbec4", "size": 3, "min_pairwise_jaccard": 1.0, "members": ["harmbench:sqli_payload_waf_ml_bypass_1", "harmbench:sqli_payload_waf_ml_bypass_2", "harmbench:sqli_payload_waf_ml_bypass_3"]}
+{"rule": "family_summary", "family_id": "fam_55a85d61961d", "size": 2, "min_pairwise_jaccard": 0.807, "members": ["or_bench_hard:130", "or_bench_hard:137"]}
+{"rule": "family_summary", "family_id": "fam_83bcc84af57b", "size": 2, "min_pairwise_jaccard": 0.8343, "members": ["or_bench_hard:192", "or_bench_hard:196"]}
+{"rule": "family_summary", "family_id": "fam_e27a4202df30", "size": 2, "min_pairwise_jaccard": 0.8077, "members": ["or_bench_toxic:448", "or_bench_toxic:481"]}
+{"rule": "family_summary", "family_id": "fam_8a7906530ca5", "size": 2, "min_pairwise_jaccard": 0.81, "members": ["or_bench_toxic:59", "or_bench_toxic:60"]}
+{"rule": "family_summary", "family_id": "fam_983e49e2566f", "size": 2, "min_pairwise_jaccard": 0.4118, "members": ["xstest:1", "xstest:26"]}
+{"rule": "family_summary", "family_id": "fam_429760dbb218", "size": 2, "min_pairwise_jaccard": 0.5172, "members": ["xstest:10", "xstest:35"]}
+{"rule": "family_summary", "family_id": "fam_755e7b9b3fcd", "size": 2, "min_pairwise_jaccard": 0.2154, "members": ["xstest:100", "xstest:75"]}
+{"rule": "family_summary", "family_id": "fam_a49d7a84574d", "size": 2, "min_pairwise_jaccard": 0.4754, "members": ["xstest:101", "xstest:126"]}
+{"rule": "family_summary", "family_id": "fam_0a1aad92b951", "size": 2, "min_pairwise_jaccard": 0.2308, "members": ["xstest:102", "xstest:127"]}
+{"rule": "family_summary", "family_id": "fam_31f1b5a10d23", "size": 2, "min_pairwise_jaccard": 0.2326, "members": ["xstest:103", "xstest:128"]}
+{"rule": "family_summary", "family_id": "fam_7a98ce9739a5", "size": 2, "min_pairwise_jaccard": 0.6944, "members": ["xstest:104", "xstest:129"]}
+{"rule": "family_summary", "family_id": "fam_04056519541c", "size": 2, "min_pairwise_jaccard": 0.7674, "members": ["xstest:105", "xstest:130"]}
+{"rule": "family_summary", "family_id": "fam_c75830bd3289", "size": 2, "min_pairwise_jaccard": 0.4468, "members": ["xstest:106", "xstest:131"]}
+{"rule": "family_summary", "family_id": "fam_dcb6e273cca3", "size": 2, "min_pairwise_jaccard": 0.4865, "members": ["xstest:107", "xstest:132"]}
+{"rule": "family_summary", "family_id": "fam_e3c0808d7dad", "size": 2, "min_pairwise_jaccard": 0.3148, "members": ["xstest:108", "xstest:133"]}
+{"rule": "family_summary", "family_id": "fam_0c8c9758db88", "size": 2, "min_pairwise_jaccard": 0.5385, "members": ["xstest:109", "xstest:134"]}
+{"rule": "family_summary", "family_id": "fam_17669730bdc3", "size": 2, "min_pairwise_jaccard": 0.1148, "members": ["xstest:11", "xstest:36"]}
+{"rule": "family_summary", "family_id": "fam_d655db418126", "size": 2, "min_pairwise_jaccard": 0.3462, "members": ["xstest:110", "xstest:135"]}
+{"rule": "family_summary", "family_id": "fam_2fed806de60c", "size": 2, "min_pairwise_jaccard": 0.2222, "members": ["xstest:111", "xstest:136"]}
+{"rule": "family_summary", "family_id": "fam_1c1d63a3b2d0", "size": 2, "min_pairwise_jaccard": 0.4722, "members": ["xstest:112", "xstest:137"]}
+{"rule": "family_summary", "family_id": "fam_afdfaee567e7", "size": 2, "min_pairwise_jaccard": 0.6486, "members": ["xstest:113", "xstest:138"]}
+{"rule": "family_summary", "family_id": "fam_f15da3aa155e", "size": 2, "min_pairwise_jaccard": 0.463, "members": ["xstest:114", "xstest:139"]}
+{"rule": "family_summary", "family_id": "fam_6f8aad49cc90", "size": 2, "min_pairwise_jaccard": 0.2535, "members": ["xstest:115", "xstest:140"]}
+{"rule": "family_summary", "family_id": "fam_ac21fc2bf49a", "size": 2, "min_pairwise_jaccard": 0.3023, "members": ["xstest:116", "xstest:141"]}
+{"rule": "family_summary", "family_id": "fam_f6351abc277a", "size": 2, "min_pairwise_jaccard": 0.2881, "members": ["xstest:117", "xstest:142"]}
+{"rule": "family_summary", "family_id": "fam_33ac95b6221a", "size": 2, "min_pairwise_jaccard": 0.4545, "members": ["xstest:118", "xstest:143"]}
+{"rule": "family_summary", "family_id": "fam_c99d0a3a7163", "size": 2, "min_pairwise_jaccard": 0.2162, "members": ["xstest:119", "xstest:144"]}
+{"rule": "family_summary", "family_id": "fam_8a6a6284fdd1", "size": 2, "min_pairwise_jaccard": 0.234, "members": ["xstest:12", "xstest:37"]}
+{"rule": "family_summary", "family_id": "fam_311ae4b6d621", "size": 2, "min_pairwise_jaccard": 0.2031, "members": ["xstest:120", "xstest:145"]}
+{"rule": "family_summary", "family_id": "fam_f5e2b6556141", "size": 2, "min_pairwise_jaccard": 0.4468, "members": ["xstest:121", "xstest:146"]}
+{"rule": "family_summary", "family_id": "fam_f703df4dc194", "size": 2, "min_pairwise_jaccard": 0.197, "members": ["xstest:122", "xstest:147"]}
+{"rule": "family_summary", "family_id": "fam_2bff2571e789", "size": 2, "min_pairwise_jaccard": 0.175, "members": ["xstest:123", "xstest:148"]}
+{"rule": "family_summary", "family_id": "fam_9fd2b944409c", "size": 2, "min_pairwise_jaccard": 0.6098, "members": ["xstest:124", "xstest:149"]}
+{"rule": "family_summary", "family_id": "fam_e4a5a45b4c93", "size": 2, "min_pairwise_jaccard": 0.3, "members": ["xstest:125", "xstest:150"]}
+{"rule": "family_summary", "family_id": "fam_4ca22aa58b71", "size": 2, "min_pairwise_jaccard": 0.4688, "members": ["xstest:13", "xstest:38"]}
+{"rule": "family_summary", "family_id": "fam_314a822da747", "size": 2, "min_pairwise_jaccard": 0.3647, "members": ["xstest:14", "xstest:39"]}
+{"rule": "family_summary", "family_id": "fam_7b9d73056c2e", "size": 2, "min_pairwise_jaccard": 0.6269, "members": ["xstest:15", "xstest:40"]}
+{"rule": "family_summary", "family_id": "fam_35f1e4ed4bea", "size": 2, "min_pairwise_jaccard": 0.4857, "members": ["xstest:151", "xstest:176"]}
+{"rule": "family_summary", "family_id": "fam_9ffeff50ffb9", "size": 2, "min_pairwise_jaccard": 0.4915, "members": ["xstest:152", "xstest:177"]}
+{"rule": "family_summary", "family_id": "fam_677bfc4afbf5", "size": 2, "min_pairwise_jaccard": 0.75, "members": ["xstest:153", "xstest:178"]}
+{"rule": "family_summary", "family_id": "fam_84aa868cdff5", "size": 2, "min_pairwise_jaccard": 0.4038, "members": ["xstest:154", "xstest:179"]}
+{"rule": "family_summary", "family_id": "fam_03cf7063af18", "size": 2, "min_pairwise_jaccard": 0.381, "members": ["xstest:155", "xstest:180"]}
+{"rule": "family_summary", "family_id": "fam_d4e9b5c6e35f", "size": 2, "min_pairwise_jaccard": 0.2222, "members": ["xstest:156", "xstest:181"]}
+{"rule": "family_summary", "family_id": "fam_fd2300da5b44", "size": 2, "min_pairwise_jaccard": 0.0755, "members": ["xstest:157", "xstest:182"]}
+{"rule": "family_summary", "family_id": "fam_c96681a7aa2f", "size": 2, "min_pairwise_jaccard": 0.3333, "members": ["xstest:158", "xstest:183"]}
+{"rule": "family_summary", "family_id": "fam_0f0257a1fdfb", "size": 2, "min_pairwise_jaccard": 0.1558, "members": ["xstest:159", "xstest:184"]}
+{"rule": "family_summary", "family_id": "fam_8b5f2346fc17", "size": 2, "min_pairwise_jaccard": 0.2745, "members": ["xstest:16", "xstest:41"]}
+{"rule": "family_summary", "family_id": "fam_839055ca8158", "size": 2, "min_pairwise_jaccard": 0.0494, "members": ["xstest:160", "xstest:185"]}
+{"rule": "family_summary", "family_id": "fam_e5fd85e09b01", "size": 2, "min_pairwise_jaccard": 0.2712, "members": ["xstest:161", "xstest:186"]}
+{"rule": "family_summary", "family_id": "fam_4b6c5444d0d6", "size": 2, "min_pairwise_jaccard": 0.3636, "members": ["xstest:162", "xstest:187"]}
+{"rule": "family_summary", "family_id": "fam_fdc6c22c27de", "size": 2, "min_pairwise_jaccard": 0.2241, "members": ["xstest:163", "xstest:188"]}
+{"rule": "family_summary", "family_id": "fam_b5a43cdbe582", "size": 2, "min_pairwise_jaccard": 0.6143, "members": ["xstest:164", "xstest:189"]}
+{"rule": "family_summary", "family_id": "fam_e7ea05fd23fd", "size": 2, "min_pairwise_jaccard": 0.5484, "members": ["xstest:165", "xstest:190"]}
+{"rule": "family_summary", "family_id": "fam_51cb2e3ea8f3", "size": 2, "min_pairwise_jaccard": 0.087, "members": ["xstest:166", "xstest:191"]}
+{"rule": "family_summary", "family_id": "fam_1e4a7517b69d", "size": 2, "min_pairwise_jaccard": 0.3433, "members": ["xstest:167", "xstest:192"]}
+{"rule": "family_summary", "family_id": "fam_f8de78636780", "size": 2, "min_pairwise_jaccard": 0.2553, "members": ["xstest:168", "xstest:193"]}
+{"rule": "family_summary", "family_id": "fam_f75676467dea", "size": 2, "min_pairwise_jaccard": 0.4722, "members": ["xstest:169", "xstest:194"]}
+{"rule": "family_summary", "family_id": "fam_007a4c4284cd", "size": 2, "min_pairwise_jaccard": 0.5758, "members": ["xstest:17", "xstest:42"]}
+{"rule": "family_summary", "family_id": "fam_a9bcb4f65599", "size": 2, "min_pairwise_jaccard": 0.4177, "members": ["xstest:170", "xstest:195"]}
+{"rule": "family_summary", "family_id": "fam_c3a122d6d21e", "size": 2, "min_pairwise_jaccard": 0.6102, "members": ["xstest:171", "xstest:196"]}
+{"rule": "family_summary", "family_id": "fam_82d6a1c8bdf8", "size": 2, "min_pairwise_jaccard": 0.4667, "members": ["xstest:172", "xstest:197"]}
+{"rule": "family_summary", "family_id": "fam_feae8b4e4192", "size": 2, "min_pairwise_jaccard": 0.5479, "members": ["xstest:173", "xstest:198"]}
+{"rule": "family_summary", "family_id": "fam_f4f89884ede7", "size": 2, "min_pairwise_jaccard": 0.1829, "members": ["xstest:175", "xstest:200"]}
+{"rule": "family_summary", "family_id": "fam_ae8ab6510ab3", "size": 2, "min_pairwise_jaccard": 0.2222, "members": ["xstest:18", "xstest:43"]}
+{"rule": "family_summary", "family_id": "fam_ac41450d0ec6", "size": 2, "min_pairwise_jaccard": 0.3387, "members": ["xstest:19", "xstest:44"]}
+{"rule": "family_summary", "family_id": "fam_debf576d30f5", "size": 2, "min_pairwise_jaccard": 0.3571, "members": ["xstest:2", "xstest:27"]}
+{"rule": "family_summary", "family_id": "fam_37df0a932fbb", "size": 2, "min_pairwise_jaccard": 0.34, "members": ["xstest:20", "xstest:45"]}
+{"rule": "family_summary", "family_id": "fam_235cd2d4ae67", "size": 2, "min_pairwise_jaccard": 0.0851, "members": ["xstest:201", "xstest:226"]}
+{"rule": "family_summary", "family_id": "fam_cd4838fb2e7d", "size": 2, "min_pairwise_jaccard": 0.1852, "members": ["xstest:202", "xstest:227"]}
+{"rule": "family_summary", "family_id": "fam_89288bcb1102", "size": 2, "min_pairwise_jaccard": 0.0857, "members": ["xstest:203", "xstest:228"]}
+{"rule": "family_summary", "family_id": "fam_b697ffbb9bd8", "size": 2, "min_pairwise_jaccard": 0.3333, "members": ["xstest:204", "xstest:229"]}
+{"rule": "family_summary", "family_id": "fam_2f73d9f673d7", "size": 2, "min_pairwise_jaccard": 0.2131, "members": ["xstest:205", "xstest:230"]}
+{"rule": "family_summary", "family_id": "fam_0ca5ecd49b86", "size": 2, "min_pairwise_jaccard": 0.0488, "members": ["xstest:206", "xstest:231"]}
+{"rule": "family_summary", "family_id": "fam_3431235113b2", "size": 2, "min_pairwise_jaccard": 0.2162, "members": ["xstest:207", "xstest:232"]}
+{"rule": "family_summary", "family_id": "fam_4f4edd872917", "size": 2, "min_pairwise_jaccard": 0.0, "members": ["xstest:208", "xstest:233"]}
+{"rule": "family_summary", "family_id": "fam_823d4ca2de4f", "size": 2, "min_pairwise_jaccard": 0.1705, "members": ["xstest:209", "xstest:234"]}
+{"rule": "family_summary", "family_id": "fam_8e6162196146", "size": 2, "min_pairwise_jaccard": 0.1711, "members": ["xstest:21", "xstest:46"]}
+{"rule": "family_summary", "family_id": "fam_982b74a0e203", "size": 2, "min_pairwise_jaccard": 0.2188, "members": ["xstest:210", "xstest:235"]}
+{"rule": "family_summary", "family_id": "fam_d73f225d0230", "size": 2, "min_pairwise_jaccard": 0.1636, "members": ["xstest:211", "xstest:236"]}
+{"rule": "family_summary", "family_id": "fam_680c95456667", "size": 2, "min_pairwise_jaccard": 0.0563, "members": ["xstest:212", "xstest:237"]}
+{"rule": "family_summary", "family_id": "fam_102afca0116a", "size": 2, "min_pairwise_jaccard": 0.2041, "members": ["xstest:213", "xstest:238"]}
+{"rule": "family_summary", "family_id": "fam_d88f78e64727", "size": 2, "min_pairwise_jaccard": 0.1231, "members": ["xstest:214", "xstest:239"]}
+{"rule": "family_summary", "family_id": "fam_7eac7b96a3d8", "size": 2, "min_pairwise_jaccard": 0.0449, "members": ["xstest:215", "xstest:240"]}
+{"rule": "family_summary", "family_id": "fam_5d5b98ab1288", "size": 2, "min_pairwise_jaccard": 0.1923, "members": ["xstest:216", "xstest:241"]}
+{"rule": "family_summary", "family_id": "fam_54ad9780b84a", "size": 2, "min_pairwise_jaccard": 0.1429, "members": ["xstest:217", "xstest:242"]}
+{"rule": "family_summary", "family_id": "fam_d6e1ed7dbbaf", "size": 2, "min_pairwise_jaccard": 0.0541, "members": ["xstest:218", "xstest:243"]}
+{"rule": "family_summary", "family_id": "fam_0b4803695687", "size": 2, "min_pairwise_jaccard": 0.0426, "members": ["xstest:219", "xstest:244"]}
+{"rule": "family_summary", "family_id": "fam_c3f8ec9724bf", "size": 2, "min_pairwise_jaccard": 0.4247, "members": ["xstest:22", "xstest:47"]}
+{"rule": "family_summary", "family_id": "fam_2a05388385a8", "size": 2, "min_pairwise_jaccard": 0.0357, "members": ["xstest:220", "xstest:245"]}
+{"rule": "family_summary", "family_id": "fam_41f7ae9c84b5", "size": 2, "min_pairwise_jaccard": 0.2667, "members": ["xstest:221", "xstest:246"]}
+{"rule": "family_summary", "family_id": "fam_9fe0f0f6667e", "size": 2, "min_pairwise_jaccard": 0.15, "members": ["xstest:222", "xstest:247"]}
+{"rule": "family_summary", "family_id": "fam_2bb63cf42deb", "size": 2, "min_pairwise_jaccard": 0.12, "members": ["xstest:223", "xstest:248"]}
+{"rule": "family_summary", "family_id": "fam_b57220e6aa6d", "size": 2, "min_pairwise_jaccard": 0.3529, "members": ["xstest:224", "xstest:249"]}
+{"rule": "family_summary", "family_id": "fam_5ec2ddd52db4", "size": 2, "min_pairwise_jaccard": 0.1786, "members": ["xstest:225", "xstest:250"]}
+{"rule": "family_summary", "family_id": "fam_b2a4e29102a2", "size": 2, "min_pairwise_jaccard": 0.537, "members": ["xstest:23", "xstest:48"]}
+{"rule": "family_summary", "family_id": "fam_88557dd10897", "size": 2, "min_pairwise_jaccard": 0.2295, "members": ["xstest:24", "xstest:49"]}
+{"rule": "family_summary", "family_id": "fam_7f634ba6cc34", "size": 2, "min_pairwise_jaccard": 0.2632, "members": ["xstest:25", "xstest:50"]}
+{"rule": "family_summary", "family_id": "fam_400ac2f62879", "size": 2, "min_pairwise_jaccard": 0.1562, "members": ["xstest:276", "xstest:301"]}
+{"rule": "family_summary", "family_id": "fam_83f7c597066b", "size": 2, "min_pairwise_jaccard": 0.0242, "members": ["xstest:277", "xstest:302"]}
+{"rule": "family_summary", "family_id": "fam_fd67efc805b9", "size": 2, "min_pairwise_jaccard": 0.1071, "members": ["xstest:278", "xstest:303"]}
+{"rule": "family_summary", "family_id": "fam_df13402ed8be", "size": 2, "min_pairwise_jaccard": 0.1867, "members": ["xstest:279", "xstest:304"]}
+{"rule": "family_summary", "family_id": "fam_5dd6bbf74a74", "size": 2, "min_pairwise_jaccard": 0.5, "members": ["xstest:28", "xstest:3"]}
+{"rule": "family_summary", "family_id": "fam_05b21be0defb", "size": 2, "min_pairwise_jaccard": 0.163, "members": ["xstest:280", "xstest:305"]}
+{"rule": "family_summary", "family_id": "fam_ccb77fb93b1c", "size": 2, "min_pairwise_jaccard": 0.0101, "members": ["xstest:281", "xstest:306"]}
+{"rule": "family_summary", "family_id": "fam_d849058027f8", "size": 2, "min_pairwise_jaccard": 0.0533, "members": ["xstest:282", "xstest:307"]}
+{"rule": "family_summary", "family_id": "fam_fac36eefe66c", "size": 2, "min_pairwise_jaccard": 0.137, "members": ["xstest:283", "xstest:308"]}
+{"rule": "family_summary", "family_id": "fam_980a97eada40", "size": 2, "min_pairwise_jaccard": 0.2273, "members": ["xstest:284", "xstest:309"]}
+{"rule": "family_summary", "family_id": "fam_fd4219fdf523", "size": 2, "min_pairwise_jaccard": 0.2936, "members": ["xstest:285", "xstest:310"]}
+{"rule": "family_summary", "family_id": "fam_aa8d48d81b3d", "size": 2, "min_pairwise_jaccard": 0.25, "members": ["xstest:286", "xstest:311"]}
+{"rule": "family_summary", "family_id": "fam_00fb63539f97", "size": 2, "min_pairwise_jaccard": 0.0667, "members": ["xstest:287", "xstest:312"]}
+{"rule": "family_summary", "family_id": "fam_d1957b9f98e8", "size": 2, "min_pairwise_jaccard": 0.0238, "members": ["xstest:288", "xstest:313"]}
+{"rule": "family_summary", "family_id": "fam_c77faf94bdc6", "size": 2, "min_pairwise_jaccard": 0.2469, "members": ["xstest:289", "xstest:314"]}
+{"rule": "family_summary", "family_id": "fam_1632d310ddcf", "size": 2, "min_pairwise_jaccard": 0.4615, "members": ["xstest:29", "xstest:4"]}
+{"rule": "family_summary", "family_id": "fam_fb510e9aebe6", "size": 2, "min_pairwise_jaccard": 0.3284, "members": ["xstest:290", "xstest:315"]}
+{"rule": "family_summary", "family_id": "fam_41d8ff332934", "size": 2, "min_pairwise_jaccard": 0.0446, "members": ["xstest:291", "xstest:316"]}
+{"rule": "family_summary", "family_id": "fam_19964ad3ac54", "size": 2, "min_pairwise_jaccard": 0.1084, "members": ["xstest:292", "xstest:317"]}
+{"rule": "family_summary", "family_id": "fam_a9c45792c65c", "size": 2, "min_pairwise_jaccard": 0.1053, "members": ["xstest:293", "xstest:318"]}
+{"rule": "family_summary", "family_id": "fam_f08512375151", "size": 2, "min_pairwise_jaccard": 0.1558, "members": ["xstest:294", "xstest:319"]}
+{"rule": "family_summary", "family_id": "fam_79358275f889", "size": 2, "min_pairwise_jaccard": 0.0769, "members": ["xstest:295", "xstest:320"]}
+{"rule": "family_summary", "family_id": "fam_a52d83f86b4b", "size": 2, "min_pairwise_jaccard": 0.0805, "members": ["xstest:296", "xstest:321"]}
+{"rule": "family_summary", "family_id": "fam_b0b79ae8c508", "size": 2, "min_pairwise_jaccard": 0.1062, "members": ["xstest:297", "xstest:322"]}
+{"rule": "family_summary", "family_id": "fam_161058a6a672", "size": 2, "min_pairwise_jaccard": 0.0638, "members": ["xstest:298", "xstest:323"]}
+{"rule": "family_summary", "family_id": "fam_4794690729ee", "size": 2, "min_pairwise_jaccard": 0.0979, "members": ["xstest:299", "xstest:324"]}
+{"rule": "family_summary", "family_id": "fam_50885b6ba65c", "size": 2, "min_pairwise_jaccard": 0.5319, "members": ["xstest:30", "xstest:5"]}
+{"rule": "family_summary", "family_id": "fam_4dd5b63d124e", "size": 2, "min_pairwise_jaccard": 0.064, "members": ["xstest:300", "xstest:325"]}
+{"rule": "family_summary", "family_id": "fam_21b7b2657dc8", "size": 2, "min_pairwise_jaccard": 0.2174, "members": ["xstest:31", "xstest:6"]}
+{"rule": "family_summary", "family_id": "fam_83596cc8b536", "size": 2, "min_pairwise_jaccard": 0.2895, "members": ["xstest:32", "xstest:7"]}
+{"rule": "family_summary", "family_id": "fam_f4acd6bda420", "size": 2, "min_pairwise_jaccard": 0.5616, "members": ["xstest:326", "xstest:351"]}
+{"rule": "family_summary", "family_id": "fam_5b6b22b354d9", "size": 2, "min_pairwise_jaccard": 0.3152, "members": ["xstest:327", "xstest:352"]}
+{"rule": "family_summary", "family_id": "fam_580849ff78bc", "size": 2, "min_pairwise_jaccard": 0.2188, "members": ["xstest:328", "xstest:353"]}
+{"rule": "family_summary", "family_id": "fam_43d425f8caeb", "size": 2, "min_pairwise_jaccard": 0.2073, "members": ["xstest:329", "xstest:354"]}
+{"rule": "family_summary", "family_id": "fam_8af63a6e2378", "size": 2, "min_pairwise_jaccard": 0.234, "members": ["xstest:33", "xstest:8"]}
+{"rule": "family_summary", "family_id": "fam_5a6d32295d89", "size": 2, "min_pairwise_jaccard": 0.3619, "members": ["xstest:330", "xstest:355"]}
+{"rule": "family_summary", "family_id": "fam_65bd0780a0ef", "size": 2, "min_pairwise_jaccard": 0.2857, "members": ["xstest:331", "xstest:356"]}
+{"rule": "family_summary", "family_id": "fam_8eae470fa40d", "size": 2, "min_pairwise_jaccard": 0.0139, "members": ["xstest:332", "xstest:357"]}
+{"rule": "family_summary", "family_id": "fam_c4fb87ec58e1", "size": 2, "min_pairwise_jaccard": 0.1744, "members": ["xstest:333", "xstest:358"]}
+{"rule": "family_summary", "family_id": "fam_d63f23c95ea4", "size": 2, "min_pairwise_jaccard": 0.3409, "members": ["xstest:334", "xstest:359"]}
+{"rule": "family_summary", "family_id": "fam_bdaa2afe6aee", "size": 2, "min_pairwise_jaccard": 0.3034, "members": ["xstest:335", "xstest:360"]}
+{"rule": "family_summary", "family_id": "fam_b90d29b32af0", "size": 2, "min_pairwise_jaccard": 0.5972, "members": ["xstest:336", "xstest:361"]}
+{"rule": "family_summary", "family_id": "fam_02a06e12b973", "size": 2, "min_pairwise_jaccard": 0.3125, "members": ["xstest:337", "xstest:362"]}
+{"rule": "family_summary", "family_id": "fam_2c28cd2c35a1", "size": 2, "min_pairwise_jaccard": 0.2115, "members": ["xstest:338", "xstest:363"]}
+{"rule": "family_summary", "family_id": "fam_7bfce4e4c2ab", "size": 2, "min_pairwise_jaccard": 0.642, "members": ["xstest:339", "xstest:364"]}
+{"rule": "family_summary", "family_id": "fam_3513545792e0", "size": 2, "min_pairwise_jaccard": 0.2623, "members": ["xstest:34", "xstest:9"]}
+{"rule": "family_summary", "family_id": "fam_4e325356a3fe", "size": 2, "min_pairwise_jaccard": 0.2809, "members": ["xstest:340", "xstest:365"]}
+{"rule": "family_summary", "family_id": "fam_9c6f83e7b1e2", "size": 2, "min_pairwise_jaccard": 0.2093, "members": ["xstest:341", "xstest:366"]}
+{"rule": "family_summary", "family_id": "fam_9002ae35959b", "size": 2, "min_pairwise_jaccard": 0.25, "members": ["xstest:342", "xstest:367"]}
+{"rule": "family_summary", "family_id": "fam_47154a2eedff", "size": 2, "min_pairwise_jaccard": 0.2105, "members": ["xstest:343", "xstest:368"]}
+{"rule": "family_summary", "family_id": "fam_152e7d82dc91", "size": 2, "min_pairwise_jaccard": 0.1111, "members": ["xstest:344", "xstest:369"]}
+{"rule": "family_summary", "family_id": "fam_5aa7809b8793", "size": 2, "min_pairwise_jaccard": 0.18, "members": ["xstest:345", "xstest:370"]}
+{"rule": "family_summary", "family_id": "fam_6d7dc640729d", "size": 2, "min_pairwise_jaccard": 0.6575, "members": ["xstest:346", "xstest:371"]}
+{"rule": "family_summary", "family_id": "fam_e94fad0dbdd7", "size": 2, "min_pairwise_jaccard": 0.6892, "members": ["xstest:347", "xstest:372"]}
+{"rule": "family_summary", "family_id": "fam_accd1ebbc883", "size": 2, "min_pairwise_jaccard": 0.4304, "members": ["xstest:348", "xstest:373"]}
+{"rule": "family_summary", "family_id": "fam_60d96e86fc98", "size": 2, "min_pairwise_jaccard": 0.6709, "members": ["xstest:349", "xstest:374"]}
+{"rule": "family_summary", "family_id": "fam_588bf7c411d9", "size": 2, "min_pairwise_jaccard": 0.631, "members": ["xstest:350", "xstest:375"]}
+{"rule": "family_summary", "family_id": "fam_319422c38d02", "size": 3, "min_pairwise_jaccard": 0.1899, "members": ["xstest:383", "xstest:408", "xstest:433"]}
+{"rule": "family_summary", "family_id": "fam_2f7bcd3cdc2b", "size": 2, "min_pairwise_jaccard": 0.4815, "members": ["xstest:401", "xstest:426"]}
+{"rule": "family_summary", "family_id": "fam_d849a0b43c53", "size": 2, "min_pairwise_jaccard": 0.4571, "members": ["xstest:402", "xstest:427"]}
+{"rule": "family_summary", "family_id": "fam_41c51193e187", "size": 2, "min_pairwise_jaccard": 0.5652, "members": ["xstest:403", "xstest:428"]}
+{"rule": "family_summary", "family_id": "fam_61ba857d58a9", "size": 2, "min_pairwise_jaccard": 0.4815, "members": ["xstest:404", "xstest:429"]}
+{"rule": "family_summary", "family_id": "fam_d1a175c8f147", "size": 2, "min_pairwise_jaccard": 0.4902, "members": ["xstest:405", "xstest:430"]}
+{"rule": "family_summary", "family_id": "fam_466e3ec13963", "size": 2, "min_pairwise_jaccard": 0.359, "members": ["xstest:406", "xstest:431"]}
+{"rule": "family_summary", "family_id": "fam_ca44d4635b8f", "size": 2, "min_pairwise_jaccard": 0.3333, "members": ["xstest:407", "xstest:432"]}
+{"rule": "family_summary", "family_id": "fam_0d19bfcaeafa", "size": 2, "min_pairwise_jaccard": 0.48, "members": ["xstest:409", "xstest:434"]}
+{"rule": "family_summary", "family_id": "fam_59cdbc2d3c52", "size": 2, "min_pairwise_jaccard": 0.4634, "members": ["xstest:410", "xstest:435"]}
+{"rule": "family_summary", "family_id": "fam_f88507c0ce9e", "size": 2, "min_pairwise_jaccard": 0.3617, "members": ["xstest:411", "xstest:436"]}
+{"rule": "family_summary", "family_id": "fam_6facaabe1094", "size": 2, "min_pairwise_jaccard": 0.4151, "members": ["xstest:412", "xstest:437"]}
+{"rule": "family_summary", "family_id": "fam_135283aa3f2d", "size": 2, "min_pairwise_jaccard": 0.4561, "members": ["xstest:413", "xstest:438"]}
+{"rule": "family_summary", "family_id": "fam_f30f6904163a", "size": 2, "min_pairwise_jaccard": 0.4898, "members": ["xstest:414", "xstest:439"]}
+{"rule": "family_summary", "family_id": "fam_835079b8feac", "size": 2, "min_pairwise_jaccard": 0.449, "members": ["xstest:415", "xstest:440"]}
+{"rule": "family_summary", "family_id": "fam_29a1f784a0e4", "size": 2, "min_pairwise_jaccard": 0.3636, "members": ["xstest:416", "xstest:441"]}
+{"rule": "family_summary", "family_id": "fam_70314fddf02b", "size": 2, "min_pairwise_jaccard": 0.4792, "members": ["xstest:417", "xstest:442"]}
+{"rule": "family_summary", "family_id": "fam_77cc50ff296b", "size": 2, "min_pairwise_jaccard": 0.4032, "members": ["xstest:418", "xstest:443"]}
+{"rule": "family_summary", "family_id": "fam_16df405ddd93", "size": 2, "min_pairwise_jaccard": 0.4545, "members": ["xstest:419", "xstest:444"]}
+{"rule": "family_summary", "family_id": "fam_8ef1f95d63d4", "size": 2, "min_pairwise_jaccard": 0.5217, "members": ["xstest:420", "xstest:445"]}
+{"rule": "family_summary", "family_id": "fam_829f82ba15a5", "size": 2, "min_pairwise_jaccard": 0.4727, "members": ["xstest:421", "xstest:446"]}
+{"rule": "family_summary", "family_id": "fam_28039f743a19", "size": 2, "min_pairwise_jaccard": 0.449, "members": ["xstest:422", "xstest:447"]}
+{"rule": "family_summary", "family_id": "fam_4eb497d5b3c4", "size": 2, "min_pairwise_jaccard": 0.4576, "members": ["xstest:423", "xstest:448"]}
+{"rule": "family_summary", "family_id": "fam_34cd3a3165d6", "size": 2, "min_pairwise_jaccard": 0.3433, "members": ["xstest:424", "xstest:449"]}
+{"rule": "family_summary", "family_id": "fam_7f637a00a061", "size": 2, "min_pairwise_jaccard": 0.4286, "members": ["xstest:425", "xstest:450"]}
+{"rule": "family_summary", "family_id": "fam_cf5314cd17f4", "size": 2, "min_pairwise_jaccard": 0.7091, "members": ["xstest:51", "xstest:76"]}
+{"rule": "family_summary", "family_id": "fam_9b9ad60b649e", "size": 2, "min_pairwise_jaccard": 0.4364, "members": ["xstest:52", "xstest:77"]}
+{"rule": "family_summary", "family_id": "fam_2e1a360ada8c", "size": 2, "min_pairwise_jaccard": 0.1897, "members": ["xstest:53", "xstest:78"]}
+{"rule": "family_summary", "family_id": "fam_52cbe6b6c6ed", "size": 2, "min_pairwise_jaccard": 0.2791, "members": ["xstest:54", "xstest:79"]}
+{"rule": "family_summary", "family_id": "fam_3a48bac64f82", "size": 2, "min_pairwise_jaccard": 0.0139, "members": ["xstest:55", "xstest:80"]}
+{"rule": "family_summary", "family_id": "fam_73cf44def5c1", "size": 2, "min_pairwise_jaccard": 0.3265, "members": ["xstest:56", "xstest:81"]}
+{"rule": "family_summary", "family_id": "fam_6f3bc33bfc7e", "size": 2, "min_pairwise_jaccard": 0.283, "members": ["xstest:57", "xstest:82"]}
+{"rule": "family_summary", "family_id": "fam_c1647900abe6", "size": 2, "min_pairwise_jaccard": 0.4808, "members": ["xstest:58", "xstest:83"]}
+{"rule": "family_summary", "family_id": "fam_7df898dd9fc2", "size": 2, "min_pairwise_jaccard": 0.6286, "members": ["xstest:59", "xstest:84"]}
+{"rule": "family_summary", "family_id": "fam_311e0fdc693b", "size": 2, "min_pairwise_jaccard": 0.3881, "members": ["xstest:60", "xstest:85"]}
+{"rule": "family_summary", "family_id": "fam_bb4ec33e963a", "size": 2, "min_pairwise_jaccard": 0.2414, "members": ["xstest:61", "xstest:86"]}
+{"rule": "family_summary", "family_id": "fam_76b6ae2b30fb", "size": 2, "min_pairwise_jaccard": 0.3649, "members": ["xstest:62", "xstest:87"]}
+{"rule": "family_summary", "family_id": "fam_f76953ccb565", "size": 2, "min_pairwise_jaccard": 0.541, "members": ["xstest:63", "xstest:88"]}
+{"rule": "family_summary", "family_id": "fam_459a37cd013b", "size": 2, "min_pairwise_jaccard": 0.25, "members": ["xstest:64", "xstest:89"]}
+{"rule": "family_summary", "family_id": "fam_a33e7001c43a", "size": 2, "min_pairwise_jaccard": 0.2128, "members": ["xstest:65", "xstest:90"]}
+{"rule": "family_summary", "family_id": "fam_2d6271180cd0", "size": 2, "min_pairwise_jaccard": 0.1739, "members": ["xstest:66", "xstest:91"]}
+{"rule": "family_summary", "family_id": "fam_e802fd655e82", "size": 2, "min_pairwise_jaccard": 0.0, "members": ["xstest:67", "xstest:92"]}
+{"rule": "family_summary", "family_id": "fam_89ef693a416e", "size": 2, "min_pairwise_jaccard": 0.5143, "members": ["xstest:68", "xstest:93"]}
+{"rule": "family_summary", "family_id": "fam_9c0479699478", "size": 2, "min_pairwise_jaccard": 0.1489, "members": ["xstest:69", "xstest:94"]}
+{"rule": "family_summary", "family_id": "fam_89a1f05af64e", "size": 2, "min_pairwise_jaccard": 0.3846, "members": ["xstest:70", "xstest:95"]}
+{"rule": "family_summary", "family_id": "fam_e293547a6437", "size": 2, "min_pairwise_jaccard": 0.3478, "members": ["xstest:71", "xstest:96"]}
+{"rule": "family_summary", "family_id": "fam_074b84183663", "size": 2, "min_pairwise_jaccard": 0.2203, "members": ["xstest:72", "xstest:97"]}
+{"rule": "family_summary", "family_id": "fam_08ffa1b1c2d7", "size": 2, "min_pairwise_jaccard": 0.4412, "members": ["xstest:73", "xstest:98"]}
+{"rule": "family_summary", "family_id": "fam_413082c7211d", "size": 2, "min_pairwise_jaccard": 0.1897, "members": ["xstest:74", "xstest:99"]}
