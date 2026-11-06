@@ -1,6 +1,6 @@
 # Kaggle GPU run: instructions for an agent
 
-Use this when an agent (with a browser and/or a shell on Vedant's machine) runs the GPU parity and baseline notebook for Vedant. Free tier only, on Vedant's existing Kaggle account. No new accounts, no paid upgrades. Source of truth for what the notebook does: `docs/GPU_RUNBOOK.md` and `notebooks/gpu_parity_and_baseline.ipynb` on `main` (final notebook commit 909b84f or later).
+Use this when an agent (with a browser and/or a shell on Vedant's machine) runs the GPU parity and fixture-generation notebook for Vedant. Free tier only, on Vedant's existing Kaggle account. No new accounts, no paid upgrades. Source of truth: `docs/GPU_RUNBOOK.md`, prereg D4 in `docs/research/PREREG_baseline.md`, and `notebooks/gpu_parity_and_baseline.ipynb` on `main`. Verify the notebook's prereg source hash before launch. This is not the Nov 8 scored dev baseline. Leave `CURATED_PROMPTS_PATH` unset.
 
 ## Before you start
 
@@ -24,8 +24,8 @@ Use this when an agent (with a browser and/or a shell on Vedant's machine) runs 
 
 Verify flags with `kaggle kernels --help` against the installed version; docs at https://github.com/Kaggle/kaggle-api.
 
-1. `pip install --upgrade kaggle`
-2. API credentials: Vedant creates a token at https://www.kaggle.com/settings (API section). Save it to `~/.kaggle/kaggle.json` and run `chmod 600 ~/.kaggle/kaggle.json`, or export `KAGGLE_USERNAME` and `KAGGLE_KEY` in the shell. Never commit it.
+1. Install Kaggle in an external environment. On this Windows machine, CLI 2.2.5 is installed at `../hinglish-shield-scratch/.venv-ops/Scripts/kaggle.exe`. Its first import needed `six` installed separately. `kaggle --version` and `kaggle kernels --help` work.
+2. Test existing authentication with `kaggle kernels list --mine`. Do not inspect credential files or print tokens. This machine authenticated successfully on Nov 6. If authentication is missing, Vedant performs `kaggle auth login` on his existing account, or supplies a credential through the tool's secure secret input.
 3. Make a push folder outside the repo, for example `/tmp/hs-kaggle/`, and copy the notebook in.
 4. `kaggle kernels init -p /tmp/hs-kaggle` and edit `kernel-metadata.json`:
    ```json
@@ -44,8 +44,8 @@ Verify flags with `kaggle kernels --help` against the installed version; docs at
    }
    ```
    Keep `is_private: true` (publishing anything public needs Vedant's OK).
-5. `kaggle kernels push -p /tmp/hs-kaggle`
-6. Secrets cannot be set from the CLI. After the first push, open the notebook on kaggle.com once, attach the `HF_TOKEN` secret (Path A step 4), and set the accelerator to GPU T4 x2 if it did not pick it up, then save a version. Later CLI pushes to the same id reuse the notebook; confirm the secret is still attached if the run fails with a 401 or 403.
+5. First save without execution: `kaggle kernels push -p /tmp/hs-kaggle --no-run`. CLI 2.2.5 supports this flag. Keep the notebook private.
+6. Secrets cannot be set from the CLI. Open the notebook on kaggle.com, attach `HF_TOKEN` (Path A step 4), verify existing-account phone verification and free GPU availability, and select GPU T4 x2. Then use Save & Run All. For a later CLI run after these checks, `kaggle kernels push -p /tmp/hs-kaggle --accelerator NvidiaTeslaT4` requests GPU T4 x2. Confirm the secret remains attached. Do not launch merely to discover a missing secret.
 7. Poll: `kaggle kernels status <kaggle-username>/hinglish-shield-gpu-parity` (wait for complete or error; do not poll faster than every few minutes).
 8. Fetch outputs: `kaggle kernels output <kaggle-username>/hinglish-shield-gpu-parity -p /tmp/hs-kaggle/out`
 
@@ -63,12 +63,12 @@ unzip /path/to/hs_gpu_artifacts_<run_id>.zip -d runs/gpu-<run_id>/
 - Read the results honestly and write them in `LOG.md`:
   - Parity: short and long KL must each be < 1e-4 to pass. If the 4196-token long case did not run, the result is `incomplete`, not a pass. Record fp32 vs bf16 fallback.
   - fp16 guard: any NaN or inf aborts. Record max diff and agreement rate; if it fails, scored T4 runs use fp32 (deviation D2).
-  - Baseline cells on fixtures are `artifact_kind: fixture`, never ASR results.
+  - Guard outputs are `artifact_kind: setup-smoke`; generation outputs are `artifact_kind: fixture`, all `split: example`. Never report them as ASR or dev results. The bf16 gate is a separate, possibly provisional variant; use D4's floor/provisional rules, not the original fp32 threshold.
 - Open a PR titled `Runs: Kaggle GPU parity <run_id>` and merge on green CI (standing permission). Update the Notion Task Board item for the Nov 9 Locate gate.
 
 ## If something fails
 
-- Out of memory: the notebook falls back to bf16 for parity automatically; record it. If it still dies, restart the session and run again; do not cut the long case silently.
+- Out of memory: genuine allocation failures enable the CPU bf16 variant on a T4. Auth and logic errors do not. A kernel killed by the host may leave only partial artifacts; report incomplete. Conversion still holds two fp32 models, about 25 GiB plus overhead. Do not cut the long case silently.
 - NaN or inf guard abort: do not retry in fp16; use fp32 and log deviation D2.
 - 401 or 403 from Hugging Face: the secret is missing, unattached, or the HF account lost model access. Check Add-ons > Secrets; ask Vedant if access is the problem.
 - GPU quota exhausted or no GPU offered: stop and tell Vedant the reset time Kaggle shows. Do not move to a paid provider or create accounts.

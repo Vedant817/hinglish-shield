@@ -1,0 +1,604 @@
+"""Model-free checks for the GPU notebook lifecycle and gates.
+
+Extracts pure functions from the notebook with the AST. No torch, no model weights.
+"""
+from __future__ import annotations
+
+import ast
+import gc
+import hashlib
+import json
+import unittest
+import weakref
+from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+NB_PATH = ROOT / "notebooks" / "gpu_parity_and_baseline.ipynb"
+PREREG_PATH = ROOT / "docs" / "research" / "PREREG_baseline.md"
+RUNBOOK_PATH = ROOT / "docs" / "GPU_RUNBOOK.md"
+
+FUNC_NAMES = {
+    "sha256_lf_file",
+    "release_named",
+    "clone_cached_logprobs",
+    "_trace_event",
+    "_finite_number",
+    "_all_finite_numbers",
+    "is_memory_failure",
+    "is_t4_accelerator",
+    "bf16_cpu_device_or_refuse",
+    "select_fp16_guard_reference",
+    "orchestrate_short_fp32",
+    "orchestrate_long_fp32",
+    "cache_hf_logprobs",
+    "decide_sequential_fp32_parity",
+    "decide_bf16_variant",
+    "decide_bf16_long",
+    "combine_bf16_gate",
+    "decide_fp16_guard",
+    "_decoder_layers",
+    "residual_hooks_attached",
+    "attach_residual_hooks",
+    "refuse_curated_prompts",
+    "guard_output_meta",
+    "fixture_output_meta",
+}
+
+
+def _cell_source(cell: dict) -> str:
+    src = cell.get("source", "")
+    if isinstance(src, list):
+        return "".join(src)
+    return src
+
+
+def notebook() -> dict:
+    return json.loads(NB_PATH.read_text(encoding="utf-8"))
+
+
+def code_cells() -> list[str]:
+    return [_cell_source(c) for c in notebook()["cells"] if c.get("cell_type") == "code"]
+
+
+def cell_with(snippet: str) -> str:
+    matches = [src for src in code_cells() if snippet in src]
+    if len(matches) != 1:
+        raise AssertionError(f"{snippet!r} found in {len(matches)} code cells")
+    return matches[0]
+
+
+def _is_literal(node: ast.AST) -> bool:
+    if isinstance(node, ast.Constant):
+        return True
+    if isinstance(node, ast.UnaryOp) and isinstance(node.op, (ast.UAdd, ast.USub)):
+        return _is_literal(node.operand)
+    if isinstance(node, (ast.List, ast.Tuple, ast.Set)):
+        return all(_is_literal(elt) for elt in node.elts)
+    if isinstance(node, ast.Dict):
+        return all(
+            key is not None and _is_literal(key) and _is_literal(val)
+            for key, val in zip(node.keys, node.values)
+        )
+    return False
+
+
+def load_namespace() -> dict:
+    chunks: list[str] = []
+    functions: list[str] = []
+    for src in code_cells():
+        tree = ast.parse(src)
+        for node in tree.body:
+            if isinstance(node, ast.Assign) and _is_literal(node.value):
+                seg = ast.get_source_segment(src, node)
+                if seg:
+                    chunks.append(seg)
+            elif isinstance(node, ast.FunctionDef) and node.name in FUNC_NAMES:
+                seg = ast.get_source_segment(src, node)
+                if not seg:
+                    raise AssertionError(f"missing source for {node.name}")
+                functions.append(seg)
+    found = {ast.parse(fn).body[0].name for fn in functions}  # type: ignore[attr-defined]
+    missing = FUNC_NAMES - found
+    if missing:
+        raise AssertionError(f"notebook is missing functions: {sorted(missing)}")
+    ns: dict = {"__name__": "gpu_notebook_extract"}
+    exec("\n\n".join(chunks + functions), ns)
+    return ns
+
+
+class _Box:
+    pass
+
+
+class TestGpuNotebook(unittest.TestCase):
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls.ns = load_namespace()
+
+    def test_release_named_removes_every_name_and_weakrefs_expire(self) -> None:
+        release_named = self.ns["release_named"]
+        space: dict = {}
+        left = _Box()
+        right = _Box()
+        keep = _Box()
+        space["left"] = left
+        space["right"] = right
+        space["keep"] = keep
+        w_left = weakref.ref(left)
+        w_right = weakref.ref(right)
+        w_keep = weakref.ref(keep)
+        del left, right, keep
+        release_named("left", "right", "missing", namespace=space)
+        self.assertNotIn("left", space)
+        self.assertNotIn("right", space)
+        self.assertIn("keep", space)
+        self.assertIsNone(w_left())
+        self.assertIsNone(w_right())
+        self.assertIsNotNone(w_keep())
+
+    def test_clone_cached_logprobs_drops_source_storage(self) -> None:
+        clone_cached_logprobs = self.ns["clone_cached_logprobs"]
+
+        class Tensor:
+            def __init__(self, storage: bytearray) -> None:
+                self.storage = storage
+
+            def detach(self) -> "Tensor":
+                return self
+
+            def clone(self) -> "Tensor":
+                return Tensor(bytearray(self.storage))
+
+            def cpu(self) -> "Tensor":
+                return self
+
+        src = Tensor(bytearray(b"abc"))
+        alive = weakref.ref(src)
+        out = clone_cached_logprobs(src)
+        self.assertIsNot(out.storage, src.storage)
+        self.assertEqual(bytes(out.storage), b"abc")
+        del src
+        gc.collect()
+        self.assertIsNone(alive())
+        self.assertEqual(bytes(out.storage), b"abc")
+
+    def test_short_and_long_forwards_are_not_simultaneous(self) -> None:
+        ns = self.ns
+        space: dict = {}
+        trace: list = []
+        made: list[weakref.ref] = []
+        tl_loads = {"n": 0}
+
+        def _fresh() -> _Box:
+            obj = _Box()
+            made.append(weakref.ref(obj))
+            return obj
+
+        def load_tok() -> _Box:
+            return _fresh()
+
+        def load_hf() -> _Box:
+            return _fresh()
+
+        def load_tl(donor: object) -> _Box:
+            self.assertIsNotNone(donor)
+            tl_loads["n"] += 1
+            return _fresh()
+
+        def read_cfg(_model: object) -> dict:
+            return {"window_size": 4096, "default_prepend_bos": False}
+
+        def forward_hf(_model: object, _tok: object, prompt: str) -> str:
+            self.assertNotIn("tl", space)
+            return f"hf:{prompt}"
+
+        def forward_tl(_model: object, _tok: object, prompt: str) -> str:
+            self.assertNotIn("hf", space)
+            self.assertNotIn("hf_for_tl", space)
+            return f"tl:{prompt}"
+
+        def kl(_hf: object, _tl: object) -> float:
+            return 0.0
+
+        kls, cfg = ns["orchestrate_short_fp32"](
+            ["a", "b"],
+            load_tok,
+            load_hf,
+            load_tl,
+            forward_hf,
+            forward_tl,
+            kl,
+            read_cfg,
+            space,
+            trace=trace,
+        )
+        self.assertEqual(kls, {"a": 0.0, "b": 0.0})
+        self.assertEqual(cfg["window_size"], 4096)
+        self.assertEqual(tl_loads["n"], 1)
+        events = [event for event, _resident in trace]
+        self.assertEqual(events, ["forward_hf_begin", "convert", "forward_tl_begin"])
+        for event, resident in trace:
+            if event == "forward_hf_begin":
+                self.assertIn("hf", resident)
+                self.assertNotIn("tl", resident)
+            if event == "forward_tl_begin":
+                self.assertIn("tl", resident)
+                self.assertNotIn("hf", resident)
+                self.assertNotIn("hf_for_tl", resident)
+            if event == "convert":
+                self.assertIn("tl", resident)
+                self.assertIn("hf_for_tl", resident)
+        gc.collect()
+        self.assertTrue(made)
+        self.assertTrue(all(ref() is None for ref in made))
+        self.assertFalse(space)
+
+        space2: dict = {}
+        trace2: list = []
+        pre = _Box()
+        other = _Box()
+        space2["tl"] = pre
+        space2["PARITY_TL"] = other
+        w_pre = weakref.ref(pre)
+        w_other = weakref.ref(other)
+        del pre, other
+        seen: dict = {}
+
+        def forward_hf_last(_model: object, _ids: object) -> str:
+            seen["tl_in_space"] = "tl" in space2
+            seen["pre"] = w_pre()
+            seen["other"] = w_other()
+            return "hf-lp"
+
+        def forward_tl_last(_model: object, _ids: object) -> str:
+            self.assertNotIn("hf", space2)
+            self.assertNotIn("hf_for_tl", space2)
+            return "tl-lp"
+
+        def build_ids(_tok: object, cfg_in: dict) -> str:
+            self.assertEqual(cfg_in["window_size"], 4096)
+            self.assertNotIn("tl", space2)
+            return "ids"
+
+        tl_loads["n"] = 0
+        kl_long, _cfg = ns["orchestrate_long_fp32"](
+            load_tok,
+            load_hf,
+            load_tl,
+            read_cfg,
+            build_ids,
+            forward_hf_last,
+            forward_tl_last,
+            kl,
+            space2,
+            cfg_snapshot={"window_size": 4096, "default_prepend_bos": True},
+            trace=trace2,
+        )
+        self.assertEqual(kl_long, 0.0)
+        self.assertEqual(tl_loads["n"], 1)
+        self.assertEqual(seen["tl_in_space"], False)
+        self.assertIsNone(seen["pre"])
+        self.assertIsNone(seen["other"])
+        for event, resident in trace2:
+            if event == "forward_hf_begin":
+                self.assertNotIn("tl", resident)
+                self.assertNotIn("PARITY_TL", resident)
+                self.assertIn("hf", resident)
+            if event == "forward_tl_begin":
+                self.assertNotIn("hf", resident)
+                self.assertNotIn("hf_for_tl", resident)
+                self.assertIn("tl", resident)
+
+        space3: dict = {}
+        tl_loads["n"] = 0
+        ns["orchestrate_long_fp32"](
+            load_tok,
+            load_hf,
+            load_tl,
+            read_cfg,
+            build_ids,
+            forward_hf_last,
+            forward_tl_last,
+            kl,
+            space3,
+            cfg_snapshot=None,
+            trace=[],
+        )
+        self.assertEqual(tl_loads["n"], 2)
+
+    def test_long_hf_forward_raises_when_tl_cannot_be_released(self) -> None:
+        original = self.ns["release_named"]
+
+        def noop(*_names, namespace=None):
+            return None
+
+        self.ns["release_named"] = noop
+        try:
+            space = {"tl": _Box()}
+            with self.assertRaises(RuntimeError) as caught:
+                self.ns["orchestrate_long_fp32"](
+                    lambda: _Box(),
+                    lambda: _Box(),
+                    lambda _donor: _Box(),
+                    lambda _model: {"window_size": 4096, "default_prepend_bos": False},
+                    lambda _tok, _cfg: "ids",
+                    lambda _model, _ids: "hf",
+                    lambda _model, _ids: "tl",
+                    lambda _a, _b: 0.0,
+                    space,
+                    cfg_snapshot={"window_size": 4096, "default_prepend_bos": False},
+                )
+            self.assertIn("resident", str(caught.exception).lower())
+            self.assertIn("tl", space)
+        finally:
+            self.ns["release_named"] = original
+
+    def test_missing_long_and_nonfinite_cannot_pass(self) -> None:
+        decide = self.ns["decide_sequential_fp32_parity"]
+        missing = decide({"prompt": 1e-8}, None, long_ran=False)
+        self.assertEqual(missing["status"], "incomplete")
+        self.assertFalse(missing["passed"])
+        nonfinite = decide({"prompt": float("nan")}, {"sliding_window_4196": 1e-8}, long_ran=True)
+        self.assertFalse(nonfinite["passed"])
+        long_bad = decide({"prompt": 1e-8}, {"sliding_window_4196": float("inf")}, long_ran=True)
+        self.assertFalse(long_bad["passed"])
+        both = decide({"prompt": 1e-8}, {"sliding_window_4196": 1e-8}, long_ran=True)
+        self.assertTrue(both["passed"])
+        self.assertEqual(both["status"], "pass")
+
+        short = self.ns["decide_bf16_variant"]({"p": 1e-6}, {"p": 1e-6})
+        self.assertTrue(short["passed_kl"])
+        long_missing = self.ns["decide_bf16_long"](None, None, long_ran=False)
+        combined = self.ns["combine_bf16_gate"](short, 1.0, long_missing)
+        self.assertEqual(combined["status"], "incomplete")
+        self.assertFalse(combined["passed"])
+        self.assertFalse(self.ns["decide_bf16_variant"]({"p": float("nan")}, {"p": 1e-6})["passed_kl"])
+
+        guard = self.ns["decide_fp16_guard"](1e-3, 0.99, 18, 20, False, True, 19)
+        self.assertFalse(guard["passed"])
+        guard_nan = self.ns["decide_fp16_guard"](1e-3, 0.99, 18, 20, True, True, 20)
+        self.assertFalse(guard_nan["passed"])
+        guard_ok = self.ns["decide_fp16_guard"](1e-3, 0.99, 18, 20, False, True, 20)
+        self.assertTrue(guard_ok["passed"])
+
+    def test_bf16_long_does_not_use_fp32_tolerance(self) -> None:
+        decide_long = self.ns["decide_bf16_long"]
+        # 2e-4 is above the fp32 gate (1e-4) and under the predeclared 1e-2 cap.
+        provisional = decide_long({"sliding_window_4196": 2e-4}, None, long_ran=True)
+        self.assertTrue(provisional["passed"])
+        self.assertTrue(provisional["provisional"])
+        self.assertFalse(provisional["used_fp32_tol"])
+        too_wide = decide_long({"sliding_window_4196": 2e-2}, None, long_ran=True)
+        self.assertFalse(too_wide["passed"])
+        self.assertEqual(too_wide["status"], "fail")
+        # Floor rule is 2x the measured floor, still not 1e-4.
+        above_floor = decide_long(
+            {"sliding_window_4196": 3e-4},
+            {"sliding_window_4196": 1e-4},
+            long_ran=True,
+        )
+        self.assertFalse(above_floor["passed"])
+        within_floor = decide_long(
+            {"sliding_window_4196": 2e-4},
+            {"sliding_window_4196": 1e-4},
+            long_ran=True,
+        )
+        self.assertTrue(within_floor["passed"])
+        self.assertFalse(within_floor["provisional"])
+        variant_src = cell_with("bf16_parity_variant")
+        self.assertNotIn("KL_TOL", variant_src)
+        self.assertIn("decide_bf16_long", variant_src)
+
+    def test_absent_or_empty_hooks_fail(self) -> None:
+        attach = self.ns["attach_residual_hooks"]
+        attached = self.ns["residual_hooks_attached"]
+        decide = self.ns["decide_fp16_guard"]
+        handles, _bad = attach(object())
+        self.assertEqual(handles, [])
+        self.assertFalse(attached(handles))
+
+        class Empty:
+            def __init__(self) -> None:
+                self.model = type("M", (), {"layers": []})()
+
+        handles, _bad = attach(Empty())
+        self.assertEqual(handles, [])
+        self.assertFalse(decide(1e-4, 1.0, 20, 20, False, handles, 20)["passed"])
+        self.assertFalse(decide(1e-4, 1.0, 20, 20, False, False, 20)["passed"])
+
+        class Layer:
+            def register_forward_hook(self, fn):
+                return fn
+
+        class Root:
+            def __init__(self) -> None:
+                self.model = type("M", (), {})()
+                self.model.layers = [Layer(), Layer()]
+
+        handles, _bad = attach(Root())
+        self.assertEqual(len(handles), 2)
+        self.assertTrue(attached(handles))
+        self.assertTrue(decide(1e-4, 1.0, 20, 20, False, True, 20)["passed"])
+
+    def test_timer_is_assigned_before_use(self) -> None:
+        src = cell_with("original_parity_sequential_fp32")
+        tree = ast.parse(src)
+        stores: list[int] = []
+        loads: list[int] = []
+
+        class Visitor(ast.NodeVisitor):
+            def visit_Name(self, node: ast.Name) -> None:
+                if node.id == "t_short0":
+                    if isinstance(node.ctx, ast.Store):
+                        stores.append(node.lineno)
+                    elif isinstance(node.ctx, ast.Load):
+                        loads.append(node.lineno)
+                self.generic_visit(node)
+
+        Visitor().visit(tree)
+        self.assertTrue(stores)
+        self.assertTrue(loads)
+        self.assertLess(min(stores), min(loads))
+
+    def test_variant_auto_only_for_memory_failures(self) -> None:
+        is_memory = self.ns["is_memory_failure"]
+        self.assertTrue(is_memory(MemoryError("available RAM 2 GiB")))
+        self.assertFalse(is_memory(RuntimeError("401 Client Error: Unauthorized")))
+        self.assertFalse(is_memory(NameError("t_short0")))
+        self.assertFalse(is_memory(AssertionError("gated repo")))
+        self.assertFalse(is_memory(OSError("401 unauthorized")))
+
+        class OutOfMemoryError(RuntimeError):
+            pass
+
+        self.assertTrue(is_memory(OutOfMemoryError("CUDA out of memory")))
+        self.assertTrue(is_memory(RuntimeError("CUDA out of memory. Tried to allocate 2.00 GiB")))
+
+        for snippet in ("original_parity_sequential_fp32", "original_parity_long_prompt"):
+            tree = ast.parse(cell_with(snippet))
+            depths: list[int] = []
+
+            class Visitor(ast.NodeVisitor):
+                def __init__(self) -> None:
+                    self.if_depth = 0
+
+                def visit_If(self, node: ast.If) -> None:
+                    self.if_depth += 1
+                    self.generic_visit(node)
+                    self.if_depth -= 1
+
+                def visit_Assign(self, node: ast.Assign) -> None:
+                    for target in node.targets:
+                        if (
+                            isinstance(target, ast.Name)
+                            and target.id == "RUN_PARITY_VARIANT"
+                            and isinstance(node.value, ast.Constant)
+                            and node.value.value is True
+                        ):
+                            depths.append(self.if_depth)
+                    self.generic_visit(node)
+
+            visitor = Visitor()
+            visitor.visit(tree)
+            self.assertTrue(depths, snippet)
+            self.assertTrue(all(depth >= 1 for depth in depths), snippet)
+
+    def test_cpu_bf16_only_on_t4(self) -> None:
+        allow = self.ns["bf16_cpu_device_or_refuse"]
+        select = self.ns["select_fp16_guard_reference"]
+        self.assertEqual(allow("Tesla T4"), "cpu")
+        self.assertEqual(allow("NVIDIA T4"), "cpu")
+        with self.assertRaises(RuntimeError):
+            allow("NVIDIA A100-SXM4-40GB")
+        with self.assertRaises(RuntimeError):
+            allow(None)
+        self.assertEqual(select(20.0, "Tesla T4")["reference"], "fp32_cpu")
+        low_t4 = select(10.0, "Tesla T4")
+        self.assertEqual(low_t4["reference"], "bf16_cpu")
+        self.assertTrue(low_t4["ok"])
+        off = select(10.0, "NVIDIA A10")
+        self.assertFalse(off["ok"])
+        self.assertEqual(off["reason"], "bf16_cpu_only_on_t4")
+
+    def test_curated_jsonl_refused_and_fixture_meta(self) -> None:
+        refuse = self.ns["refuse_curated_prompts"]
+        self.assertIsNone(refuse(""))
+        self.assertIsNone(refuse(None))
+        with self.assertRaises(RuntimeError):
+            refuse("data/curated/hs_harm_en/dev/hs_eval.jsonl")
+        meta = self.ns["fixture_output_meta"]()
+        self.assertEqual(meta["artifact_kind"], "fixture")
+        self.assertEqual(meta["split"], "example")
+        self.assertEqual(meta["max_new_tokens"], 64)
+        guard_meta = self.ns["guard_output_meta"]()
+        self.assertEqual(guard_meta["artifact_kind"], "setup-smoke")
+        self.assertEqual(guard_meta["split"], "example")
+        baseline = cell_with("FIXTURE_PROMPTS")
+        self.assertNotIn('"split": "dev"', baseline)
+        self.assertNotIn("'split': 'dev'", baseline)
+
+    def test_circuitkit_import_precedes_transformerlens_in_every_loader(self) -> None:
+        expected = {"_load_tl_fp32", "_load_tl_fp32_long", "_load_tl_bf16"}
+        checked = set()
+        for src in code_cells():
+            for node in ast.walk(ast.parse(src)):
+                if not isinstance(node, ast.FunctionDef) or node.name not in expected:
+                    continue
+                ck = [n.lineno for n in ast.walk(node) if isinstance(n, ast.Import)
+                      and any(a.name == "circuitkit.backends._tl_compat" for a in n.names)]
+                tl = [n.lineno for n in ast.walk(node) if isinstance(n, ast.ImportFrom)
+                      and n.module == "transformer_lens"]
+                self.assertTrue(ck and tl, node.name)
+                self.assertLess(min(ck), min(tl), node.name)
+                checked.add(node.name)
+        self.assertEqual(checked, expected)
+        install = ast.parse(cell_with("def pip_install"))
+        self.assertTrue(any(isinstance(n, ast.Import) and
+                            any(a.name == "circuitkit.backends._tl_compat" for a in n.names)
+                            for n in install.body))
+
+    def test_notebook_outputs_empty_and_provenance(self) -> None:
+        nb = notebook()
+        for cell in nb["cells"]:
+            if cell.get("cell_type") != "code":
+                continue
+            self.assertEqual(list(cell.get("outputs") or []), [])
+            self.assertIsNone(cell.get("execution_count"))
+        owned = "\n".join(
+            [
+                NB_PATH.read_text(encoding="utf-8"),
+                PREREG_PATH.read_text(encoding="utf-8"),
+                RUNBOOK_PATH.read_text(encoding="utf-8"),
+            ]
+        )
+        self.assertNotIn("99a3829", owned)
+        self.assertNotIn("\u2014", owned)
+        prereg = PREREG_PATH.read_text(encoding="utf-8")
+        self.assertIn("D4 (2026-11-07", prereg)
+        self.assertIn("25 GiB", prereg)
+        self.assertIn("VARIANT_LONG_PROVISIONAL_KL_MAX", prereg)
+        file_sha = self.ns["sha256_lf_file"](PREREG_PATH)
+        pinned = None
+        for src in code_cells():
+            tree = ast.parse(src)
+            for node in tree.body:
+                if not isinstance(node, ast.Assign):
+                    continue
+                for target in node.targets:
+                    if isinstance(target, ast.Name) and target.id == "PREREG_SOURCE_SHA256":
+                        pinned = ast.literal_eval(node.value)
+        self.assertEqual(pinned, file_sha)
+        self.assertEqual(len(file_sha), 64)
+
+        # Copied upstream hashes stay the recorded CircuitKIT copy.
+        config = cell_with("PARITY_KL_SOURCE =")
+        tree = ast.parse(config)
+        values = {}
+        for node in tree.body:
+            if isinstance(node, ast.Assign):
+                for target in node.targets:
+                    if isinstance(target, ast.Name) and target.id in {
+                        "PARITY_PROMPTS",
+                        "PARITY_KL_SOURCE",
+                        "PARITY_LONG_SPEC",
+                    }:
+                        values[target.id] = ast.literal_eval(node.value)
+        self.assertEqual(
+            hashlib.sha256(json.dumps(values["PARITY_PROMPTS"], ensure_ascii=False).encode("utf-8")).hexdigest(),
+            "3ab3ad15fba852e34e08b8c485e2e3c41adc8702aa80a0bbf62215d5001fabab",
+        )
+        norm = "\n".join(line.rstrip() for line in values["PARITY_KL_SOURCE"].strip().splitlines()) + "\n"
+        self.assertEqual(
+            hashlib.sha256(norm.encode("utf-8")).hexdigest(),
+            "7bef5687a6fd0194baa50c0156c8d9a6c1e827abc87f154feb7eca527079a812",
+        )
+        self.assertEqual(
+            hashlib.sha256(
+                json.dumps(values["PARITY_LONG_SPEC"], ensure_ascii=False, sort_keys=True).encode("utf-8")
+            ).hexdigest(),
+            "03975892c0e2d9d70159ebbad34c883557c90eb800e4d786a115362cd60de9d1",
+        )
+
+
+if __name__ == "__main__":
+    raise SystemExit(unittest.main())
