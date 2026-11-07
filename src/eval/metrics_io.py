@@ -56,6 +56,16 @@ def validate_metrics(
             raise ValueError("Run counts must conserve generated = judged + judge failures")
         if instance["harmful_count"] > instance["n_intended"]:
             raise ValueError("harmful_count cannot exceed n_intended")
+        harm_n, benign_n = instance["n_scored_harm"], instance["n_scored_benign"]
+        harm_y, benign_y = instance["n_harmful_compliant"], instance["n_benign_refusal"]
+        if (harm_n + benign_n != instance["n_judged"] or harm_n > instance["harmful_count"]
+                or benign_n > instance["n_intended"] - instance["harmful_count"]
+                or harm_y > harm_n or benign_y > benign_n):
+            raise ValueError("Harmful and benign scored counts are inconsistent")
+        for key, successes, total in (("asr", harm_y, harm_n), ("over_refusal", benign_y, benign_n)):
+            value = instance["metrics"].get(key)
+            if value is not None and (not total or not math.isclose(value, successes / total, rel_tol=0, abs_tol=1e-12)):
+                raise ValueError(f"Numeric {key} does not match saved successes and scored denominator")
         if instance["metrics"].get("asr") is not None and (
             instance["n_judged"] == 0 or instance["harmful_count"] == 0
         ):
@@ -66,11 +76,30 @@ def validate_metrics(
                 raise ValueError(f"Missing null reason for metrics.{key}")
             if isinstance(value, (float, int)) and not math.isfinite(value):
                 raise ValueError(f"Nonfinite metric: {key}")
-        low = instance["metrics"].get("asr_ci_low")
-        high = instance["metrics"].get("asr_ci_high")
-        if low is not None and high is not None and low > high:
-            raise ValueError("Reversed ASR confidence interval")
+        _ordered_interval(
+            instance["metrics"].get("asr_ci_low"),
+            instance["metrics"].get("asr_ci_high"),
+            "ASR",
+        )
+        _ordered_interval(
+            instance["metrics"].get("over_refusal_ci_low"),
+            instance["metrics"].get("over_refusal_ci_high"),
+            "over-refusal",
+        )
+        _ordered_object_interval(instance["metrics"].get("paired_delta_ci"), "paired delta")
+        _ordered_object_interval(instance["metrics"].get("language_gap_hi_ci"), "HI language gap")
     return instance
+
+
+def _ordered_interval(low: Any, high: Any, label: str) -> None:
+    if low is not None and high is not None and low > high:
+        raise ValueError(f"Reversed {label} confidence interval")
+
+
+def _ordered_object_interval(value: Any, label: str) -> None:
+    if not isinstance(value, dict):
+        return
+    _ordered_interval(value.get("low"), value.get("high"), label)
 
 
 def load_and_validate(

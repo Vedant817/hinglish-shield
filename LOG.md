@@ -102,3 +102,29 @@ Format per iteration: what, result, next. Times in IST. No em dashes.
 - review repairs: Grok's synthetic review caught untracked-source provenance and ignored decoding options. Real runs now require a committed matching runner and clean git worktree; ledgers record the LF source hash and dirty/matching flags. Unknown decoding keys are rejected. Earlier integration repairs cover source laundering, exact integer settings, base-only method and cleanup on failure/cancellation.
 - validation: Light CI-equivalent environment: 35 dev-ledger tests passed; combined suite 147 passed, 1 skipped; smoke passed. Models and judges are fake transports in these tests. No torch, model weights or GPU was used.
 - limits: Existing canonical EN/HI members only; Hinglish and Hindi benign variants need verified reviewed lineage before admission. Human calibration, numerical guard approval, real adapter runtime, category adjudication, preservation metrics and scored baseline remain incomplete. The locked test runner and frozen membership are unchanged.
+# 2026-11-07 IST: dev aggregation admission review repairs
+
+The first independent PR17 review rejected the admission and release gates.
+Repaired language-scoped family pairing without dropping both-arm failures,
+calibration pair/count conservation and partial kappa validation, missing benign
+language coverage, cross-arm identity recording, and explicit harmful/benign
+rate denominators. Published run rows now require a hash-bound aggregation
+sidecar. Runtime admission consumes hashed WildGuard fixture producer artifacts
+and the native notebook dtype-guard format, with revision and per-prompt checks.
+Pack acceptance additionally requires matched harmful and benign multilingual
+families; capability scores cannot cover only a favorable family subset.
+
+Validation: the permitted model-free eval, notebook and curation suites passed
+locally, and smoke passed. The producer interoperability test uses fake inference.
+No weights were loaded, no human labels were supplied and no measured run was
+promoted. Independent re-review is pending. Reviewed-variant aggregation
+integration and actual prerequisite runtime evidence remain outstanding.
+# 2026-11-07 IST: bounded aggregation re-review and follow-up
+
+The independent PR17 re-review accepted the repairs for the original admission
+findings and identified a single-arm capability mismatch. Capability aggregation
+now uses benign families, matching its documented contract and the release gate.
+The WildGuard fixture producer refuses a missing Git identity before importing
+torch, and calibration documentation distinguishes paired ledger counts from
+the supplied sheet's declared expected size. Focused synthetic regressions and
+smoke passed. No model/runtime safety score or human calibration was produced.
