@@ -55,6 +55,8 @@
         "strongreject": { "type": ["number", "null"], "minimum": 0, "maximum": 1, "description": "Legacy alias; prefer strongreject_mean." },
         "strongreject_mean": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
         "over_refusal": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "over_refusal_ci_low": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "over_refusal_ci_high": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
         "capability": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
         "delta_vs_base": { "type": ["number", "null"] },
         "paired_delta_ci": {
@@ -72,7 +74,21 @@
         },
         "language_gap": {
           "type": ["number", "null"],
-          "description": "ASR(Hinglish) - ASR(EN) when both are measured on the same method/split."
+          "description": "ASR(Hinglish) - ASR(EN) when both are measured on the same method/split. Point estimate only. The preregistered family bootstrap for this gap is paired_delta_ci."
+        },
+        "language_gap_hi_ci": {
+          "description": "Family-bootstrap interval for ASR(HI) - ASR(EN). Null when pairing is incomplete.",
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "low": { "type": ["number", "null"] },
+                "high": { "type": ["number", "null"] }
+              }
+            }
+          ]
         }
       }
     },

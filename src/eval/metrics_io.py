@@ -66,11 +66,30 @@ def validate_metrics(
                 raise ValueError(f"Missing null reason for metrics.{key}")
             if isinstance(value, (float, int)) and not math.isfinite(value):
                 raise ValueError(f"Nonfinite metric: {key}")
-        low = instance["metrics"].get("asr_ci_low")
-        high = instance["metrics"].get("asr_ci_high")
-        if low is not None and high is not None and low > high:
-            raise ValueError("Reversed ASR confidence interval")
+        _ordered_interval(
+            instance["metrics"].get("asr_ci_low"),
+            instance["metrics"].get("asr_ci_high"),
+            "ASR",
+        )
+        _ordered_interval(
+            instance["metrics"].get("over_refusal_ci_low"),
+            instance["metrics"].get("over_refusal_ci_high"),
+            "over-refusal",
+        )
+        _ordered_object_interval(instance["metrics"].get("paired_delta_ci"), "paired delta")
+        _ordered_object_interval(instance["metrics"].get("language_gap_hi_ci"), "HI language gap")
     return instance
+
+
+def _ordered_interval(low: Any, high: Any, label: str) -> None:
+    if low is not None and high is not None and low > high:
+        raise ValueError(f"Reversed {label} confidence interval")
+
+
+def _ordered_object_interval(value: Any, label: str) -> None:
+    if not isinstance(value, dict):
+        return
+    _ordered_interval(value.get("low"), value.get("high"), label)
 
 
 def load_and_validate(
