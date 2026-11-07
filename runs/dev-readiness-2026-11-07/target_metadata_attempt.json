@@ -1,0 +1,9 @@
+{
+  "artifact_kind": "setup-smoke",
+  "model_id": "CohereLabs/tiny-aya-global",
+  "model_revision": "af89d219b53ed9b13b8a4645f9c8028973510324",
+  "url": "https://huggingface.co/CohereLabs/tiny-aya-global/resolve/af89d219b53ed9b13b8a4645f9c8028973510324/tokenizer_config.json",
+  "weights_downloaded": false,
+  "status": "unavailable",
+  "http_status": 401
+}

@@ -1,0 +1,46 @@
+{
+  "artifact_kind": "setup-smoke",
+  "split": "example",
+  "status": "unavailable",
+  "metrics_eligible": false,
+  "primary_asr": null,
+  "source_commit": "654235f39dc6257c5d3cdf60c62b0849e9337195",
+  "coverage_command": "python scripts/export_reviewed_variants.py --review-sheet data/staging/review/vedant_review_nov7_calibration_dev.csv --acceptance-policy explicit-human-accept-v1 --out <new-output>",
+  "coverage_exit_code": 2,
+  "review_sheet_sha256": "305d5315ce9544e5fb9d671a816603232f2ab6c087a1d1b8a9cbf4a64a595fe0",
+  "row_count": 26,
+  "verdict_counts": {
+    "accept": 0,
+    "reject": 0,
+    "revise": 0,
+    "unreviewed": 26
+  },
+  "eligible_variant_count": 0,
+  "eligible_behavior_count": 0,
+  "matched_adr_families": 0,
+  "scored_generation_started": false,
+  "missing": [
+    "explicit human translation accepts",
+    "reviewed dev prompt/index/family bundle and lineage hashes",
+    "target chat-template metadata pin",
+    "committed effective dev run config and source identity",
+    "primary/secondary human response calibration",
+    "secondary real fixture load/parsing evidence",
+    "human-frozen capability item keys"
+  ],
+  "partial_run_policy": "No accepted-row scored run is currently possible: zero accepted variants. Any later partial run requires prereg-compatible selection/coverage and must not claim multilingual pack acceptance.",
+  "frozen_test_status": "blocked by unresolved holdout disposition and Nov11 IST embargo; no test prompts read",
+  "files_sha256": {
+    "report.json": "3b5e8eac53ec897a138c7c29f597522199d3068d4520efb019048a14b0f78e46",
+    "coverage.json": "f30486f0438cd6d47fbff978dbc88acb3a78dcaaf6271f4bd5a33b920e7201c9",
+    "target_metadata_attempt.json": "c8958c0faf59f10f198d2ea3052549f51fbc5ac62af79739024cdd2423506c8e",
+    "runtime_binding.json": "35817e897c61d62804cb3645ad736bbf212b2742f7ae3c520869881dd4e96197",
+    "runtime_binding_check.json": "8b463675badbaa56da5c670414b4a63cbf5125b5adac670fe7fbc1b5f114c145",
+    "model_free_tests.log": "28eff60832ca1cf8ae99bd1f234f94769b5977ee07ef66d18862b910e1e60393"
+  },
+  "metadata_attempt_status": "Target tokenizer metadata fetch returned HTTP 401; template hash remains null. No credential value accessed from files or printed.",
+  "secondary_protocol": "configs/eval/prospective_secondary.json",
+  "capability_protocol": "configs/eval/prospective_capability.json",
+  "model_free_test_summary": "273 passed, 7 subtests passed; smoke passed; no weights in this verification",
+  "secondary_fixture_attempt": "planned next from a committed clean checkout in existing external CPU environment"
+}

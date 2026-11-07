@@ -6,10 +6,12 @@ No em dashes in this file.
 
 ## Current development boundaries (Nov 7)
 
+Execution is sequential: start the next permitted step when its prerequisites pass. Planned dates below are historical targets, not waiting gates. The locked test remains embargoed until Nov 11 IST and until all scientific gates pass.
+
 - Development review uses only `data/staging/review/vedant_review_nov7_calibration_dev.csv`: 26 calibration/dev rows. The historical mixed queue contains 59 rows, including 33 test rows. Do not open or print its prompt content. The requested family-split checker is an identity/count audit, not development review or scoring.
 - HinGE human quality labels and IndicGuard source labels do not approve our finance translations and do not label our generated responses. Translation admission still requires explicit human accepts with lineage; judge calibration requires human labels of the actual generated responses. Missing labels stay unavailable.
 - `fam_983e49e2566f` in `data/splits/development_exposures.json` is an unresolved frozen-holdout contamination incident. Preserve the original manifest byte-for-byte. The locked-test guard must remain enabled pending a separately reviewed prospective resolution. No test generation, scoring or tuning before the single Nov 11 frozen-arm pass, and no pass until that resolution and all prerequisites are satisfied. See `docs/INTEGRITY_LOG.md`.
-- Nov 8 preliminary H1 work is dev-only. Pin the reviewed data, model revision, chat template, judge, dtype and effective generation settings before the run.
+- Preliminary H1 work is dev-only and starts immediately once eligible, including before the old Nov 8 target. Pin the reviewed data, model revision, chat template, judge, dtype and effective generation settings before the run.
 - PR21's v8 evidence is a provisional D4 CPU bf16 variant result. Its short mean KL exceeds the original `1e-4` threshold. Original fp32 short-plus-4196 credit is incomplete; weight-backed Locate/Repair acceptance stays blocked. Do not change tolerances after seeing v8. D5/D6 are logged operational deviations; preserve raw artifacts and hashes.
 - PR22 establishes English WildGuard load/parsing only. Both fixture responses are safe. It does not establish judge accuracy, an unsafe-response positive control, or Hindi/Hinglish calibration. Fixture outputs are not ASR.
 - Next executable work is the reviewed multilingual lineage and response-calibration pack, followed by a pinned dev baseline, then gated Locate/Repair. Passing CI or Kilo alone does not authorize acceptance or merge.
@@ -68,7 +70,7 @@ These are pipeline integrity checks, not ASR or language-gap results.
 1. **Review existing runtime evidence:** PR21 preserves v8 parity/guard artifacts; PR22 preserves the English WildGuard fixture. Do not rerun solely because this historical handoff once requested a launch. Follow the current development boundaries above; fixtures are not scored metrics.
 2. **Vedant: Hindi and Hinglish review** (Task Board Human P0, Nov 7): https://app.notion.com/40f047502f588116ab55c2304137b52d and review sheet `data/staging/review/vedant_review_nov7_calibration_dev.csv`. Related value task: https://app.notion.com/40f047502f58817eb784dfecd51cab2c
 3. **Data freeze** before any test scoring: finish HI/Hinglish variants on calibration/dev; keep test frozen; re-run family cross-split check.
-4. **Nov 8:** preliminary H1 on **dev** only (`configs/eval/baseline.yaml`), after pinned identity, reviewed data and judge-calibration gates. PR22 establishes English WildGuard fixture load/parsing only.
+4. **Next eligible step:** preliminary H1 on **dev** only (`configs/eval/baseline.yaml`), after pinned identity, reviewed data and judge-calibration gates. PR22 establishes English WildGuard fixture load/parsing only.
 5. **Nov 9 Locate gate:** original sequential fp32 short+long KL credit remains incomplete. A logged incomplete or provisional bf16 variant is not original credit and does not unlock the weight-backed repair path.
 6. **Nov 11:** planned single locked test pass (`configs/eval/test_locked.yaml`), blocked until the holdout incident has a separately reviewed prospective resolution and the Repair arm is frozen. Never retune on test.
 7. Writer P0s: HF article and pitch (no invented numbers): https://app.notion.com/40f047502f58812cb515f2dc909208e8
@@ -177,7 +179,7 @@ Next work in priority order:
 1. Review the preserved PR21 v8 and PR22 WildGuard fixture evidence using docs/KAGGLE_AGENT.md. Original fp32 short+long parity is incomplete; the D4 bf16 result is provisional. Do not treat fixtures as ASR or unlock weight-backed Locate/Repair.
 2. Support Vedant's Nov 7 Hindi/Hinglish review of data/staging/review/vedant_review_nov7_calibration_dev.csv; apply labeled fixes without inventing translations.
 3. Complete calibration/dev language coverage; keep test frozen; re-run scripts/check_translation_family_splits.py.
-4. WildGuard English fixture runtime is evidenced in PR22; accuracy and multilingual human calibration remain unverified. Nov 8 preliminary baseline is dev-only and requires all admission gates before writing real metrics.json.
+4. WildGuard English fixture runtime is evidenced in PR22; accuracy and multilingual human calibration remain unverified. Preliminary baseline is dev-only, starts immediately when eligible, and requires all admission gates before writing real metrics.json.
 5. Only after the original parity credit and remaining runtime pins pass, Locate refusal directions on calibration/dev only. A provisional bf16 result is insufficient for the weight-backed path.
 6. Repair steering sweep on calibration/dev; freeze arm. Nov 11 locked test stays blocked pending a separately reviewed prospective holdout resolution. Preserve the original manifest and exposure guard.
 7. Keep Writer article numbers tied only to run artifacts.

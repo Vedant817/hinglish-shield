@@ -1,0 +1,13 @@
+{
+  "artifact_kind": "setup-smoke",
+  "scope": "Native runtime binding contract only, no generated ledger or metrics",
+  "status": "pass",
+  "reasons": [],
+  "provenance_subset": {
+    "model_id": "CohereLabs/tiny-aya-global",
+    "model_revision": "af89d219b53ed9b13b8a4645f9c8028973510324",
+    "judge_model_id": "allenai/wildguard",
+    "judge_revision": "cbba4823f3e8020e5a74a5e29bf85072def6f2ff",
+    "dtype": "float16"
+  }
+}

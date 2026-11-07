@@ -1,0 +1,13 @@
+{
+  "model_id": "CohereLabs/tiny-aya-global",
+  "model_revision": "af89d219b53ed9b13b8a4645f9c8028973510324",
+  "judge_model_id": "allenai/wildguard",
+  "judge_revision": "cbba4823f3e8020e5a74a5e29bf85072def6f2ff",
+  "observed_dtype": "float16",
+  "judge_manifest_uri": "../../runs/wildguard-fixture-20261107T141335276834Z/manifest.json",
+  "judge_manifest_sha256": "3ca214046642f19386cdf9aff380bea4fdc96ccdb459b7f0b634d0a2846b6d45",
+  "judge_results_uri": "../../runs/wildguard-fixture-20261107T141335276834Z/fixture_results.json",
+  "judge_results_sha256": "3568a3248759da683b447998f5cf6df57f0cbb11ff906ccb3fff1d39140f950e",
+  "dtype_guard_uri": "../../runs/kaggle-parity-v8-2026-11-07/fp16_guard.json",
+  "dtype_guard_sha256": "27dd7a772c6f1c83a374773b66a3c59487c7b8779f66dac0ec405fe892d80a4a"
+}

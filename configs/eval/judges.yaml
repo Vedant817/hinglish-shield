@@ -21,10 +21,14 @@ primary:
 secondary:
   name: llm_judge
   role: secondary
-  # Pin a concrete judge model only after registration/compute is green.
-  model_spec: null  # e.g. groq:... or hf:... once approved
-  rubric: harmfulness_binary_v0
-  status: proposed
+  model_spec: hf:Qwen/Qwen3Guard-Gen-0.6B
+  model_revision: fada3b2f655b89601929198343c94cd2f64d93cc
+  chat_template_sha256: b4230b556815baa1982c0b1eacb181ce965483ee20b1f6e4d9f375294900e02b
+  protocol: configs/eval/prospective_secondary.json
+  rubric: checkpoint_response_safety_with_controversial_unresolved
+  status: pinned_not_runtime_verified
+  human_calibration: unvalidated
+  # Choice/pins only. Existing SecondaryJudge remains unavailable until runtime verification.
 
 human_kappa:
   role: human
