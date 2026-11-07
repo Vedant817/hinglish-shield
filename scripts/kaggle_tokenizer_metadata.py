@@ -18,6 +18,35 @@ URL = f"https://huggingface.co/{MODEL_ID}/raw/{REVISION}/tokenizer_config.json"
 MAX_METADATA_BYTES = 2 * 1024 * 1024
 
 
+def notebook_document(script_source: str, source_commit: str) -> dict:
+    """A deterministic private-job document with papermill's required kernel."""
+    digest = hashlib.sha256(script_source.encode("utf-8")).hexdigest()
+    code = (
+        "from pathlib import Path\nimport hashlib\n"
+        f"source = {script_source!r}\n"
+        "namespace = {'__name__': 'hs_tokenizer_metadata_job'}\n"
+        "exec(compile(source, 'kaggle_tokenizer_metadata.py', 'exec'), namespace)\n"
+        f"assert hashlib.sha256(source.encode()).hexdigest() == {digest!r}\n"
+        "report = namespace['collect_identity'](Path('/kaggle/working/hs_tokenizer_metadata'), "
+        f"source_commit={source_commit!r}, source_sha256={digest!r})\n"
+        "print({'artifact_kind': 'setup-smoke', 'status': report['status'], "
+        "'weights_loaded': False, 'generation_performed': False})\n"
+    )
+    return {"nbformat": 4, "nbformat_minor": 5,
+            "metadata": {"kernelspec": {"name": "python3", "display_name": "Python 3", "language": "python"},
+                         "language_info": {"name": "python"}},
+            "cells": [{"id": "metadata-only-fetch", "cell_type": "code", "metadata": {},
+                       "source": code, "execution_count": None, "outputs": []}]}
+
+
+def kernel_request() -> dict:
+    """Build minimal metadata; never inherit a GPU machine shape."""
+    return {"id": "vedant817/hinglish-shield-gpu-parity", "title": "hinglish-shield-gpu-parity",
+            "code_file": "tokenizer_metadata.ipynb", "language": "python", "kernel_type": "notebook",
+            "is_private": True, "enable_gpu": False, "enable_tpu": False, "enable_internet": True,
+            "dataset_sources": [], "competition_sources": [], "kernel_sources": []}
+
+
 class MetadataRedirect(HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         redirected = super().redirect_request(req, fp, code, msg, headers, newurl)

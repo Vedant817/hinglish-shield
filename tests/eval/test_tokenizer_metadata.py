@@ -7,7 +7,7 @@ from urllib.request import Request
 
 import pytest
 
-from scripts.kaggle_tokenizer_metadata import URL, MetadataRedirect, collect_identity
+from scripts.kaggle_tokenizer_metadata import URL, MetadataRedirect, collect_identity, kernel_request, notebook_document
 
 
 def test_metadata_only_hashes_exact_raw_asset_and_template(tmp_path):
@@ -62,3 +62,18 @@ def test_missing_or_ambiguous_template_is_not_pinned(tmp_path, template):
                               open_url=lambda *args, **kwargs: io.BytesIO(json.dumps({"chat_template": template}).encode()))
     assert result["status"] == "unavailable"
     assert "chat_template_sha256" not in result
+
+
+def test_job_packaging_has_explicit_papermill_kernel_and_no_accelerator_shape():
+    import ast
+    import nbformat
+    doc = notebook_document("# fixture source\n", "a" * 40)
+    nbformat.validate(doc)
+    assert doc["metadata"]["kernelspec"]["name"] == "python3"
+    assert doc["metadata"]["kernelspec"]["language"] == "python"
+    assert doc["cells"][0]["outputs"] == [] and doc["cells"][0]["execution_count"] is None
+    ast.parse(doc["cells"][0]["source"])
+    request = kernel_request()
+    assert request["is_private"] is True
+    assert request["enable_gpu"] is False and request["enable_tpu"] is False
+    assert "machine_shape" not in request and "accelerator" not in request
