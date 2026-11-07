@@ -20,7 +20,7 @@
   "dataset_hash": null,
   "reviewed_lineage_sha256": null,
   "reviewed_evidence_sha256": null,
-  "review_sheet_sha256": null,
+  "review_sheet_sha256": "305d5315ce9544e5fb9d671a816603232f2ab6c087a1d1b8a9cbf4a64a595fe0",
   "canonical_source_ids_sha256": null,
-  "notes": "INCOMPLETE TEMPLATE, NOT RUNNABLE. Missing hashes must come from accepted reviewed data and actual pinned tokenizer. Do not substitute placeholders or bypass guards."
+  "notes": "INCOMPLETE TEMPLATE, NOT RUNNABLE. review_sheet_sha256 pins the current UNREVIEWED sheet only, not human acceptance. Re-freeze after genuine labels. Dataset/index/prompt/lineage and actual target template hashes must come from real reviewed artifacts; never substitute placeholders."
 }

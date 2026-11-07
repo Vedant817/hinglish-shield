@@ -1,0 +1,48 @@
+{
+  "artifact_kind": "setup-smoke",
+  "split": "example",
+  "source_main": "ed0aaf6cc9307939d4d64420ae764f86f0744cd4",
+  "status": "blocked",
+  "metrics_eligible": false,
+  "primary_asr": null,
+  "available_pins": {
+    "target_revision": "af89d219b53ed9b13b8a4645f9c8028973510324",
+    "primary_revision": "cbba4823f3e8020e5a74a5e29bf85072def6f2ff",
+    "secondary_revision": "fada3b2f655b89601929198343c94cd2f64d93cc",
+    "review_sheet_unreviewed_snapshot_sha256": "305d5315ce9544e5fb9d671a816603232f2ab6c087a1d1b8a9cbf4a64a595fe0",
+    "circuitkit_source_commit": "e71d5e17fe6e2abfde47ec9a7fbaf31649601b78"
+  },
+  "unknown_pins": [
+    "actual target tokenizer/template hash",
+    "reviewed prompt/index/manifest/dataset/lineage hashes",
+    "human calibration labels/report and frozen capability item keys"
+  ],
+  "guard_check": {
+    "type": "RepairError",
+    "message": "CircuitKIT weight load requires recomputed original fp32 short and 4196 credit"
+  },
+  "model_load_called": false,
+  "locate_called": false,
+  "test_generation_or_scoring": false,
+  "active_candidate_activated": false,
+  "coverage_exit_code": 2,
+  "coverage_status": "blocked_no_explicit_accept",
+  "unreviewed_rows": 26,
+  "eligible_variants": 0,
+  "drafts_only": [
+    "docs/drafts/ARTICLE.md",
+    "docs/drafts/PITCH.md",
+    "docs/drafts/README.proposed.md"
+  ],
+  "files_sha256": {
+    ".gitattributes": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da",
+    "coverage_report.json": "3b5e8eac53ec897a138c7c29f597522199d3068d4520efb019048a14b0f78e46",
+    "repair_credit.json": "948578c071fa6c2a025f0137ab85f046e2cc133e3480b8f532a0941ec1337f97",
+    "focused_tests.log": "d2535a74844b420eea07e6db3df78cdd7a3454302d9f6b16fe1933d2f544c317"
+  },
+  "validation": "77 model-free tests passed: repair, dev runner and inactive candidate metadata; prompt access guard active",
+  "prepared_config_sha256": {
+    "configs/eval/dev_identity.template.json": "7f380f35067da2afec747df964f809ca5a2977612da946c5d289792af25731ec",
+    "configs/repair/real_runtime.yaml": "7864c943eceac8dc1ee315de01e17201d050729276da08f847ccd9b9452616d4"
+  }
+}
