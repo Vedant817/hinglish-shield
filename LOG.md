@@ -113,3 +113,12 @@ revision, supplied that tokenizer to TL, and made the install a joint resolution
 with an explicit HF Hub pin and a recorded pip dependency check before model loads.
 Validation: `tests/test_gpu_notebook.py` passed locally without torch or weights.
 The complete Kaggle dependency install and all model execution remain unverified.
+# 2026-11-07 IST: dependency-only Kaggle probe prepared
+
+Added a secret-free preflight script that hash-checks the committed parity
+notebook, extracts only install literals, and executes its dependency resolution,
+pip check and CircuitKIT-before-TransformerLens imports. Failure diagnostics and
+the executed source are archived as setup-smoke evidence. It loads no model
+weights, reads no prompt datasets and emits no metrics file. Local tests verify
+install-list agreement, source-drift refusal and failure artifact retention.
+This entry records preparation only; actual Kaggle execution is separate evidence.

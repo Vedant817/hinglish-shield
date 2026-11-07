@@ -95,6 +95,16 @@ caused by the base Kaggle environment; do not use `--no-deps` to bypass it.
 The model-free regression suite and metadata checks do not establish a successful
 Kaggle install, a short or long parity pass, a dtype guard pass, or a scored run.
 
+For a dependency-only check before attaching a token, upload
+`scripts/kaggle_dependency_preflight.py` as a private script kernel on the existing
+free account. It fetches the immutable notebook version recorded in its constants,
+verifies the notebook bytes, then runs the same install list, dependency check and
+compatibility import order. It receives no HF token, opens no prompt dataset,
+loads no weights and runs no inference. Download its setup-smoke ZIP, including
+failure logs. A dependency preflight pass is only environment evidence and cannot
+grant parity, Locate or judge credit. If the notebook install pins change, prepare
+a new preflight against the new committed notebook and preserve the older run.
+
 ## Bringing artifacts home
 
 ```bash
