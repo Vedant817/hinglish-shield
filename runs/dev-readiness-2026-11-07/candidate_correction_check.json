@@ -1,0 +1,20 @@
+{
+  "artifact_kind": "setup-smoke",
+  "status": "correction_tested_not_independently_accepted",
+  "candidate_sha256": "2b15e854c229c03a101c6360f62fad742698aed424b89721ac9f4355f4f7163e",
+  "prior_review": "docs/reviews/holdout-candidate-a8647bd.md",
+  "prior_verdict": "revise",
+  "repair": "Embedded v2 summaries explicitly historical; prospective denominators derived from candidate family assignments",
+  "protected_inputs_unchanged": {
+    "data/splits/family_splits_v2.json": true,
+    "configs/research/baseline_prereg.yaml": true,
+    "configs/eval/baseline.yaml": true,
+    "configs/eval/test_locked.yaml": true,
+    "data/splits/development_exposures.json": true
+  },
+  "active_guard_and_guard_tests_unchanged": true,
+  "focused_tests": "4 passed",
+  "permitted_full_suite": "277 passed, 7 subtests passed; audit_guard active, mixed reader module excluded",
+  "activation_authorized": false,
+  "test_executed": false
+}

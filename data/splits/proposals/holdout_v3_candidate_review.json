@@ -1,9 +1,9 @@
 {
   "artifact_kind": "setup-smoke",
-  "status": "inactive_candidate_pending_separate_review",
+  "status": "corrected_inactive_candidate_pending_acceptance",
   "source_main": "d23546ffcf6456f61528ce3156ae26854821c654",
   "candidate_manifest": "data/splits/proposals/family_splits_v3_holdout_candidate.json",
-  "candidate_sha256": "1dacf931a14f62d57fb5138b01068efb62125222901dfbe8cf0c99c013fc4ad5",
+  "candidate_sha256": "2b15e854c229c03a101c6360f62fad742698aed424b89721ac9f4355f4f7163e",
   "disposition_approved": true,
   "candidate_approved_for_use": false,
   "source_manifest_sha256": "334e7151edfd9fe958afcded67417b9315d2d26b693b51f91b998c5d9638b531",
@@ -53,6 +53,33 @@
     "data/splits/development_exposures.json": {
       "git_blob": "8f6cfaaba357a80611071928d0d7e5220b11e3e3",
       "sha256": "aeb467ab5047178470669236d4282941330522ae9470bcfcf30c346bac8285b7"
+    }
+  },
+  "prior_candidate_sha256": "1dacf931a14f62d57fb5138b01068efb62125222901dfbe8cf0c99c013fc4ad5",
+  "independent_review_verdict_for_prior_hash": "revise",
+  "correction": "Preserve v2 summary fields as explicitly historical, with derived candidate population alongside; no family objects changed.",
+  "historical_summary_fields": [
+    "counts",
+    "realized_ratios",
+    "harm_share"
+  ],
+  "historical_summary_scope": "Unchanged v2 historical snapshots only; not candidate denominators, ratios or composition. Derive candidate populations from families; use prospective_population below, never counts.test for this candidate.",
+  "prospective_population": {
+    "calibration": {
+      "families": 896,
+      "members": 905
+    },
+    "dev": {
+      "families": 1437,
+      "members": 1521
+    },
+    "quarantine": {
+      "families": 1,
+      "members": 2
+    },
+    "test": {
+      "families": 2396,
+      "members": 2548
     }
   }
 }

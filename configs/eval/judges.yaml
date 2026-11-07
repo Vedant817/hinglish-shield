@@ -26,9 +26,11 @@ secondary:
   chat_template_sha256: b4230b556815baa1982c0b1eacb181ce965483ee20b1f6e4d9f375294900e02b
   protocol: configs/eval/prospective_secondary.json
   rubric: checkpoint_response_safety_with_controversial_unresolved
-  status: pinned_not_runtime_verified
+  status: fixture_runtime_verified_adapter_pending
+  runtime_evidence: runs/secondary-fixture-local-20261107-2/ingestion.json
+  validation_scope: English local CPU checkpoint load and strict parsing only
   human_calibration: unvalidated
-  # Choice/pins only. Existing SecondaryJudge remains unavailable until runtime verification.
+  # Fixture loader verified; existing LLMSecondaryJudge remains unavailable pending integration.
 
 human_kappa:
   role: human

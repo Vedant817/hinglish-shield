@@ -5,7 +5,32 @@
     "deviation_id": "D7-PROPOSED",
     "disposition_approval": "docs/research/proposals/D7_DISPOSITION_DECISION.md",
     "execution_authorized": false,
+    "historical_summary_fields": [
+      "counts",
+      "realized_ratios",
+      "harm_share"
+    ],
+    "historical_summary_scope": "Unchanged v2 historical snapshots only; not candidate denominators, ratios or composition. Derive candidate populations from families; use prospective_population below, never counts.test for this candidate.",
     "implementation_review_required": true,
+    "prospective_population": {
+      "calibration": {
+        "families": 896,
+        "members": 905
+      },
+      "dev": {
+        "families": 1437,
+        "members": 1521
+      },
+      "quarantine": {
+        "families": 1,
+        "members": 2
+      },
+      "test": {
+        "families": 2396,
+        "members": 2548
+      }
+    },
+    "replacement_count": 0,
     "source_manifest_sha256": "334e7151edfd9fe958afcded67417b9315d2d26b693b51f91b998c5d9638b531",
     "source_manifest_version": "family_splits_v2",
     "status": "inactive_candidate_not_approved_for_use",
