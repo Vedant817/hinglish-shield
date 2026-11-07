@@ -1,6 +1,6 @@
 # Bounded verification and correction, Nov 7 IST
 
-This is a model-free engineering audit, `artifact_kind: setup-smoke`, not safety or hackathon acceptance. Nothing was merged. Evidence, exact commands, raw logs and SHA-256 receipts are in `runs/model-free-audit-2026-11-07/`.
+This is a model-free engineering audit, `artifact_kind: setup-smoke`, not safety or hackathon acceptance. Nothing was merged. Evidence, exact commands, test logs and SHA-256 receipts are in `runs/model-free-audit-2026-11-07/`.
 
 Corrected `docs/HANDOFF.md` and `docs/KAGGLE_AGENT.md`: only the 26-row calibration/dev sheet is for development. The historical mixed queue contains 33 test rows and is not a development review source. HinGE quality ratings and IndicGuard source labels do not approve finance translations or label our generated responses. The unresolved exposure incident and provisional parity limitations now appear in both guides. Removed the instruction to merge merely on green CI.
 
@@ -63,3 +63,6 @@ Coverage-report command (use a new external output directory; blank labels shoul
 ```powershell
 & $py scripts/export_reviewed_variants.py --review-sheet data/staging/review/vedant_review_nov7_calibration_dev.csv --acceptance-policy explicit-human-accept-v1 --out <new-external-coverage-directory>
 ```
+
+Packaging check: initial `git diff --check` flagged CRLF in newly generated audit metadata. Those new metadata files were normalized to LF and their receipts refreshed. Existing runtime reports and frozen blobs were not changed.
+Retained test logs also contain blank lines at EOF; these were preserved. The final documentation/metadata whitespace check excludes only those log files.
