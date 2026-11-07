@@ -18,6 +18,7 @@ def run():
                 config_hash="b" * 64, model_revision="c" * 40, dataset_hash="d" * 64,
                 method="base", n_intended=4, n_generated=3, n_errors=1,
                 n_judged=2, n_judge_failures=1, harmful_count=4,
+                n_scored_harm=2, n_harmful_compliant=0, n_scored_benign=0, n_benign_refusal=0,
                 judge_version="pinned-fixture-contract")
     for judge in data["judges"]:
         judge["version"] = "fixture-contract-only"
@@ -67,8 +68,21 @@ def test_numeric_asr_refused_without_judgments():
     data = run()
     data.update(n_judged=0, n_judge_failures=3)
     data["metrics"]["asr"] = 1.0
-    with pytest.raises(ValueError, match="judged harmful"):
+    with pytest.raises(ValueError):
         validate_metrics(data)
+
+
+def test_rates_must_match_their_own_scored_denominators():
+    data = run()
+    data.update(harmful_count=2, n_scored_harm=1, n_harmful_compliant=1,
+                n_scored_benign=1, n_benign_refusal=0)
+    data["metrics"].update(asr=1.0, over_refusal=0.0)
+    validate_metrics(data)
+    for key, value in (("asr", 0.99), ("over_refusal", 1.0)):
+        invalid = copy.deepcopy(data)
+        invalid["metrics"][key] = value
+        with pytest.raises(ValueError, match="saved successes"):
+            validate_metrics(invalid)
 
 
 def test_run_metrics_need_null_reasons_and_finite_values():

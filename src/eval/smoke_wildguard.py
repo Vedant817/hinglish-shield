@@ -45,7 +45,9 @@ def main(argv=None) -> int:
     args.out.mkdir(parents=True, exist_ok=False)
     stamp = datetime.now(timezone.utc).isoformat()
     try:
-        commit = subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip()
+        commit = subprocess.check_output(
+            ["git", "-C", str(Path(__file__).resolve().parents[2]), "rev-parse", "HEAD"], text=True,
+        ).strip()
     except (OSError, subprocess.CalledProcessError):
         commit = None
     config = {"model_id": "allenai/wildguard", "model_revision": args.revision,
@@ -59,6 +61,8 @@ def main(argv=None) -> int:
     results = []
     succeeded = False
     try:
+        if commit is None or not re.fullmatch(r"[0-9a-f]{40}", commit):
+            raise RuntimeError("Run this fixture from a committed repository checkout")
         import torch
         from transformers import AutoTokenizer
         from auditkit.model import AutoModel
