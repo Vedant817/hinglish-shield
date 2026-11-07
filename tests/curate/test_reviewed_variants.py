@@ -401,6 +401,30 @@ def test_protocol_failures_write_nothing(tmp_path: Path):
     assert not (unknown / "out").exists()
 
 
+@pytest.mark.parametrize("field", ["canonical_source_ids_sha256", "review_sheet_sha256"])
+def test_lineage_metadata_digests_bind_actual_verified_content(tmp_path, field):
+    from src.curate.reviewed_variants import load_authority, evidence_sha256
+    sheet, manifest, _ = _export(tmp_path, _mixed_dev_family(), _accept_rows())
+    split = tmp_path / "out/dev"
+    pins = json.loads((split / "checksums.json").read_text())
+    lineage = json.loads((split / "lineage.json").read_text())
+    lineage[field] = "0" * 64
+    if field == "canonical_source_ids_sha256":
+        pins[field] = lineage[field]
+        pins["reviewed_evidence_sha256"] = evidence_sha256(
+            pins["review_sheet_sha256"], pins[field], pins["prompts_sha256"],
+        )
+        lineage["evidence_sha256"] = pins["reviewed_evidence_sha256"]
+    raw = (json.dumps(lineage, indent=2, sort_keys=True, ensure_ascii=False) + "\n").encode()
+    pins["reviewed_lineage_sha256"] = sha256_bytes(raw)
+    with pytest.raises(ReviewedVariantError, match="reviewed lineage mismatch"):
+        verify_ledger_lineage(
+            lineage_bytes=raw, review_sheet_bytes=sheet.read_bytes(),
+            index_rows=json.loads((split / "index.json").read_text()),
+            authority=load_authority(manifest, require_pinned_hash=False), pins=pins,
+        )
+
+
 def test_forged_lineage_unreviewed_and_correction_drift(tmp_path: Path):
     sheet, manifest, _report = _export(tmp_path, _mixed_dev_family(), _accept_rows())
     authority_bytes = manifest.read_bytes()
