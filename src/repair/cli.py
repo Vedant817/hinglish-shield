@@ -8,9 +8,10 @@ import sys
 from pathlib import Path
 
 from .errors import RepairError
-from .freeze import verify_manifest, write_freeze_manifest
+from .freeze import verify_any, write_freeze_manifest
 from .parity import locate_credit
 from .protocol import load_provenance
+from .real_runtime import write_tensor_fixture_evidence
 from .workflow import locate, sweep
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -36,6 +37,12 @@ def build_parser() -> argparse.ArgumentParser:
     locate_parser.add_argument("--out", type=_path, required=True)
     locate_parser.add_argument("--backend", default="fixture", choices=("fixture", "circuitkit"))
     locate_parser.add_argument("--parity-run", type=_path)
+    locate_parser.add_argument("--runtime-config", type=_path, default=ROOT / "configs" / "repair" / "real_runtime.yaml")
+    locate_parser.add_argument("--circuit-scores", type=_path)
+    locate_parser.add_argument("--circuitkit-source", type=_path)
+    locate_parser.add_argument("--reviewed-lineage", type=_path)
+    locate_parser.add_argument("--review-sheet", type=_path)
+    _add_lineage_pins(locate_parser)
 
     steer_parser = sub.add_parser("steer", help="Apply the frozen direction on dev with runtime hooks")
     _add_sweep_io(steer_parser)
@@ -53,6 +60,9 @@ def build_parser() -> argparse.ArgumentParser:
 
     child = sub.add_parser("verify-freeze-child")
     child.add_argument("manifest", type=_path)
+
+    fixture = sub.add_parser("tensor-fixture", help="Write a deterministic tensor fixture ledger")
+    fixture.add_argument("--out-dir", type=_path, required=True)
     return parser
 
 
@@ -73,6 +83,49 @@ def _add_sweep_io(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--dev-prompts", type=_path, required=True)
     parser.add_argument("--judgments", type=_path)
     parser.add_argument("--out", type=_path, required=True)
+    parser.add_argument("--parity-run", type=_path)
+    parser.add_argument("--runtime-config", type=_path, default=ROOT / "configs" / "repair" / "real_runtime.yaml")
+    parser.add_argument("--circuit-scores", type=_path)
+    parser.add_argument("--circuitkit-source", type=_path)
+    parser.add_argument("--reviewed-lineage", type=_path)
+    parser.add_argument("--review-sheet", type=_path)
+    _add_lineage_pins(parser)
+
+
+def _add_lineage_pins(parser: argparse.ArgumentParser) -> None:
+    parser.add_argument("--reviewed-lineage-sha256")
+    parser.add_argument("--reviewed-evidence-sha256")
+    parser.add_argument("--review-sheet-sha256")
+    parser.add_argument("--canonical-source-ids-sha256")
+    parser.add_argument("--prompts-sha256")
+
+
+def _pins(args: argparse.Namespace) -> dict[str, str] | None:
+    names = (
+        "reviewed_lineage_sha256",
+        "reviewed_evidence_sha256",
+        "review_sheet_sha256",
+        "canonical_source_ids_sha256",
+        "prompts_sha256",
+    )
+    values = {name: getattr(args, name) for name in names}
+    if all(value is None for value in values.values()):
+        return None
+    if any(not isinstance(value, str) or len(value) != 64 for value in values.values()):
+        raise RepairError("reviewed lineage contract is required", stage="membership")
+    return values
+
+
+def _scores(path: Path | None) -> dict | None:
+    if path is None:
+        return None
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise RepairError("circuit scores are unreadable", stage="circuitkit") from exc
+    if not isinstance(payload, dict):
+        raise RepairError("circuit scores are unreadable", stage="circuitkit")
+    return payload
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -100,6 +153,12 @@ def main(argv: list[str] | None = None) -> int:
                 parity_run=args.parity_run,
                 allow_unpinned_manifest=args.allow_unpinned_manifest,
                 backend=args.backend,
+                runtime_config_path=args.runtime_config,
+                circuit_scores=_scores(args.circuit_scores),
+                circuitkit_source=args.circuitkit_source,
+                reviewed_lineage_path=args.reviewed_lineage,
+                review_sheet_path=args.review_sheet,
+                reviewed_pins=_pins(args),
             )
             return 0
         if args.command in {"steer", "sweep"}:
@@ -116,6 +175,13 @@ def main(argv: list[str] | None = None) -> int:
                 artifact_kind=args.artifact_kind,
                 judgments_path=args.judgments,
                 allow_unpinned_manifest=args.allow_unpinned_manifest,
+                parity_run=args.parity_run,
+                runtime_config_path=args.runtime_config,
+                circuit_scores=_scores(args.circuit_scores),
+                circuitkit_source=args.circuitkit_source,
+                reviewed_lineage_path=args.reviewed_lineage,
+                review_sheet_path=args.review_sheet,
+                reviewed_pins=_pins(args),
             )
             return 0
         if args.command == "freeze":
@@ -138,8 +204,11 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         if args.command == "verify-freeze-child":
             payload = json.loads(args.manifest.read_text(encoding="utf-8"))
-            report = verify_manifest(payload)
+            report = verify_any(payload)
             print(json.dumps(report, indent=2, sort_keys=True, allow_nan=False))
+            return 0
+        if args.command == "tensor-fixture":
+            write_tensor_fixture_evidence(args.out_dir)
             return 0
     except RepairError as exc:
         print(f"repair refused ({exc.stage}): {exc}", file=sys.stderr)

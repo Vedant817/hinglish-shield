@@ -1,0 +1,88 @@
+{
+  "alpha_zero_matches_base": true,
+  "arms": [
+    {
+      "arm_id": "base_no_intervention",
+      "hook_count": 0,
+      "new_token_ids": [
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "arm_id": "alpha_zero_with_wrapper",
+      "hook_count": 4,
+      "new_token_ids": [
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "arm_id": "random_norm_matched_seed_7",
+      "hook_count": 4,
+      "new_token_ids": [
+        1,
+        1,
+        1,
+        1
+      ]
+    },
+    {
+      "arm_id": "candidate_alpha_1",
+      "hook_count": 4,
+      "new_token_ids": [
+        3,
+        3,
+        3,
+        3
+      ]
+    }
+  ],
+  "artifact_kind": "fixture",
+  "circuitkit_source": {
+    "dirty": false,
+    "expected": "e71d5e17fe6e2abfde47ec9a7fbaf31649601b78",
+    "head": "e71d5e17fe6e2abfde47ec9a7fbaf31649601b78",
+    "ok": true,
+    "path": "C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\CircuitKIT-source",
+    "reason": null,
+    "steering_matches_head": true,
+    "steering_sha256": "5894c05141c8bdd97d810396fdd27b3b8ffa825070c3a6a3b10980d1594be88b"
+  },
+  "content_sha256": "8c5d50b71f6e870eb4c231423d9cb4719e0840cb249a2aa53bfa40522141e732",
+  "environment": {
+    "huggingface_hub": {
+      "distribution_version": "2.4.0",
+      "imported": true,
+      "module_version": "2.4.0"
+    },
+    "python": "3.12.15",
+    "torch": {
+      "distribution_version": "2.15.0+cpu",
+      "imported": true,
+      "module_version": "2.15.0+cpu"
+    },
+    "transformer_lens": {
+      "distribution_version": "3.8.0",
+      "imported": true,
+      "module_version": null
+    }
+  },
+  "layer_name": "blocks.0.hook_resid_post",
+  "metrics_eligible": false,
+  "model_id": "fixture/deterministic-tensor",
+  "not_pretrained_weights": true,
+  "not_tiny_aya": true,
+  "not_wildguard": true,
+  "primary_asr": null,
+  "proposed_protocol": true,
+  "proven_refusal_mechanism": false,
+  "runtime_verified_on_pretrained_weights": false,
+  "split": "example",
+  "tensor_kind": "deterministic_last_token_function",
+  "weights_executed_by_this_command": false
+}

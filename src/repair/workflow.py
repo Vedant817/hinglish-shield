@@ -137,14 +137,20 @@ def locate(
     parity_run: Path | None = None,
     allow_unpinned_manifest: bool = False,
     backend: str = "fixture",
+    runtime_config_path: Path | None = None,
+    circuit_scores: Mapping[str, float] | None = None,
+    circuitkit_source: Path | None = None,
+    reviewed_lineage_path: Path | None = None,
+    review_sheet_path: Path | None = None,
+    reviewed_pins: Mapping[str, str] | None = None,
+    model_factory: Any = None,
+    prompt_loader: Any = None,
+    code_check: Any = None,
+    source_check: Any = None,
 ) -> dict[str, Any]:
     protocol = load_protocol(protocol_path)
     provenance = load_provenance(provenance_path)
-    if artifact_kind == "run":
-        pins = _assert_real_pins(provenance)
-    elif artifact_kind == "fixture":
-        pins = _assert_fixture_pins(provenance)
-    else:
+    if artifact_kind not in {"run", "fixture"}:
         raise RepairError("artifact kind must be fixture or run", stage="provenance")
     if backend == "circuitkit":
         credit = locate_credit(parity_run, accept_variant=provenance["accept_preregistered_bf16_variant"])
@@ -153,12 +159,43 @@ def locate(
                 "CircuitKIT locate refused: parity credit is missing, failed, or incomplete",
                 stage="parity",
             )
-        raise RepairError(
-            "CircuitKIT locate needs an in-process model. This command does not download weights.",
-            stage="circuitkit",
+        if artifact_kind != "run":
+            raise RepairError(
+                "fixture artifact cannot authorize a Tiny Aya load",
+                stage="provenance",
+            )
+        from .real_runtime import locate_with_model
+
+        if runtime_config_path is None:
+            raise RepairError("missing real runtime config", stage="provenance")
+        if prompts_path is None:
+            raise RepairError("missing prompts", stage="prompts")
+        return locate_with_model(
+            protocol_path=protocol_path,
+            provenance_path=provenance_path,
+            runtime_config_path=runtime_config_path,
+            index_path=index_path,
+            manifest_path=manifest_path,
+            prompts_path=prompts_path,
+            out_path=out_path,
+            parity_run=parity_run,
+            circuit_scores=circuit_scores,
+            circuitkit_source=circuitkit_source,
+            reviewed_lineage_path=reviewed_lineage_path,
+            review_sheet_path=review_sheet_path,
+            reviewed_pins=reviewed_pins,
+            model_factory=model_factory,
+            prompt_loader=prompt_loader,
+            code_check=code_check,
+            source_check=source_check,
+            allow_unpinned_manifest=allow_unpinned_manifest,
         )
     if backend != "fixture":
         raise RepairError("unknown locate backend", stage="protocol")
+    if artifact_kind == "run":
+        pins = _assert_real_pins(provenance)
+    else:
+        pins = _assert_fixture_pins(provenance)
     authority, rows = _checked_index(
         index_path,
         manifest_path,
@@ -343,18 +380,56 @@ def sweep(
     artifact_kind: str,
     judgments_path: Path | None = None,
     allow_unpinned_manifest: bool = False,
+    parity_run: Path | None = None,
+    runtime_config_path: Path | None = None,
+    circuit_scores: Mapping[str, float] | None = None,
+    circuitkit_source: Path | None = None,
+    reviewed_lineage_path: Path | None = None,
+    review_sheet_path: Path | None = None,
+    reviewed_pins: Mapping[str, str] | None = None,
+    model_factory: Any = None,
+    judge_factory: Any = None,
+    prompt_loader: Any = None,
+    code_check: Any = None,
+    source_check: Any = None,
 ) -> dict[str, Any]:
+    if artifact_kind == "run":
+        from .real_runtime import run_real_sweep
+
+        if runtime_config_path is None:
+            raise RepairError("missing real runtime config", stage="provenance")
+        if dev_prompts_path is None:
+            raise RepairError("missing prompts", stage="prompts")
+        return run_real_sweep(
+            protocol_path=protocol_path,
+            provenance_path=provenance_path,
+            runtime_config_path=runtime_config_path,
+            sweep_path=sweep_path,
+            direction_path=direction_path,
+            calibration_index_path=calibration_index_path,
+            dev_index_path=dev_index_path,
+            dev_prompts_path=dev_prompts_path,
+            manifest_path=manifest_path,
+            out_path=out_path,
+            parity_run=parity_run,
+            judgments_path=judgments_path,
+            circuit_scores=circuit_scores,
+            circuitkit_source=circuitkit_source,
+            reviewed_lineage_path=reviewed_lineage_path,
+            review_sheet_path=review_sheet_path,
+            reviewed_pins=reviewed_pins,
+            model_factory=model_factory,
+            judge_factory=judge_factory,
+            prompt_loader=prompt_loader,
+            code_check=code_check,
+            source_check=source_check,
+            allow_unpinned_manifest=allow_unpinned_manifest,
+        )
     protocol = load_protocol(protocol_path)
     provenance = load_provenance(provenance_path)
     sweep_config = load_sweep_config(sweep_path)
     if artifact_kind == "fixture":
         pins = _assert_fixture_pins(provenance)
-    elif artifact_kind == "run":
-        _assert_real_pins(provenance)
-        raise RepairError(
-            "runtime hooks on the pinned model are not loaded by this command",
-            stage="provenance",
-        )
     else:
         raise RepairError("artifact kind must be fixture or run", stage="provenance")
     try:

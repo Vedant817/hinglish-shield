@@ -112,10 +112,167 @@ def build_freeze_manifest(sweep_path: Path, direction_path: Path) -> dict[str, A
     return manifest
 
 
+def _peek(path: Path) -> dict[str, Any]:
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise RepairError("missing sweep report", stage="freeze") from exc
+    if not isinstance(payload, dict):
+        raise RepairError("missing sweep report", stage="freeze")
+    return payload
+
+
 def write_freeze_manifest(sweep_path: Path, direction_path: Path, out_path: Path) -> dict[str, Any]:
-    manifest = build_freeze_manifest(sweep_path, direction_path)
+    peeked = _peek(sweep_path)
+    if peeked.get("generation") == "per_step_hook_forward":
+        manifest = build_measured_freeze(sweep_path, direction_path)
+    else:
+        manifest = build_freeze_manifest(sweep_path, direction_path)
     write_json(out_path, manifest)
     return manifest
+
+
+def build_measured_freeze(sweep_path: Path, direction_path: Path) -> dict[str, Any]:
+    """Bind the measured arm to recomputed evidence. Does not load pretrained weights."""
+    from .protocol import load_sweep_config
+    from .real_runtime import assert_accept_bindings
+    from .selection import decide_arm
+
+    sweep = _load_object(sweep_path, "sweep report")
+    direction = _load_object(direction_path, "frozen direction")
+    if sweep.get("generation") != "per_step_hook_forward":
+        raise RepairError("freeze refused: sweep is not a per-step hook ledger", stage="freeze")
+    if sweep.get("direction_sha256") != direction.get("content_sha256"):
+        raise RepairError("sweep direction hash does not match the frozen direction", stage="freeze")
+    if sweep.get("primary_asr") is not None or sweep.get("metrics_eligible") is not False:
+        raise RepairError("freeze refused: metrics were invented", stage="freeze")
+    if sweep.get("proven_refusal_mechanism") is not False:
+        raise RepairError("freeze refused: direction claims a proven refusal mechanism", stage="freeze")
+    judgments = sweep.get("judgments")
+    members = sweep.get("dev_members")
+    if not isinstance(members, list) or not members:
+        raise RepairError("freeze refused: dev members are missing", stage="freeze")
+    sweep_config = load_sweep_config(Path(__file__).resolve().parents[2] / "configs" / "repair" / "sweep.yaml")
+    if sweep.get("sweep_sha256") != sweep_config["sha256"]:
+        raise RepairError("freeze refused: sweep config hash does not match the committed sweep", stage="freeze")
+    recomputed = decide_arm(
+        members,
+        judgments if isinstance(judgments, dict) else None,
+        over_refusal_max_rise=sweep_config["over_refusal_max_rise"],
+        capability_max_drop_points=sweep_config["capability_max_drop_points"],
+        bootstrap_reps=sweep_config["bootstrap_reps"],
+        bootstrap_seed=sweep_config["bootstrap_seed"],
+        min_families_for_accept=sweep_config["min_families_for_accept"],
+    )
+    stored = sweep.get("decision")
+    if not isinstance(stored, dict) or stored.get("decision") != recomputed.get("decision"):
+        raise RepairError("freeze refused: stored decision does not match the evidence", stage="freeze")
+    if recomputed.get("freeze") is not True:
+        raise RepairError("freeze refused: selection is unavailable or rejected", stage="freeze")
+    assert_accept_bindings(recomputed, min_families=sweep_config["min_families_for_accept"])
+    vector = direction.get("vector")
+    if not isinstance(vector, list) or l2_norm(vector) == 0.0:
+        raise RepairError("freeze refused: direction norm is zero", stage="freeze")
+    manifest: dict[str, Any] = {
+        "verification_pathway": "measured_evidence",
+        "intervention_type": "runtime_hook",
+        "static_checkpoint": False,
+        "safetune_superior": False,
+        "circuit_superiority": False,
+        "weights_reloaded": False,
+        "runtime_verified_on_pretrained_weights": sweep.get("runtime_verified_on_pretrained_weights") is True,
+        "deployable_claim": recomputed.get("deployable_claim") is True,
+        "decision": recomputed.get("decision"),
+        "decision_reason": recomputed.get("reason"),
+        "n_families": recomputed.get("n_families"),
+        "min_families_for_accept": sweep_config["min_families_for_accept"],
+        "over_refusal_gate": recomputed.get("over_refusal_gate"),
+        "capability_gate": recomputed.get("capability_gate"),
+        "harm_low": (recomputed.get("harm_improvement") or {}).get("low"),
+        "declared_arm": "candidate_alpha_1",
+        "alpha": 1.0,
+        "artifact_kind": sweep.get("artifact_kind"),
+        "split": sweep.get("split"),
+        "model_id": sweep.get("model_id"),
+        "not_tiny_aya": sweep.get("not_tiny_aya"),
+        "not_wildguard": True,
+        "not_a_scored_test": True,
+        "proven_refusal_mechanism": False,
+        "primary_asr": None,
+        "metrics_eligible": False,
+        "direction_sha256": direction["content_sha256"],
+        "sweep_sha256": sweep["content_sha256"],
+        "vector": vector,
+        "l2_norm": l2_norm(vector),
+        "layer_index": direction.get("layer_index"),
+        "judgments": judgments,
+        "dev_members": members,
+        "disclaimer": direction.get("disclaimer"),
+    }
+    manifest["content_sha256"] = content_sha256(manifest)
+    return manifest
+
+
+def verify_measured(payload: dict[str, Any]) -> dict[str, Any]:
+    """Fresh-process check of evidence bindings. Does not reload pretrained weights."""
+    from .protocol import load_sweep_config
+    from .real_runtime import assert_accept_bindings
+    from .selection import decide_arm
+
+    if payload.get("content_sha256") != content_sha256(payload):
+        raise RepairError("freeze manifest hash does not match its contents", stage="freeze")
+    if payload.get("verification_pathway") != "measured_evidence":
+        raise RepairError("freeze manifest is not measured evidence", stage="freeze")
+    if payload.get("static_checkpoint") is not False or payload.get("safetune_superior") is not False:
+        raise RepairError("freeze manifest claims an unmeasured method win", stage="freeze")
+    if payload.get("circuit_superiority") is not False or payload.get("proven_refusal_mechanism") is not False:
+        raise RepairError("freeze manifest claims an unmeasured method win", stage="freeze")
+    if payload.get("primary_asr") is not None or payload.get("metrics_eligible") is not False:
+        raise RepairError("freeze manifest invented metrics", stage="freeze")
+    if payload.get("weights_reloaded") is not False:
+        raise RepairError("freeze manifest claims a weight reload that this pathway does not do", stage="freeze")
+    sweep_config = load_sweep_config(Path(__file__).resolve().parents[2] / "configs" / "repair" / "sweep.yaml")
+    recomputed = decide_arm(
+        payload["dev_members"],
+        payload.get("judgments"),
+        over_refusal_max_rise=sweep_config["over_refusal_max_rise"],
+        capability_max_drop_points=sweep_config["capability_max_drop_points"],
+        bootstrap_reps=sweep_config["bootstrap_reps"],
+        bootstrap_seed=sweep_config["bootstrap_seed"],
+        min_families_for_accept=sweep_config["min_families_for_accept"],
+    )
+    if payload.get("decision") != recomputed.get("decision"):
+        raise RepairError("fresh process decision does not match the evidence", stage="freeze")
+    assert_accept_bindings(recomputed, min_families=sweep_config["min_families_for_accept"])
+    if payload.get("declared_arm") != "candidate_alpha_1" or payload.get("alpha") != 1.0:
+        raise RepairError("freeze manifest arm is not the declared candidate", stage="freeze")
+    if payload.get("vector") is None or payload.get("direction_sha256") is None:
+        raise RepairError("freeze manifest is missing the measured vector", stage="freeze")
+    return {
+        "verified": True,
+        "verification_pathway": "measured_evidence",
+        "weights_reloaded": False,
+        "runtime_verified_on_pretrained_weights": False,
+        "runtime_hook": True,
+        "decision": recomputed.get("decision"),
+        "n_families": recomputed.get("n_families"),
+        "primary_asr": None,
+        "metrics_eligible": False,
+        "safetune_superior": False,
+        "static_checkpoint": False,
+        "circuit_superiority": False,
+        "not_a_scored_test": True,
+    }
+
+
+def verify_any(payload: dict[str, Any]) -> dict[str, Any]:
+    if payload.get("tensor_kind") == "deterministic_last_token_function":
+        from .real_runtime import verify_tensor_fixture_payload
+
+        return verify_tensor_fixture_payload(payload)
+    if payload.get("verification_pathway") == "measured_evidence":
+        return verify_measured(payload)
+    return verify_manifest(payload)
 
 
 def verify_manifest(payload: dict[str, Any]) -> dict[str, Any]:
