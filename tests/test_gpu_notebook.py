@@ -411,6 +411,12 @@ class TestGpuNotebook(unittest.TestCase):
         self.assertFalse(original({"p": 1e-4}, {"long": 0.0}, long_ran=True)["passed"])
         self.assertTrue(short({"p": 0.0}, {"p": 0.0})["passed_kl"])
         self.assertTrue(long({"long": 0.0}, {"long": 0.0}, long_ran=True)["passed"])
+        guard = self.ns["decide_fp16_guard"]
+        mixed = [0.001] * 19 + [-0.001]
+        self.assertFalse(guard(sum(mixed) / 20, 1.0, 20, 20, False, True, 20, kl_values=mixed)["passed"])
+        valid = [0.001] * 20
+        self.assertTrue(guard(0.001, 1.0, 20, 20, False, True, 20, kl_values=valid)["passed"])
+        self.assertIn("kl_values=kls", cell_with("guard = {"))
 
     def test_every_parity_checkpoint_load_uses_the_same_revision(self) -> None:
         expected = "d62ac17e241c871fc52e9a95d7b0e2615189d7d5"
