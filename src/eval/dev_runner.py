@@ -22,6 +22,12 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Callable, Mapping, Sequence
 
+from src.curate.reviewed_variants import (
+    REVIEWED_VARIANT_SOURCE,
+    ReviewedVariantError,
+    load_authority,
+    verify_ledger_lineage,
+)
 from .judges import WildGuardPrimaryJudge
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -52,6 +58,12 @@ CANONICAL_SPLITS = frozenset({"calibration", "dev", "test"})
 CANONICAL_FAMILY_MANIFEST = ROOT / "data" / "splits" / "family_splits_v2.json"
 CANONICAL_FAMILY_MANIFEST_SHA256 = (
     "334e7151edfd9fe958afcded67417b9315d2d26b693b51f91b998c5d9638b531"
+)
+REVIEW_PIN_FIELDS = (
+    "canonical_source_ids_sha256",
+    "review_sheet_sha256",
+    "reviewed_evidence_sha256",
+    "reviewed_lineage_sha256",
 )
 
 
@@ -313,7 +325,17 @@ def validate_config(payload: Mapping[str, Any]) -> dict[str, Any]:
             payload.get("family_manifest_sha256"), "family_manifest_sha256"
         ),
         "notes": notes,
+        **_reviewed_pins(payload),
     }
+
+
+def _reviewed_pins(payload: Mapping[str, Any]) -> dict[str, str | None]:
+    supplied = [key for key in REVIEW_PIN_FIELDS if key in payload]
+    if supplied and len(supplied) != len(REVIEW_PIN_FIELDS):
+        raise DevRunnerError("reviewed lineage contract is required")
+    if not supplied:
+        return {key: None for key in REVIEW_PIN_FIELDS}
+    return {key: _require_sha256(payload.get(key), key) for key in REVIEW_PIN_FIELDS}
 
 
 def code_provenance(root: Path) -> dict[str, Any]:
@@ -839,6 +861,7 @@ def _base_manifest(
             "metrics_eligible stays false until reviewed category aggregation and preservation scoring.",
             "Fixture adapters record artifact_kind fixture and split example.",
             "Canonical membership is the pinned family_splits_v2 manifest, not a self-authored review file.",
+            "Derived variants keep a distinct reviewed_variant id and require verified lineage before prompts are opened.",
             "Retries use a new run id. This command does not delete evidence.",
         ],
         "membership_split": "dev",
@@ -878,6 +901,10 @@ def _base_manifest(
             "model_revision": config["model_revision"],
             "notes": config.get("notes"),
             "prompts_sha256": config["prompts_sha256"],
+            "canonical_source_ids_sha256": config.get("canonical_source_ids_sha256"),
+            "review_sheet_sha256": config.get("review_sheet_sha256"),
+            "reviewed_evidence_sha256": config.get("reviewed_evidence_sha256"),
+            "reviewed_lineage_sha256": config.get("reviewed_lineage_sha256"),
             "seed": 42,
         },
         "null_reasons": {
@@ -932,6 +959,13 @@ def _mark(manifest: dict[str, Any], phase: str, out_dir: Path) -> None:
     _write_json_atomic(out_dir / "manifest.json", manifest)
 
 
+def _reviewed_authority(path: Path, *, require_pinned_hash: bool) -> dict[str, Any]:
+    try:
+        return load_authority(path, require_pinned_hash=require_pinned_hash)
+    except ReviewedVariantError as exc:
+        raise DevRunnerError(str(exc)) from None
+
+
 def run_dev_ledger(
     *,
     config_path: Path,
@@ -944,11 +978,15 @@ def run_dev_ledger(
     judge_factory: Callable[[Mapping[str, Any]], Any] | None = None,
     root: Path | None = None,
     canonical_manifest_path: Path | None = None,
+    reviewed_lineage_path: Path | None = None,
+    review_sheet_path: Path | None = None,
 ) -> dict[str, Any]:
     """Run one dev ledger. Refuses an existing output directory.
 
     ``canonical_manifest_path`` is a fixture helper. It cannot authorize a real run.
     The real path reads only the pinned family_splits_v2 file.
+    Derived rows require ``reviewed_lineage_path`` and ``review_sheet_path``.
+    Those checks finish before the prompt file is opened.
     """
     if split != "dev":
         raise DevRunnerError("split must be dev")
@@ -969,8 +1007,40 @@ def run_dev_ledger(
     if not injected and full_commit is None:
         raise DevRunnerError("unpinned full_commit")
     index_rows = load_index_and_manifest(index_path, family_manifest_path, config)
+    derived_rows = [row for row in index_rows if row["source_dataset"] == REVIEWED_VARIANT_SOURCE]
+    canonical_rows = [row for row in index_rows if row["source_dataset"] != REVIEWED_VARIANT_SOURCE]
+    pins_present = all(config.get(key) for key in REVIEW_PIN_FIELDS)
+    if derived_rows and not pins_present:
+        raise DevRunnerError("reviewed lineage contract is required")
+    if not derived_rows and pins_present:
+        raise DevRunnerError("reviewed lineage contract is not used for canonical rows")
+    if derived_rows and (reviewed_lineage_path is None or review_sheet_path is None):
+        raise DevRunnerError("reviewed lineage contract is required")
     canonical_sha: str | None = None
-    if not injected:
+    if derived_rows:
+        if not injected:
+            assert_supported_model_contract(config)
+            authority = _reviewed_authority(CANONICAL_FAMILY_MANIFEST, require_pinned_hash=True)
+        elif canonical_manifest_path is None:
+            raise DevRunnerError("derived variants require canonical authority")
+        else:
+            authority = _reviewed_authority(canonical_manifest_path, require_pinned_hash=False)
+        if canonical_rows:
+            assert_canonical_dev_membership(canonical_rows, authority)
+        canonical_sha = str(authority["sha256"])
+        lineage_bytes = _read_bytes(reviewed_lineage_path, "reviewed lineage")
+        sheet_bytes = _read_bytes(review_sheet_path, "review sheet")
+        try:
+            verify_ledger_lineage(
+                lineage_bytes=lineage_bytes,
+                review_sheet_bytes=sheet_bytes,
+                index_rows=derived_rows,
+                authority=authority,
+                pins=config,
+            )
+        except ReviewedVariantError as exc:
+            raise DevRunnerError(str(exc)) from None
+    elif not injected:
         assert_supported_model_contract(config)
         authority = load_canonical_authority(
             CANONICAL_FAMILY_MANIFEST, require_pinned_hash=True
@@ -1228,6 +1298,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--index", required=True, type=Path)
     parser.add_argument("--prompts", required=True, type=Path)
     parser.add_argument("--family-manifest", required=True, type=Path)
+    parser.add_argument("--reviewed-lineage", type=Path)
+    parser.add_argument("--review-sheet", type=Path)
     parser.add_argument("--out", required=True, type=Path)
     if argv is None:
         argv = sys.argv[1:]
@@ -1246,6 +1318,8 @@ def main(argv: list[str] | None = None) -> int:
             family_manifest_path=args.family_manifest,
             out_dir=args.out,
             split=args.split,
+            reviewed_lineage_path=args.reviewed_lineage,
+            review_sheet_path=args.review_sheet,
         )
     except DevRunnerError as exc:
         print(f"REFUSING DEV LEDGER: {exc}", file=sys.stderr)
