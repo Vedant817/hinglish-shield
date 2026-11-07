@@ -52,7 +52,7 @@ Validation order:
 2. Load and pin-check the config, including integer seed `42`, integer `max_new_tokens` `256`, and method `base`.
 3. Load the index, check its file hash, and reject missing, duplicate, unreviewed, non-dev, or unsupported language or label rows.
 4. Load the caller family manifest, check its file hash, and reject membership or source mismatches.
-5. On a real run, reject an unsupported model id, then check every row against the pinned canonical manifest. A fixture run does this only when the synthetic helper is injected.
+5. On a real run, reject an unsupported model id, then check canonical rows against the pinned canonical manifest. A fixture run does this only when the synthetic helper is injected. Rows whose `source_dataset` is `reviewed_variant` are not canonical members. They require `--reviewed-lineage`, `--review-sheet`, and the four reviewed hashes in the config: `reviewed_lineage_sha256`, `reviewed_evidence_sha256`, `review_sheet_sha256`, and `canonical_source_ids_sha256`. The runner recomputes the accepted variants from the review sheet and checks lineage, family, split, label, and prompt hashes before it opens the prompt file. A fixture that injects derived rows still needs the synthetic canonical helper. That helper cannot authorize `artifact_kind` `run`.
 6. Only then open the prompt file. Check its file hash, ids, per-prompt hashes, and `dataset_hash`.
 7. Reserve `--out` with an exclusive create. An existing directory is an error. Choose a new run id instead of deleting the old directory.
 8. Generate. Then unload the target. Then construct the judge. Unload the judge before returning.
@@ -97,7 +97,6 @@ Generation errors stay in the ledger with `status` `generation_error` and no cat
 - Human review is still required before a nonharmful nonrefusal can be called irrelevant. Hinglish judge behavior is not validated here. Kappa, Wilson intervals, family bootstrap, and preservation gates are not run here.
 - `runs/_example` and the parity notebook remain fixtures. This ledger does not relabel them.
 
-The frozen canonical manifest currently has no Hinglish or Hindi benign members.
-This first ledger can admit only existing canonical EN/HI items. Reviewed
-translations need a separate verified lineage contract before real admission;
-do not relabel source identities to bypass the canonical language check.
+The frozen canonical manifest currently has no Hinglish members and no Hindi benign members. A canonical row still has to match that member's original language and label. Putting a translation on the original `source_dataset` and `source_id` remains a membership failure.
+
+Derived rows use `source_dataset` `reviewed_variant` and a new item id. Their lineage file points at the original canonical item, family, split, language, and label. The acceptance policy on that file is `explicit-human-accept-v1`. See `docs/REVIEWED_VARIANTS.md`. The current human sheet has no explicit accepts, so it does not authorize a derived ledger. Injected factories remain `artifact_kind` `fixture` and `split` `example`. Method `base` is still required.
