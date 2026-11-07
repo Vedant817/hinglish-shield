@@ -18,7 +18,7 @@ run while TL is still resident. See prereg D4 in `docs/research/PREREG_baseline.
 2. Create a notebook (or upload `notebooks/gpu_parity_and_baseline.ipynb`) and set **Settings → Accelerator → GPU T4 x2**.
 3. Add secret `HF_TOKEN` (Add-ons → Secrets) for the Hugging Face account that already accepted Tiny Aya terms. Never paste the token into a cell.
 4. Leave `CURATED_PROMPTS_PATH` unset. This notebook refuses a curated JSONL. Generations here are fixtures (`artifact_kind: fixture`, `split: example`). A scored curated run belongs in a separate pipeline. `max_new_tokens` 64 is fixture length only. Scored generation stays at 256.
-5. Click **Run All**. Expected wall time: roughly 60 to 240 minutes (install + sequential fp32 short + fp32 CPU long-prompt 4196-token forward + fp16 guard + short fixture baseline). The long-prompt fp32 CPU forward alone is a rough estimate of about 20 to 90 minutes (planning guess only, not a measurement). Conversion can memory-fail near 25 GiB plus overhead even when one copy would fit. Stop early only if a cell hard-fails.
+5. Click **Run All**. Expected wall time: roughly 60 to 240 minutes (install + parity + fp16 guard + short fixture baseline). On a Kaggle host of about 31 GiB, D5 refuses the dual-resident fp32 conversion before the platform can kill the kernel, and the CPU bf16 variant runs instead. A larger host that has at least 32 GiB available and 32 GiB total still attempts sequential fp32, including the long 4196-token forward (a planning guess of about 20 to 90 minutes, not a measurement). Stop early only if a cell hard-fails.
 6. Download `hs_gpu_artifacts_<run_id>.zip` from `/kaggle/working/` and copy it into the repo as `runs/<run_id>/` (unzip so manifests are visible). Never commit tokens or model weights.
 
 ## Gate details (prereg D4)
@@ -45,7 +45,9 @@ There is no git commit pin. An earlier draft cited a commit id that is not in th
 2. **Optional dual-resident pytest** (`RUN_ORIGINAL_PYTEST=False`): holds two
    fp32 copies for the whole test (about 25 GiB). Off by default.
 3. **bf16 variant** (`gate_change`): auto-enabled only after a genuine memory failure
-   (or `FORCE_PARITY_VARIANT`). Auth errors and other logic errors do not enable it.
+   (or `FORCE_PARITY_VARIANT`). D5 raises `MemoryError` before the fp32 conversion when
+   available RAM or total RAM is under 32 GiB, because a Kaggle host restart is not a
+   catchable `MemoryError`. Auth errors and other logic errors do not enable it.
    CPU bf16 only, and only when the accelerator name contains T4. CUDA bf16 is refused.
    Short accept rule: KL(HF bf16, TL bf16) <= 2 * floor, floor = KL(HF fp32, HF bf16)
    on the same prompt, and top-1 >= 0.99.
