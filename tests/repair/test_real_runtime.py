@@ -596,6 +596,28 @@ def _judge_factory(_runtime):
     return Judge()
 
 
+def test_unknown_command_returns_two(monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]):
+    class Args:
+        command = "not-a-command"
+
+    class Parser:
+        def parse_args(self, _argv):
+            return Args()
+
+    monkeypatch.setattr("src.repair.cli.build_parser", Parser)
+    assert main([]) == 2
+    assert "unknown command" in capsys.readouterr().err
+
+
+def test_unreadable_freeze_child_returns_two(tmp_path: Path, capsys: pytest.CaptureFixture[str]):
+    missing = tmp_path / "missing.json"
+    assert main(["verify-freeze-child", str(missing)]) == 2
+    assert "unreadable" in capsys.readouterr().err
+    bad = tmp_path / "bad.json"
+    bad.write_text("{", encoding="utf-8")
+    assert main(["verify-freeze-child", str(bad)]) == 2
+
+
 def test_real_weights_refuse_the_residual_hook():
     model = DeterministicTensorFixture()
     model.real_weights = True

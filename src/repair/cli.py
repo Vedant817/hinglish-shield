@@ -203,14 +203,19 @@ def main(argv: list[str] | None = None) -> int:
                 return completed.returncode
             return 0
         if args.command == "verify-freeze-child":
-            payload = json.loads(args.manifest.read_text(encoding="utf-8"))
+            try:
+                payload = json.loads(args.manifest.read_text(encoding="utf-8"))
+            except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+                raise RepairError("freeze manifest is unreadable", stage="freeze") from exc
+            if not isinstance(payload, dict):
+                raise RepairError("freeze manifest is unreadable", stage="freeze")
             report = verify_any(payload)
             print(json.dumps(report, indent=2, sort_keys=True, allow_nan=False))
             return 0
         if args.command == "tensor-fixture":
             write_tensor_fixture_evidence(args.out_dir)
             return 0
+        raise RepairError(f"unknown command {args.command}", stage="cli")
     except RepairError as exc:
         print(f"repair refused ({exc.stage}): {exc}", file=sys.stderr)
         return 2
-    raise RepairError(f"unknown command {args.command}")
