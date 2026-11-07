@@ -1,0 +1,12 @@
+{
+  "artifact_kind": "setup-smoke",
+  "split": "example",
+  "kernel_url": "https://www.kaggle.com/code/vedant817/hinglish-shield-dependency-preflight-5db659a",
+  "kernel_version": 1,
+  "observed_kernel_status": "ERROR",
+  "requested_accelerator": "NvidiaTeslaT4",
+  "source_git_revision": "1681112d8d94ba2be9dc5027efb9d86f7b4f74a1",
+  "source_matches_committed_bytes": true,
+  "kaggle_log_sha256": "48b107061b7bf3af07d32b2f3bd80901fdab9f1dc4ae062f8c2af2e3814af0cc",
+  "limitation": "Installed-package metadata and failed dependency check only; no imports, weights or inference"
+}

@@ -1,0 +1,8 @@
+[{"stream_name":"stdout","time":58.182560736,"data":"{\"artifact_kind\": \"setup-smoke\", \"status\": \"failed\", \"phase\": \"dependency_check\", \"archive\": \"/kaggle/working/dependency-preflight-20261107T054314Z.zip\"}\n"}
+,{"stream_name":"stderr","time":60.358022978,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":60.358061435,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":60.732408861,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":60.73244222,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":61.778234395,"data":"[NbConvertApp] Converting notebook __script__.ipynb to html\n"}
+,{"stream_name":"stderr","time":62.88224957,"data":"[NbConvertApp] Writing 307792 bytes to __results__.html\n"}
+]

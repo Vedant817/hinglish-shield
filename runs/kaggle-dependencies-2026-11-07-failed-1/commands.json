@@ -1,0 +1,25 @@
+{
+  "check": [
+    "/usr/bin/python3",
+    "-m",
+    "pip",
+    "check"
+  ],
+  "install": [
+    "/usr/bin/python3",
+    "-m",
+    "pip",
+    "install",
+    "-q",
+    "transformers==5.22.1",
+    "huggingface-hub==1.33.0",
+    "accelerate",
+    "safetensors",
+    "sentencepiece",
+    "protobuf",
+    "psutil",
+    "pytest",
+    "git+https://github.com/Lexsi-Labs/CircuitKIT.git@e71d5e17fe6e2abfde47ec9a7fbaf31649601b78",
+    "git+https://github.com/Lexsi-Labs/SafeTune.git@3901a9f48a88984a181c8c9493be2d3a20ab160f"
+  ]
+}

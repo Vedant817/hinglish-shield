@@ -68,6 +68,61 @@ There is no git commit pin. An earlier draft cited a commit id that is not in th
 
 Every result JSON records dtype, load_order, hardware, and artifact_kind.
 
+### Launch validation follow-up (2026-11-07, before model execution)
+
+The copied prompts, KL formula and acceptance thresholds remain unchanged.
+The notebook now rejects negative, boolean, string and non-finite KL evidence,
+including measured bf16 floors. A supplied floor must cover the same prompt keys;
+invalid measured floors fail instead of falling back to the provisional rule.
+Zero is valid. Values are never clipped. The importer already rejects negative KL.
+
+All parity tokenizer, HF donor and TL configuration loads use
+`CohereLabs/tiny-aya-base@d62ac17e241c871fc52e9a95d7b0e2615189d7d5`.
+TL receives the same pinned tokenizer used for the HF inputs, rather than fetching
+another tokenizer from a moving branch. Original and variant JSON record the pin.
+This is the parity checkpoint; the fixture generation checkpoint remains Global.
+
+The install cell resolves Transformers, the shared HF Hub pin and both pinned
+Lexsi libraries in one pip transaction. HF Hub is pinned to `1.33.0`, within
+CircuitKIT's declared `>=1.5,<2` range and Transformers `5.22.1`'s declared
+`>=1.31.0,<3.0` range. Published dependency metadata supports that intersection;
+it does not prove the complete environment installs or imports on Kaggle.
+The cell records the resolved Python, Torch, Transformers, HF Hub, TransformerLens
+and Accelerate versions. It preserves the global pip check in
+`dependency_check_global.json` and checks every active transitive requirement
+reachable from the explicit notebook package roots in `dependency_check.json`.
+Requested extras are included; missing packages, incompatible versions and
+unverified direct-URL dependencies fail closed. Installed CircuitKIT and SafeTune
+VCS commits must match their pins. Unrelated preinstalled packages are outside
+this scoped check. Do not use `--no-deps` to bypass dependency resolution.
+
+The first executed dependency preflight is preserved in
+`runs/kaggle-dependencies-2026-11-07-failed-1/`. Installation succeeded, then
+global pip check failed on the base environment and imports were skipped. It
+does not verify imports or model execution. That observed failure motivated the
+explicit dependency scope above; the original failure is retained rather than
+relabeled a pass.
+
+The successor is retained in `runs/kaggle-dependencies-2026-11-07-imports/`.
+Its scoped dependency check, installed Lexsi VCS revision checks and imports
+completed successfully on Kaggle. Global diagnostics still failed and are saved.
+The import subprocess detected one Tesla T4; do not infer two GPUs from the
+requested accelerator or the older hardware preflight. No CUDA tensor operation,
+model weights, inference, parity, dtype guard or judged baseline was executed.
+
+The model-free regression suite and metadata checks do not establish a successful
+Kaggle install, a short or long parity pass, a dtype guard pass, or a scored run.
+
+For a dependency-only check before attaching a token, upload
+`scripts/kaggle_dependency_preflight.py` as a private script kernel on the existing
+free account. It fetches the immutable notebook version recorded in its constants,
+verifies the notebook bytes, then runs the same install list, dependency check and
+compatibility import order. It receives no HF token, opens no prompt dataset,
+loads no weights and runs no inference. Download its setup-smoke ZIP, including
+failure logs. A dependency preflight pass is only environment evidence and cannot
+grant parity, Locate or judge credit. If the notebook install pins change, prepare
+a new preflight against the new committed notebook and preserve the older run.
+
 ## Bringing artifacts home
 
 ```bash

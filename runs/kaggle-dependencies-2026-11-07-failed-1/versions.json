@@ -1,0 +1,9 @@
+{
+  "accelerate": "1.15.0",
+  "circuitkit": "0.2.0",
+  "huggingface-hub": "1.33.0",
+  "safetune": "0.1.12",
+  "torch": "2.11.0+cu130",
+  "transformer-lens": "3.8.0",
+  "transformers": "5.22.1"
+}

@@ -1,0 +1,5 @@
+/usr/local/lib/python3.13/dist-packages/torch/cuda/__init__.py:1061: UserWarning: Can't initialize NVML
+  raw_cnt = _raw_device_count_nvml()
+WARNING: All log messages before absl::InitializeLog() is called are written to STDERR
+I0000 00:00:1794030900.501540     243 cudart_stub.cc:31] Could not find cuda drivers on your machine, GPU will not be used.
+{"cuda_available": true, "gpu_names": ["Tesla T4"]}

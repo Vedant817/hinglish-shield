@@ -24,6 +24,7 @@ FUNC_NAMES = {
     "_trace_event",
     "_finite_number",
     "_all_finite_numbers",
+    "_all_finite_kls",
     "is_memory_failure",
     "is_t4_accelerator",
     "bf16_cpu_device_or_refuse",
@@ -42,6 +43,7 @@ FUNC_NAMES = {
     "refuse_curated_prompts",
     "guard_output_meta",
     "fixture_output_meta",
+    "check_dependency_closure",
 }
 
 
@@ -358,8 +360,28 @@ class TestGpuNotebook(unittest.TestCase):
         self.assertFalse(guard["passed"])
         guard_nan = self.ns["decide_fp16_guard"](1e-3, 0.99, 18, 20, True, True, 20)
         self.assertFalse(guard_nan["passed"])
-        guard_ok = self.ns["decide_fp16_guard"](1e-3, 0.99, 18, 20, False, True, 20)
+        guard_ok = self.ns["decide_fp16_guard"](
+            1e-3, 0.99, 18, 20, False, True, 20, kl_values=[1e-3] * 20
+        )
         self.assertTrue(guard_ok["passed"])
+        guard_omitted = self.ns["decide_fp16_guard"](1e-3, 0.99, 18, 20, False, True, 20)
+        self.assertFalse(guard_omitted["passed"])
+        guard_short = self.ns["decide_fp16_guard"](
+            1e-3, 0.99, 18, 20, False, True, 20, kl_values=[1e-3] * 19
+        )
+        self.assertFalse(guard_short["passed"])
+        guard_nan_kl = self.ns["decide_fp16_guard"](
+            1e-3, 0.99, 18, 20, False, True, 20, kl_values=[1e-3] * 19 + [float("nan")]
+        )
+        self.assertFalse(guard_nan_kl["passed"])
+        guard_inf_kl = self.ns["decide_fp16_guard"](
+            1e-3, 0.99, 18, 20, False, True, 20, kl_values=[1e-3] * 19 + [float("inf")]
+        )
+        self.assertFalse(guard_inf_kl["passed"])
+        guard_neg_kl = self.ns["decide_fp16_guard"](
+            1e-3, 0.99, 18, 20, False, True, 20, kl_values=[1e-3] * 19 + [-1e-12]
+        )
+        self.assertFalse(guard_neg_kl["passed"])
 
     def test_bf16_long_does_not_use_fp32_tolerance(self) -> None:
         decide_long = self.ns["decide_bf16_long"]
@@ -388,6 +410,76 @@ class TestGpuNotebook(unittest.TestCase):
         variant_src = cell_with("bf16_parity_variant")
         self.assertNotIn("KL_TOL", variant_src)
         self.assertIn("decide_bf16_long", variant_src)
+
+    def test_invalid_kl_cannot_pass_any_numeric_gate(self) -> None:
+        original = self.ns["decide_sequential_fp32_parity"]
+        short = self.ns["decide_bf16_variant"]
+        long = self.ns["decide_bf16_long"]
+        for invalid in (-1.0, -1e-12, True, False, "0", float("nan"), float("inf")):
+            with self.subTest(invalid=invalid):
+                self.assertFalse(original({"p": invalid}, {"long": 0.0}, long_ran=True)["passed"])
+                self.assertFalse(original({"p": 0.0}, {"long": invalid}, long_ran=True)["passed"])
+                self.assertFalse(short({"p": invalid}, None)["passed_kl"])
+                self.assertFalse(short({"p": 0.0}, {"p": invalid})["passed_kl"])
+                self.assertFalse(long({"long": invalid}, None, long_ran=True)["passed"])
+                self.assertFalse(long({"long": 0.0}, {"long": invalid}, long_ran=True)["passed"])
+        # Negative entries must fail even when a positive maximum would hide them.
+        self.assertFalse(original({"p": -1e-12, "q": 0.0}, {"long": 0.0}, long_ran=True)["passed"])
+        self.assertFalse(short({"p": 0.0}, {"other": 0.0})["passed_kl"])
+        self.assertFalse(long({"long": 0.0}, {"other": 0.0}, long_ran=True)["passed"])
+        self.assertFalse(self.ns["decide_fp16_guard"](-1e-12, 1.0, 20, 20, False, True, 20)["passed"])
+        self.assertTrue(original({"p": 0.0}, {"long": 0.0}, long_ran=True)["passed"])
+        self.assertFalse(original({"p": 1e-4}, {"long": 0.0}, long_ran=True)["passed"])
+        self.assertTrue(short({"p": 0.0}, {"p": 0.0})["passed_kl"])
+        self.assertTrue(long({"long": 0.0}, {"long": 0.0}, long_ran=True)["passed"])
+        guard = self.ns["decide_fp16_guard"]
+        mixed = [0.001] * 19 + [-0.001]
+        self.assertFalse(guard(sum(mixed) / 20, 1.0, 20, 20, False, True, 20, kl_values=mixed)["passed"])
+        valid = [0.001] * 20
+        self.assertTrue(guard(0.001, 1.0, 20, 20, False, True, 20, kl_values=valid)["passed"])
+        self.assertIn("kl_values=kls", cell_with("guard = {"))
+
+    def test_every_parity_checkpoint_load_uses_the_same_revision(self) -> None:
+        expected = "d62ac17e241c871fc52e9a95d7b0e2615189d7d5"
+        self.assertEqual(self.ns["MODEL_PARITY_REV"], expected)
+        loads = []
+        for src in code_cells():
+            for node in ast.walk(ast.parse(src)):
+                if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Attribute):
+                    continue
+                if node.func.attr != "from_pretrained" or not node.args:
+                    continue
+                if not isinstance(node.args[0], ast.Name) or node.args[0].id != "MODEL_PARITY":
+                    continue
+                revision = next((k.value for k in node.keywords if k.arg == "revision"), None)
+                self.assertIsInstance(revision, ast.Name)
+                self.assertEqual(revision.id, "MODEL_PARITY_REV")
+                if any(k.arg == "hf_model" for k in node.keywords):
+                    tokenizer = next((k.value for k in node.keywords if k.arg == "tokenizer"), None)
+                    self.assertIsInstance(tokenizer, ast.Subscript)
+                    self.assertEqual(ast.unparse(tokenizer), "ns['tok']")
+                loads.append(node)
+        self.assertEqual(len(loads), 9)
+        self.assertIn('"model_revision": MODEL_PARITY_REV', cell_with("original_parity_sequential_fp32"))
+        self.assertIn('"model_revision": MODEL_PARITY_REV', cell_with("bf16_parity_variant"))
+
+    def test_install_resolves_shared_stack_once_and_checks_before_compat_import(self) -> None:
+        src = cell_with("def pip_install")
+        tree = ast.parse(src)
+        installs = [n for n in tree.body if isinstance(n, ast.Expr) and isinstance(n.value, ast.Call)
+                    and isinstance(n.value.func, ast.Name) and n.value.func.id == "pip_install"]
+        self.assertEqual(len(installs), 1)
+        args = ast.get_source_segment(src, installs[0])
+        for pin in ("TRANSFORMERS_PIN", "HF_HUB_PIN", "CIRCUITKIT_SHA", "SAFETUNE_SHA"):
+            self.assertIn(pin, args)
+        check_line = src.index('"pip", "check"')
+        compat_line = src.index("import circuitkit.backends._tl_compat")
+        self.assertLess(check_line, compat_line)
+        self.assertIn('"dependency_check.json"', src)
+        self.assertIn('if not dependency_check["passed"]:', src)
+        self.assertIn('"dependency_check_global.json"', src)
+        self.assertIn('check_dependency_closure(DEPENDENCY_ROOTS)', src)
+        self.assertIn('observed != expected', src)
 
     def test_absent_or_empty_hooks_fail(self) -> None:
         attach = self.ns["attach_residual_hooks"]
@@ -418,7 +510,9 @@ class TestGpuNotebook(unittest.TestCase):
         handles, _bad = attach(Root())
         self.assertEqual(len(handles), 2)
         self.assertTrue(attached(handles))
-        self.assertTrue(decide(1e-4, 1.0, 20, 20, False, True, 20)["passed"])
+        self.assertTrue(
+            decide(1e-4, 1.0, 20, 20, False, True, 20, kl_values=[1e-4] * 20)["passed"]
+        )
 
     def test_timer_is_assigned_before_use(self) -> None:
         src = cell_with("original_parity_sequential_fp32")
