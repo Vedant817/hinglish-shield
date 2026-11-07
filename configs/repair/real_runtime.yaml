@@ -1,0 +1,27 @@
+# Weight-load pins for the CircuitKIT repair runtime.
+# The revision is the notebook MODEL_GLOBAL_REV for CohereLabs/tiny-aya-global.
+# The chat template hash is intentionally empty. This file does not invent one.
+# load_dtype is the only dtype the original fp32 short-plus-4196 gate can evidence.
+# declared_score_dtype stays the preregistered bfloat16 and is not evidenced here.
+# circuit_scores stays null. Node scores are not invented.
+
+model_id: CohereLabs/tiny-aya-global
+model_revision: af89d219b53ed9b13b8a4645f9c8028973510324
+chat_template_sha256: ""
+load_dtype: float32
+load_dtype_evidence: original_fp32_short_and_4196_long
+declared_score_dtype: bfloat16
+score_dtype_evidenced: false
+seed: 42
+method: base
+declared_arm: candidate_alpha_1
+decoding:
+  do_sample: false
+  max_new_tokens: 256
+  system_prompt: null
+  temperature: null
+  top_p: null
+judge_model_id: allenai/wildguard
+judge_revision: ""
+circuit_scores: null
+circuitkit_source: null

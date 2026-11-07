@@ -1,0 +1,30 @@
+# Model and dtype pins for repair. Empty revision means unpinned.
+# A real run refuses until model_revision and chat_template_sha256 are filled.
+# This file does not grant the D4 bf16 variant. A human sets the flag only
+# after a recomputed variant pass.
+
+real_model:
+  model_id: CohereLabs/tiny-aya-global
+  allowed_dtypes:
+    - bfloat16
+    - float16
+    - float32
+  dtype: bfloat16
+  model_revision: ""
+  chat_template_sha256: ""
+fixture_model:
+  model_id: fixture/random-weight
+  dtype: float32
+  artifact_kind: fixture
+  weight_seed: 42
+  n_layers: 2
+  d_model: 8
+  vocab: 32
+  not_tiny_aya: true
+  not_wildguard: true
+accept_preregistered_bf16_variant: false
+variant_acceptance_note: >
+  D4 preregisters a CPU bf16 variant that runs only on a T4. A recomputed
+  pass is not Locate credit until accept_preregistered_bf16_variant is true.
+  Incomplete, failed, and missing results stay refused either way.
+  Setting the flag does not measure parity.

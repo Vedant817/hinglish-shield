@@ -14,7 +14,6 @@ import hashlib
 import json
 import math
 import os
-import re
 import subprocess
 import sys
 from collections import Counter
@@ -31,8 +30,7 @@ from src.curate.reviewed_variants import (
 from .judges import WildGuardPrimaryJudge
 
 ROOT = Path(__file__).resolve().parents[2]
-SHA256_RE = re.compile(r"[0-9a-f]{64}")
-SHA40_RE = re.compile(r"[0-9a-f]{40}")
+_HEX = "0123456789abcdef"
 ALLOWED_DTYPES = frozenset({"bfloat16", "float16", "float32"})
 SECRET_KEY_PARTS = frozenset({"token", "secret", "password", "credential", "apikey"})
 INDEX_FIELDS = (
@@ -195,14 +193,18 @@ def artifact_label(*, injected: bool) -> dict[str, Any]:
     }
 
 
+def is_lower_hex(value: Any, length: int) -> bool:
+    return isinstance(value, str) and len(value) == length and all(char in _HEX for char in value)
+
+
 def _require_sha256(value: Any, label: str) -> str:
-    if not isinstance(value, str) or SHA256_RE.fullmatch(value) is None:
+    if not is_lower_hex(value, 64):
         raise DevRunnerError(f"unpinned {label}")
     return value
 
 
 def _require_sha40(value: Any, label: str) -> str:
-    if not isinstance(value, str) or SHA40_RE.fullmatch(value) is None:
+    if not is_lower_hex(value, 40):
         raise DevRunnerError(f"unpinned {label}")
     return value
 
@@ -260,7 +262,7 @@ def _git_head(root: Path) -> str | None:
         ).strip()
     except (OSError, subprocess.CalledProcessError):
         return None
-    if SHA40_RE.fullmatch(out) is None:
+    if not is_lower_hex(out, 40):
         return None
     return out
 
