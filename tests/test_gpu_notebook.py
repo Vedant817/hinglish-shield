@@ -19,6 +19,7 @@ RUNBOOK_PATH = ROOT / "docs" / "GPU_RUNBOOK.md"
 
 FUNC_NAMES = {
     "sha256_lf_file",
+    "return_allocator_pages",
     "release_named",
     "clone_cached_logprobs",
     "_trace_event",
@@ -310,6 +311,67 @@ class TestGpuNotebook(unittest.TestCase):
         )
         self.assertEqual(tl_loads["n"], 2)
 
+    def test_bf16_path_loads_tl_with_no_donor(self) -> None:
+        ns = self.ns
+        self.assertIn(ns["return_allocator_pages"](), (True, False))
+        bf16 = cell_with("def _load_tl_bf16")
+        self.assertIn("from_pretrained_no_processing", bf16)
+        self.assertIn("keep_hf_donor=False", bf16)
+        self.assertIn("bf16 TL load refuses a live HF donor", bf16)
+        self.assertNotIn("hf_model=hf_model", bf16)
+        self.assertIn("from_pretrained_no_processing", cell_with("d6_bf16_tl_load"))
+
+        space: dict = {}
+        donors: list = []
+        hf_loads = {"n": 0}
+
+        def load_hf() -> _Box:
+            hf_loads["n"] += 1
+            return _Box()
+
+        def load_tl(donor: object) -> _Box:
+            donors.append(donor)
+            return _Box()
+
+        kls, cfg = ns["orchestrate_short_fp32"](
+            ["a"],
+            lambda: _Box(),
+            load_hf,
+            load_tl,
+            lambda _model, _tok, prompt: prompt,
+            lambda _model, _tok, prompt: prompt,
+            lambda _hf, _tl: 0.0,
+            lambda _model: {"window_size": 8},
+            space,
+            keep_hf_donor=False,
+        )
+        self.assertEqual(kls, {"a": 0.0})
+        self.assertEqual(cfg["window_size"], 8)
+        self.assertEqual(hf_loads["n"], 1)
+        self.assertEqual(donors, [None])
+        self.assertFalse(space)
+
+        hf_loads["n"] = 0
+        donors.clear()
+        space_long: dict = {}
+        kl_long, _cfg = ns["orchestrate_long_fp32"](
+            lambda: _Box(),
+            load_hf,
+            load_tl,
+            lambda _model: {"window_size": 8},
+            lambda _tok, _cfg: "ids",
+            lambda _model, _ids: "hf",
+            lambda _model, _ids: "tl",
+            lambda _a, _b: 0.0,
+            space_long,
+            cfg_snapshot={"window_size": 8},
+            keep_hf_donor=False,
+        )
+        self.assertEqual(kl_long, 0.0)
+        self.assertEqual(hf_loads["n"], 1)
+        self.assertEqual(donors, [None])
+        self.assertFalse(space_long)
+
     def test_long_hf_forward_raises_when_tl_cannot_be_released(self) -> None:
         original = self.ns["release_named"]
 
@@ -449,19 +511,25 @@ class TestGpuNotebook(unittest.TestCase):
             for node in ast.walk(ast.parse(src)):
                 if not isinstance(node, ast.Call) or not isinstance(node.func, ast.Attribute):
                     continue
-                if node.func.attr != "from_pretrained" or not node.args:
+                if node.func.attr not in {"from_pretrained", "from_pretrained_no_processing"} or not node.args:
                     continue
                 if not isinstance(node.args[0], ast.Name) or node.args[0].id != "MODEL_PARITY":
                     continue
                 revision = next((k.value for k in node.keywords if k.arg == "revision"), None)
                 self.assertIsInstance(revision, ast.Name)
                 self.assertEqual(revision.id, "MODEL_PARITY_REV")
+                if node.func.attr == "from_pretrained_no_processing":
+                    self.assertFalse(any(k.arg == "hf_model" for k in node.keywords))
                 if any(k.arg == "hf_model" for k in node.keywords):
                     tokenizer = next((k.value for k in node.keywords if k.arg == "tokenizer"), None)
                     self.assertIsInstance(tokenizer, ast.Subscript)
                     self.assertEqual(ast.unparse(tokenizer), "ns['tok']")
                 loads.append(node)
         self.assertEqual(len(loads), 9)
+        self.assertEqual(
+            sum(node.func.attr == "from_pretrained_no_processing" for node in loads),
+            1,
+        )
         self.assertIn('"model_revision": MODEL_PARITY_REV', cell_with("original_parity_sequential_fp32"))
         self.assertIn('"model_revision": MODEL_PARITY_REV', cell_with("bf16_parity_variant"))
 

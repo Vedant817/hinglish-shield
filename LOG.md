@@ -182,6 +182,16 @@ torch, and calibration documentation distinguishes paired ledger counts from
 the supplied sheet's declared expected size. Focused synthetic regressions and
 smoke passed. No model/runtime safety score or human calibration was produced.
 
+## 2026-11-07 IST: Kaggle version 8 evidence ingested
+
+The D6 notebook completed on Kaggle. Its bf16 short and long measurements satisfy
+the declared provisional variant rule, and the fp16 guard summary matches its
+per-prompt evidence. The original fp32 gate remains incomplete after the RAM
+preflight refused its conversion. Raw reports, archive checksums and provenance
+are in `runs/kaggle-parity-v8-2026-11-07/`. The embedded prereg hash matches the
+committed source; the runtime prereg file was unavailable. No Locate acceptance
+flag was changed. Generations remain fixtures and scored ASR stays null.
+
 ## 2026-11-07 IST: WildGuard real-model fixture completed
 
 The pinned WildGuard checkpoint loaded on the existing free Kaggle T4 session

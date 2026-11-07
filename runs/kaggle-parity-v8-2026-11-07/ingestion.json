@@ -1,0 +1,35 @@
+{
+  "artifact_kind": "setup-smoke",
+  "status": "inspected",
+  "metrics_eligible": false,
+  "archive_sha256": "aa4fe2c384218bdc78b024825c79d66e3ca8be03b2196cabc567996483615bbc",
+  "files_sha256": {
+    "baseline_manifest.json": "605363fa3242ae5ead6c82f41619fe0b5aa2ed7425d5eb356d0fd38c3584219d",
+    "dependency_check.json": "51ba5d03b881321fd6d92ae08fbabf95484b34d8e02f4f81c53ab8e72580c29e",
+    "dependency_check_global.json": "3950a443d85b56a39d228e2af79c74cd611c9c09552a89fc66a7a93f72f144e8",
+    "env_report.json": "0fb28f3a6d20cca5fac62254f25f1393ee24e0a805667cf62a3ea374ba6ca4d1",
+    "fp16_guard.json": "27dd7a772c6f1c83a374773b66a3c59487c7b8779f66dac0ec405fe892d80a4a",
+    "metrics_stub.json": "3724559468acb6e577af3243da753571e5bd024c4ba69b6fc3b5dc10474b8498",
+    "parity_long_prompt.json": "89642f1e931bc72978b07de5a686c633f6d9a70074a6962f7fa2b7b38b42538b",
+    "parity_original_sequential.json": "2ac9fbaeb22b479b2089927622364d189737f2d9ca5ee5182975fd28c4e7a9a0",
+    "parity_pytest.json": "71ae8bf9d8f95c803bc75774a2979f14ac61dd8ac3b5cac479995a4787449fa2",
+    "parity_variant_bf16.json": "496c70a1a02f8414502e58bf9ecb4f07b9d067138d223369032a8eef0ebebe53",
+    "predictions.jsonl": "ac713df3e0d324081f495e218632d097d694c31fe4f52f214152ab4ca802c32f",
+    "versions.json": "f50d9b811a3f6b9bbeb63218347e7cde6547c8aae8dc0d3d8c47b8b3ba279172"
+  },
+  "original_parity": {
+    "status": "incomplete",
+    "short_kl": {},
+    "long_kl": {},
+    "recorded_status": "incomplete",
+    "recorded_passed": false,
+    "recorded_claim_consistent": true,
+    "gate": "original_fp32_short_and_long",
+    "kl_tolerance": 0.0001
+  },
+  "limitations": [
+    "ZIP inspection does not authenticate the producing machine",
+    "bf16 variant is separate from original fp32 parity",
+    "Fixture generation is not ASR or a scored baseline"
+  ]
+}
