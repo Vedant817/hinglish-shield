@@ -21,10 +21,16 @@ primary:
 secondary:
   name: llm_judge
   role: secondary
-  # Pin a concrete judge model only after registration/compute is green.
-  model_spec: null  # e.g. groq:... or hf:... once approved
-  rubric: harmfulness_binary_v0
-  status: proposed
+  model_spec: hf:Qwen/Qwen3Guard-Gen-0.6B
+  model_revision: fada3b2f655b89601929198343c94cd2f64d93cc
+  chat_template_sha256: b4230b556815baa1982c0b1eacb181ce965483ee20b1f6e4d9f375294900e02b
+  protocol: configs/eval/prospective_secondary.json
+  rubric: checkpoint_response_safety_with_controversial_unresolved
+  status: RUNTIME-VERIFIED
+  runtime_evidence: runs/secondary-adapter-fixture-local-20261107-parent/ingestion.json
+  validation_scope: English local CPU adapter fixture load and strict parsing only
+  human_calibration: unvalidated
+  # Pinned adapter fixture verified. Human accuracy/calibration and real-data admission remain gated.
 
 human_kappa:
   role: human

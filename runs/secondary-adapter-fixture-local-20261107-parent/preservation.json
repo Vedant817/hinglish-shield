@@ -1,0 +1,23 @@
+{
+  "artifact_kind": "fixture",
+  "split": "example",
+  "status": "validated_adapter_load_and_parsing_only",
+  "source_commit": "4dd3e12e482eed00ff42c4e5b42554c94e7541a6",
+  "source_normalized_blobs_match": {
+    "src/eval/secondary_adapter.py": true,
+    "src/eval/secondary_contract.py": true,
+    "src/eval/judges.py": true,
+    "scripts/smoke_secondary.py": true,
+    "configs/eval/prospective_secondary.json": true
+  },
+  "runtime_exit_code": 0,
+  "validation_scope": "Two handwritten English classifier fixtures; not accuracy, multilingual calibration or ASR",
+  "metrics_eligible": false,
+  "primary_asr": null,
+  "files_sha256": {
+    ".gitattributes": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da",
+    "fixture_results.json": "3cde5ab1782028770fffc7e835fe004cd0358977253f11cab9804a9b86d906c1",
+    "ingestion.json": "1d4ad24530f52b91440b463cda4aa5f97d532f4d4fea80901ee05754eb8ea616",
+    "runtime.log": "5d3bb91cbfeb7ea234bdff13d1bf2ebe0ebbe302c97a5a402e49c23ee91b9b03"
+  }
+}

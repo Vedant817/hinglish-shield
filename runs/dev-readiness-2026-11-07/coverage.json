@@ -1,0 +1,1311 @@
+{
+  "adr": "0007",
+  "adr0007_matched_family_count": 0,
+  "corpus_complete": false,
+  "families": {
+    "fam_1561e18dd4a0": {
+      "adr0007_matched": false,
+      "canonical_family_label": "harm",
+      "canonical_member_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 1,
+          "hinglish": 0
+        }
+      },
+      "canonical_split": "calibration",
+      "eligible_languages": [],
+      "eligible_reviewed_variant_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        }
+      },
+      "eligible_source_items": 0,
+      "missing_cells": [
+        "harm.en",
+        "harm.hinglish",
+        "benign.en",
+        "benign.hi",
+        "benign.hinglish"
+      ],
+      "union_present": {
+        "benign": {
+          "en": false,
+          "hi": false,
+          "hinglish": false
+        },
+        "harm": {
+          "en": false,
+          "hi": true,
+          "hinglish": false
+        }
+      }
+    },
+    "fam_17f4cc1be2d1": {
+      "adr0007_matched": false,
+      "canonical_family_label": "harm",
+      "canonical_member_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 1,
+          "hinglish": 0
+        }
+      },
+      "canonical_split": "calibration",
+      "eligible_languages": [],
+      "eligible_reviewed_variant_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        }
+      },
+      "eligible_source_items": 0,
+      "missing_cells": [
+        "harm.en",
+        "harm.hinglish",
+        "benign.en",
+        "benign.hi",
+        "benign.hinglish"
+      ],
+      "union_present": {
+        "benign": {
+          "en": false,
+          "hi": false,
+          "hinglish": false
+        },
+        "harm": {
+          "en": false,
+          "hi": true,
+          "hinglish": false
+        }
+      }
+    },
+    "fam_1f08542bdbc8": {
+      "adr0007_matched": false,
+      "canonical_family_label": "harm",
+      "canonical_member_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 1,
+          "hinglish": 0
+        }
+      },
+      "canonical_split": "calibration",
+      "eligible_languages": [],
+      "eligible_reviewed_variant_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        }
+      },
+      "eligible_source_items": 0,
+      "missing_cells": [
+        "harm.en",
+        "harm.hinglish",
+        "benign.en",
+        "benign.hi",
+        "benign.hinglish"
+      ],
+      "union_present": {
+        "benign": {
+          "en": false,
+          "hi": false,
+          "hinglish": false
+        },
+        "harm": {
+          "en": false,
+          "hi": true,
+          "hinglish": false
+        }
+      }
+    },
+    "fam_2b4ff8b433e1": {
+      "adr0007_matched": false,
+      "canonical_family_label": "harm",
+      "canonical_member_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 1,
+          "hinglish": 0
+        }
+      },
+      "canonical_split": "dev",
+      "eligible_languages": [],
+      "eligible_reviewed_variant_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        }
+      },
+      "eligible_source_items": 0,
+      "missing_cells": [
+        "harm.en",
+        "harm.hinglish",
+        "benign.en",
+        "benign.hi",
+        "benign.hinglish"
+      ],
+      "union_present": {
+        "benign": {
+          "en": false,
+          "hi": false,
+          "hinglish": false
+        },
+        "harm": {
+          "en": false,
+          "hi": true,
+          "hinglish": false
+        }
+      }
+    },
+    "fam_2d100b90a610": {
+      "adr0007_matched": false,
+      "canonical_family_label": "harm",
+      "canonical_member_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 1,
+          "hinglish": 0
+        }
+      },
+      "canonical_split": "dev",
+      "eligible_languages": [],
+      "eligible_reviewed_variant_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        }
+      },
+      "eligible_source_items": 0,
+      "missing_cells": [
+        "harm.en",
+        "harm.hinglish",
+        "benign.en",
+        "benign.hi",
+        "benign.hinglish"
+      ],
+      "union_present": {
+        "benign": {
+          "en": false,
+          "hi": false,
+          "hinglish": false
+        },
+        "harm": {
+          "en": false,
+          "hi": true,
+          "hinglish": false
+        }
+      }
+    },
+    "fam_2e389cd85e58": {
+      "adr0007_matched": false,
+      "canonical_family_label": "harm",
+      "canonical_member_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 1,
+          "hinglish": 0
+        }
+      },
+      "canonical_split": "dev",
+      "eligible_languages": [],
+      "eligible_reviewed_variant_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        }
+      },
+      "eligible_source_items": 0,
+      "missing_cells": [
+        "harm.en",
+        "harm.hinglish",
+        "benign.en",
+        "benign.hi",
+        "benign.hinglish"
+      ],
+      "union_present": {
+        "benign": {
+          "en": false,
+          "hi": false,
+          "hinglish": false
+        },
+        "harm": {
+          "en": false,
+          "hi": true,
+          "hinglish": false
+        }
+      }
+    },
+    "fam_3b6dc8139b63": {
+      "adr0007_matched": false,
+      "canonical_family_label": "harm",
+      "canonical_member_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 1,
+          "hinglish": 0
+        }
+      },
+      "canonical_split": "calibration",
+      "eligible_languages": [],
+      "eligible_reviewed_variant_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        }
+      },
+      "eligible_source_items": 0,
+      "missing_cells": [
+        "harm.en",
+        "harm.hinglish",
+        "benign.en",
+        "benign.hi",
+        "benign.hinglish"
+      ],
+      "union_present": {
+        "benign": {
+          "en": false,
+          "hi": false,
+          "hinglish": false
+        },
+        "harm": {
+          "en": false,
+          "hi": true,
+          "hinglish": false
+        }
+      }
+    },
+    "fam_4c60ac765034": {
+      "adr0007_matched": false,
+      "canonical_family_label": "harm",
+      "canonical_member_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 1,
+          "hinglish": 0
+        }
+      },
+      "canonical_split": "calibration",
+      "eligible_languages": [],
+      "eligible_reviewed_variant_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        }
+      },
+      "eligible_source_items": 0,
+      "missing_cells": [
+        "harm.en",
+        "harm.hinglish",
+        "benign.en",
+        "benign.hi",
+        "benign.hinglish"
+      ],
+      "union_present": {
+        "benign": {
+          "en": false,
+          "hi": false,
+          "hinglish": false
+        },
+        "harm": {
+          "en": false,
+          "hi": true,
+          "hinglish": false
+        }
+      }
+    },
+    "fam_61c69f8d6129": {
+      "adr0007_matched": false,
+      "canonical_family_label": "harm",
+      "canonical_member_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 1,
+          "hinglish": 0
+        }
+      },
+      "canonical_split": "calibration",
+      "eligible_languages": [],
+      "eligible_reviewed_variant_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        }
+      },
+      "eligible_source_items": 0,
+      "missing_cells": [
+        "harm.en",
+        "harm.hinglish",
+        "benign.en",
+        "benign.hi",
+        "benign.hinglish"
+      ],
+      "union_present": {
+        "benign": {
+          "en": false,
+          "hi": false,
+          "hinglish": false
+        },
+        "harm": {
+          "en": false,
+          "hi": true,
+          "hinglish": false
+        }
+      }
+    },
+    "fam_791a7be2c652": {
+      "adr0007_matched": false,
+      "canonical_family_label": "harm",
+      "canonical_member_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 1,
+          "hinglish": 0
+        }
+      },
+      "canonical_split": "calibration",
+      "eligible_languages": [],
+      "eligible_reviewed_variant_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        }
+      },
+      "eligible_source_items": 0,
+      "missing_cells": [
+        "harm.en",
+        "harm.hinglish",
+        "benign.en",
+        "benign.hi",
+        "benign.hinglish"
+      ],
+      "union_present": {
+        "benign": {
+          "en": false,
+          "hi": false,
+          "hinglish": false
+        },
+        "harm": {
+          "en": false,
+          "hi": true,
+          "hinglish": false
+        }
+      }
+    },
+    "fam_7cf151d010e4": {
+      "adr0007_matched": false,
+      "canonical_family_label": "harm",
+      "canonical_member_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 2,
+          "hinglish": 0
+        }
+      },
+      "canonical_split": "dev",
+      "eligible_languages": [],
+      "eligible_reviewed_variant_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        }
+      },
+      "eligible_source_items": 0,
+      "missing_cells": [
+        "harm.en",
+        "harm.hinglish",
+        "benign.en",
+        "benign.hi",
+        "benign.hinglish"
+      ],
+      "union_present": {
+        "benign": {
+          "en": false,
+          "hi": false,
+          "hinglish": false
+        },
+        "harm": {
+          "en": false,
+          "hi": true,
+          "hinglish": false
+        }
+      }
+    },
+    "fam_7cf8d5320aa4": {
+      "adr0007_matched": false,
+      "canonical_family_label": "harm",
+      "canonical_member_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 1,
+          "hinglish": 0
+        }
+      },
+      "canonical_split": "dev",
+      "eligible_languages": [],
+      "eligible_reviewed_variant_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        }
+      },
+      "eligible_source_items": 0,
+      "missing_cells": [
+        "harm.en",
+        "harm.hinglish",
+        "benign.en",
+        "benign.hi",
+        "benign.hinglish"
+      ],
+      "union_present": {
+        "benign": {
+          "en": false,
+          "hi": false,
+          "hinglish": false
+        },
+        "harm": {
+          "en": false,
+          "hi": true,
+          "hinglish": false
+        }
+      }
+    },
+    "fam_7d51155d0bcd": {
+      "adr0007_matched": false,
+      "canonical_family_label": "harm",
+      "canonical_member_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 1,
+          "hi": 0,
+          "hinglish": 0
+        }
+      },
+      "canonical_split": "dev",
+      "eligible_languages": [],
+      "eligible_reviewed_variant_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        }
+      },
+      "eligible_source_items": 0,
+      "missing_cells": [
+        "harm.hi",
+        "harm.hinglish",
+        "benign.en",
+        "benign.hi",
+        "benign.hinglish"
+      ],
+      "union_present": {
+        "benign": {
+          "en": false,
+          "hi": false,
+          "hinglish": false
+        },
+        "harm": {
+          "en": true,
+          "hi": false,
+          "hinglish": false
+        }
+      }
+    },
+    "fam_884c6c2ee589": {
+      "adr0007_matched": false,
+      "canonical_family_label": "harm",
+      "canonical_member_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 1,
+          "hinglish": 0
+        }
+      },
+      "canonical_split": "calibration",
+      "eligible_languages": [],
+      "eligible_reviewed_variant_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        }
+      },
+      "eligible_source_items": 0,
+      "missing_cells": [
+        "harm.en",
+        "harm.hinglish",
+        "benign.en",
+        "benign.hi",
+        "benign.hinglish"
+      ],
+      "union_present": {
+        "benign": {
+          "en": false,
+          "hi": false,
+          "hinglish": false
+        },
+        "harm": {
+          "en": false,
+          "hi": true,
+          "hinglish": false
+        }
+      }
+    },
+    "fam_890a9d07d65c": {
+      "adr0007_matched": false,
+      "canonical_family_label": "harm",
+      "canonical_member_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 1,
+          "hinglish": 0
+        }
+      },
+      "canonical_split": "dev",
+      "eligible_languages": [],
+      "eligible_reviewed_variant_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        }
+      },
+      "eligible_source_items": 0,
+      "missing_cells": [
+        "harm.en",
+        "harm.hinglish",
+        "benign.en",
+        "benign.hi",
+        "benign.hinglish"
+      ],
+      "union_present": {
+        "benign": {
+          "en": false,
+          "hi": false,
+          "hinglish": false
+        },
+        "harm": {
+          "en": false,
+          "hi": true,
+          "hinglish": false
+        }
+      }
+    },
+    "fam_a1286bfb2115": {
+      "adr0007_matched": false,
+      "canonical_family_label": "harm",
+      "canonical_member_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 1,
+          "hinglish": 0
+        }
+      },
+      "canonical_split": "calibration",
+      "eligible_languages": [],
+      "eligible_reviewed_variant_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        }
+      },
+      "eligible_source_items": 0,
+      "missing_cells": [
+        "harm.en",
+        "harm.hinglish",
+        "benign.en",
+        "benign.hi",
+        "benign.hinglish"
+      ],
+      "union_present": {
+        "benign": {
+          "en": false,
+          "hi": false,
+          "hinglish": false
+        },
+        "harm": {
+          "en": false,
+          "hi": true,
+          "hinglish": false
+        }
+      }
+    },
+    "fam_aa3c6ed15370": {
+      "adr0007_matched": false,
+      "canonical_family_label": "harm",
+      "canonical_member_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 1,
+          "hinglish": 0
+        }
+      },
+      "canonical_split": "calibration",
+      "eligible_languages": [],
+      "eligible_reviewed_variant_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        }
+      },
+      "eligible_source_items": 0,
+      "missing_cells": [
+        "harm.en",
+        "harm.hinglish",
+        "benign.en",
+        "benign.hi",
+        "benign.hinglish"
+      ],
+      "union_present": {
+        "benign": {
+          "en": false,
+          "hi": false,
+          "hinglish": false
+        },
+        "harm": {
+          "en": false,
+          "hi": true,
+          "hinglish": false
+        }
+      }
+    },
+    "fam_aff2a4365135": {
+      "adr0007_matched": false,
+      "canonical_family_label": "harm",
+      "canonical_member_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 1,
+          "hi": 0,
+          "hinglish": 0
+        }
+      },
+      "canonical_split": "calibration",
+      "eligible_languages": [],
+      "eligible_reviewed_variant_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        }
+      },
+      "eligible_source_items": 0,
+      "missing_cells": [
+        "harm.hi",
+        "harm.hinglish",
+        "benign.en",
+        "benign.hi",
+        "benign.hinglish"
+      ],
+      "union_present": {
+        "benign": {
+          "en": false,
+          "hi": false,
+          "hinglish": false
+        },
+        "harm": {
+          "en": true,
+          "hi": false,
+          "hinglish": false
+        }
+      }
+    },
+    "fam_b071adb68a71": {
+      "adr0007_matched": false,
+      "canonical_family_label": "harm",
+      "canonical_member_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 1,
+          "hinglish": 0
+        }
+      },
+      "canonical_split": "dev",
+      "eligible_languages": [],
+      "eligible_reviewed_variant_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        }
+      },
+      "eligible_source_items": 0,
+      "missing_cells": [
+        "harm.en",
+        "harm.hinglish",
+        "benign.en",
+        "benign.hi",
+        "benign.hinglish"
+      ],
+      "union_present": {
+        "benign": {
+          "en": false,
+          "hi": false,
+          "hinglish": false
+        },
+        "harm": {
+          "en": false,
+          "hi": true,
+          "hinglish": false
+        }
+      }
+    },
+    "fam_b6637836ff81": {
+      "adr0007_matched": false,
+      "canonical_family_label": "harm",
+      "canonical_member_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 1,
+          "hinglish": 0
+        }
+      },
+      "canonical_split": "calibration",
+      "eligible_languages": [],
+      "eligible_reviewed_variant_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        }
+      },
+      "eligible_source_items": 0,
+      "missing_cells": [
+        "harm.en",
+        "harm.hinglish",
+        "benign.en",
+        "benign.hi",
+        "benign.hinglish"
+      ],
+      "union_present": {
+        "benign": {
+          "en": false,
+          "hi": false,
+          "hinglish": false
+        },
+        "harm": {
+          "en": false,
+          "hi": true,
+          "hinglish": false
+        }
+      }
+    },
+    "fam_e864bde2748c": {
+      "adr0007_matched": false,
+      "canonical_family_label": "harm",
+      "canonical_member_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 1,
+          "hinglish": 0
+        }
+      },
+      "canonical_split": "dev",
+      "eligible_languages": [],
+      "eligible_reviewed_variant_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        }
+      },
+      "eligible_source_items": 0,
+      "missing_cells": [
+        "harm.en",
+        "harm.hinglish",
+        "benign.en",
+        "benign.hi",
+        "benign.hinglish"
+      ],
+      "union_present": {
+        "benign": {
+          "en": false,
+          "hi": false,
+          "hinglish": false
+        },
+        "harm": {
+          "en": false,
+          "hi": true,
+          "hinglish": false
+        }
+      }
+    },
+    "fam_ec890f4b10d7": {
+      "adr0007_matched": false,
+      "canonical_family_label": "harm",
+      "canonical_member_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 1,
+          "hi": 0,
+          "hinglish": 0
+        }
+      },
+      "canonical_split": "calibration",
+      "eligible_languages": [],
+      "eligible_reviewed_variant_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        }
+      },
+      "eligible_source_items": 0,
+      "missing_cells": [
+        "harm.hi",
+        "harm.hinglish",
+        "benign.en",
+        "benign.hi",
+        "benign.hinglish"
+      ],
+      "union_present": {
+        "benign": {
+          "en": false,
+          "hi": false,
+          "hinglish": false
+        },
+        "harm": {
+          "en": true,
+          "hi": false,
+          "hinglish": false
+        }
+      }
+    },
+    "fam_f8c290f9496c": {
+      "adr0007_matched": false,
+      "canonical_family_label": "harm",
+      "canonical_member_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 1,
+          "hinglish": 0
+        }
+      },
+      "canonical_split": "dev",
+      "eligible_languages": [],
+      "eligible_reviewed_variant_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        }
+      },
+      "eligible_source_items": 0,
+      "missing_cells": [
+        "harm.en",
+        "harm.hinglish",
+        "benign.en",
+        "benign.hi",
+        "benign.hinglish"
+      ],
+      "union_present": {
+        "benign": {
+          "en": false,
+          "hi": false,
+          "hinglish": false
+        },
+        "harm": {
+          "en": false,
+          "hi": true,
+          "hinglish": false
+        }
+      }
+    },
+    "fam_f93bb1299bee": {
+      "adr0007_matched": false,
+      "canonical_family_label": "harm",
+      "canonical_member_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 1,
+          "hinglish": 0
+        }
+      },
+      "canonical_split": "calibration",
+      "eligible_languages": [],
+      "eligible_reviewed_variant_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        }
+      },
+      "eligible_source_items": 0,
+      "missing_cells": [
+        "harm.en",
+        "harm.hinglish",
+        "benign.en",
+        "benign.hi",
+        "benign.hinglish"
+      ],
+      "union_present": {
+        "benign": {
+          "en": false,
+          "hi": false,
+          "hinglish": false
+        },
+        "harm": {
+          "en": false,
+          "hi": true,
+          "hinglish": false
+        }
+      }
+    },
+    "fam_fc421cd695d0": {
+      "adr0007_matched": false,
+      "canonical_family_label": "harm",
+      "canonical_member_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 1,
+          "hinglish": 0
+        }
+      },
+      "canonical_split": "dev",
+      "eligible_languages": [],
+      "eligible_reviewed_variant_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        }
+      },
+      "eligible_source_items": 0,
+      "missing_cells": [
+        "harm.en",
+        "harm.hinglish",
+        "benign.en",
+        "benign.hi",
+        "benign.hinglish"
+      ],
+      "union_present": {
+        "benign": {
+          "en": false,
+          "hi": false,
+          "hinglish": false
+        },
+        "harm": {
+          "en": false,
+          "hi": true,
+          "hinglish": false
+        }
+      }
+    },
+    "fam_ffefaa472cd0": {
+      "adr0007_matched": false,
+      "canonical_family_label": "harm",
+      "canonical_member_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 1,
+          "hinglish": 0
+        }
+      },
+      "canonical_split": "dev",
+      "eligible_languages": [],
+      "eligible_reviewed_variant_counts": {
+        "benign": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        },
+        "harm": {
+          "en": 0,
+          "hi": 0,
+          "hinglish": 0
+        }
+      },
+      "eligible_source_items": 0,
+      "missing_cells": [
+        "harm.en",
+        "harm.hinglish",
+        "benign.en",
+        "benign.hi",
+        "benign.hinglish"
+      ],
+      "union_present": {
+        "benign": {
+          "en": false,
+          "hi": false,
+          "hinglish": false
+        },
+        "harm": {
+          "en": false,
+          "hi": true,
+          "hinglish": false
+        }
+      }
+    }
+  },
+  "families_in_sheet": 26,
+  "schema": "reviewed_coverage_v1",
+  "sheet_coverage_complete": false,
+  "unit": "semantic_family"
+}

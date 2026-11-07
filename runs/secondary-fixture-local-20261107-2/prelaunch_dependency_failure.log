@@ -1,0 +1,15 @@
+Traceback (most recent call last):
+  File "C:\Users\vedan\Documents\Resources\Code\hinglish-shield\src\eval\metrics_io.py", line 10, in <module>
+    import jsonschema
+ModuleNotFoundError: No module named 'jsonschema'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users\vedan\Documents\Resources\Code\hinglish-shield\scripts\smoke_secondary.py", line 16, in <module>
+    from src.eval.secondary_contract import parse_qwen3guard_response
+  File "C:\Users\vedan\Documents\Resources\Code\hinglish-shield\src\eval\__init__.py", line 16, in <module>
+    from .metrics_io import (
+  File "C:\Users\vedan\Documents\Resources\Code\hinglish-shield\src\eval\metrics_io.py", line 12, in <module>
+    raise ImportError(
+ImportError: jsonschema is required for metrics_io; run: pip install -r requirements.txt

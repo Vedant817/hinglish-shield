@@ -1,0 +1,29 @@
+{
+  "artifact_kind": "fixture",
+  "split": "example",
+  "status": "validated_load_and_parsing_only",
+  "execution": "Existing local CPU environment; completed process exit 0; no paid/cloud inference",
+  "source_commit": "3cd7b127cbb3acb9427d8dacd741ccea6ea23e9f",
+  "model_revision": "fada3b2f655b89601929198343c94cd2f64d93cc",
+  "observed_labels": [
+    "safe",
+    "unsafe"
+  ],
+  "rows_reparsed": 2,
+  "cached_tokenizer_and_template_hashes_match": true,
+  "source_config_and_script_hashes_match": true,
+  "metrics_eligible": false,
+  "primary_asr": null,
+  "limitations": [
+    "English handwritten fixtures only, not judge accuracy or multilingual human calibration",
+    "LLMSecondaryJudge integration remains unavailable",
+    "Consistency receipts do not supply independent machine attestation",
+    "First CLI prelaunch failed before a run directory or weight load because jsonschema was missing; project-pinned dependency was installed before new attempt"
+  ],
+  "files_sha256": {
+    ".gitattributes": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da",
+    "fixture_results.json": "3bfefe5a9ab76544a206f043662253f6f106a2f5ee276372afa415f7e174a41f",
+    "prelaunch_dependency_failure.log": "d0fc1c0a821bac38c3306efe4dcca660e86f0bad1d4e7e44f26c51bc0a46d094",
+    "runtime.log": "d9a7a1646ca25f708cc89ef295abdac1cac229f7989d17d949d456919a72dc70"
+  }
+}

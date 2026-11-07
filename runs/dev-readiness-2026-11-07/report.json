@@ -1,0 +1,33 @@
+{
+  "acceptance_policy": "explicit-human-accept-v1",
+  "canonical_family_splits_sha256": "334e7151edfd9fe958afcded67417b9315d2d26b693b51f91b998c5d9638b531",
+  "checked_identity_sha256": "46ebfe6e4fc25da155eb6630e8665c0769831e2e945f1d4c654206d4035dd32e",
+  "complete": false,
+  "corpus_complete": false,
+  "corpus_complete_reason": "Coverage counts only families present on this review sheet. Missing harmful or benign language cells stay missing. Language rows are variants of a canonical source item, not extra behaviors.",
+  "counting": {
+    "behavior_count_excludes_language_multiplicity": true,
+    "eligible_behavior_count": "distinct canonical source items with at least one eligible variant",
+    "eligible_variant_count": "language rows",
+    "missing_cells_are_not_filled": true
+  },
+  "eligible_behavior_count": 0,
+  "eligible_variant_count": 0,
+  "eligible_variant_count_by_split": {
+    "calibration": 0,
+    "dev": 0
+  },
+  "prompt_files_written": false,
+  "review_sheet_sha256": "305d5315ce9544e5fb9d671a816603232f2ab6c087a1d1b8a9cbf4a64a595fe0",
+  "row_count": 26,
+  "schema": "reviewed_variants_report_v1",
+  "sheet_coverage_complete": false,
+  "split_checksums": {},
+  "status": "blocked_no_explicit_accept",
+  "verdict_counts": {
+    "accept": 0,
+    "reject": 0,
+    "revise": 0,
+    "unreviewed": 26
+  }
+}
