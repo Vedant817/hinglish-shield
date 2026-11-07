@@ -119,3 +119,12 @@ locally, and smoke passed. The producer interoperability test uses fake inferenc
 No weights were loaded, no human labels were supplied and no measured run was
 promoted. Independent re-review is pending. Reviewed-variant aggregation
 integration and actual prerequisite runtime evidence remain outstanding.
+# 2026-11-07 IST: bounded aggregation re-review and follow-up
+
+The independent PR17 re-review accepted the repairs for the original admission
+findings and identified a single-arm capability mismatch. Capability aggregation
+now uses benign families, matching its documented contract and the release gate.
+The WildGuard fixture producer refuses a missing Git identity before importing
+torch, and calibration documentation distinguishes paired ledger counts from
+the supplied sheet's declared expected size. Focused synthetic regressions and
+smoke passed. No model/runtime safety score or human calibration was produced.

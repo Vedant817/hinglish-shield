@@ -908,10 +908,10 @@ def _assess_capability_arm(
         return None, "frozen rubric scores were not supplied for this arm", {}
     families = sorted({
         row["family_id"] for row in rows
-        if row.get("hs_label") == "harm" and isinstance(row.get("family_id"), str)
+        if row.get("hs_label") == "benign" and isinstance(row.get("family_id"), str)
     })
     if set(scores) != set(families):
-        return None, "frozen rubric scores do not cover every harm family", {"rubric_id": rubric_id}
+        return None, "frozen rubric scores do not cover every benign family", {"rubric_id": rubric_id}
     values: list[float] = []
     for family in families:
         value = scores[family]

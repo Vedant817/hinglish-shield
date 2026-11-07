@@ -122,6 +122,38 @@ def test_missing_provenance_returns_withheld_report(tmp_path):
     assert any("provenance" in reason for reason in result["reasons"])
 
 
+def test_capability_rubric_is_bound_to_benign_families(tmp_path):
+    rows = [{"family_id": "harm-family", "hs_label": "harm"},
+            {"family_id": "benign-family", "hs_label": "benign"}]
+    path = tmp_path / "rubric.json"
+    _write(path, {"rubric_id": "synthetic-capability", "rubric_frozen": True, "scores": {"benign-family": 0.8}})
+    value, reason, _ = agg._assess_capability_arm(rows, path)
+    assert value == 0.8 and reason is None
+    _write(path, {"rubric_id": "synthetic-capability", "rubric_frozen": True, "scores": {"harm-family": 0.8}})
+    value, reason, _ = agg._assess_capability_arm(rows, path)
+    assert value is None and "benign" in reason
+
+
+def test_wildguard_producer_refuses_missing_commit_before_torch_import(tmp_path, monkeypatch):
+    import builtins
+    from src.eval import smoke_wildguard as producer
+    def unavailable(*args, **kwargs):
+        raise OSError("fixture git unavailable")
+    original_import = builtins.__import__
+    def checked_import(name, *args, **kwargs):
+        if name == "torch":
+            raise AssertionError("weights path reached before source provenance")
+        return original_import(name, *args, **kwargs)
+    monkeypatch.setattr(producer.subprocess, "check_output", unavailable)
+    monkeypatch.setattr(builtins, "__import__", checked_import)
+    monkeypatch.setenv("HF_TOKEN", "fixture-placeholder-only")
+    out = tmp_path / "no-git"
+    assert producer.main(["--revision", JUDGE_REV, "--out", str(out)]) == 2
+    manifest = json.loads((out / "manifest.json").read_text())
+    assert manifest["status"] == "incomplete" and manifest["full_commit"] is None
+    assert manifest["attempts"] == []
+
+
 def test_actual_wildguard_fixture_producer_format_is_consumable_with_fake_backend(tmp_path, monkeypatch):
     """Execute the real artifact writer using fake inference, not model weights."""
     from auditkit.model import AutoModel
