@@ -20,6 +20,8 @@ from .dev_runner import (
     CANONICAL_FAMILY_MANIFEST,
     CANONICAL_FAMILY_MANIFEST_SHA256,
     DevRunnerError,
+    load_canonical_authority,
+    assert_canonical_dev_membership,
     canonical_dataset_bytes,
     sha256_bytes,
     sha256_text,
@@ -539,16 +541,20 @@ def _verify_sources(
         reasons.append("index hash mismatch")
     if _sha256_file(paths["family_manifest"]) != provenance.get("family_manifest_sha256"):
         reasons.append("family manifest hash mismatch")
-    prompt_bytes = paths["prompts"].read_bytes()
-    if sha256_bytes(prompt_bytes) != provenance.get("prompts_sha256"):
-        reasons.append("prompts hash mismatch")
     try:
         index_rows = validate_index(json.loads(paths["index"].read_text(encoding="utf-8")))
         family_payload = json.loads(paths["family_manifest"].read_text(encoding="utf-8"))
         validate_membership(index_rows, family_payload)
+        authority = load_canonical_authority(CANONICAL_FAMILY_MANIFEST, require_pinned_hash=True)
+        assert_canonical_dev_membership(index_rows, authority)
     except (OSError, UnicodeError, json.JSONDecodeError, DevRunnerError) as exc:
         reasons.append(f"index or family membership rejected: {exc}")
         return reasons
+    # Source hashes supplied by the caller cannot authorize membership. Check
+    # canonical identity first, before opening any prompt bytes.
+    prompt_bytes = paths["prompts"].read_bytes()
+    if sha256_bytes(prompt_bytes) != provenance.get("prompts_sha256"):
+        reasons.append("prompts hash mismatch")
     try:
         prompt_rows = [
             json.loads(line)

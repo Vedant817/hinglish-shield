@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 import pytest
@@ -12,11 +13,22 @@ from src.eval.calibration import ingest_human_labels, prepare_blinded_sheet
 from src.eval.dev_runner import canonical_dataset_bytes, sha256_bytes, sha256_text
 from src.eval.metrics_io import is_fixture, load_and_validate
 
-PY = Path(r"C:/Users/vedan/Documents/Resources/Code/hinglish-shield-scratch/.venv-ci/Scripts/python.exe")
+PY = Path(sys.executable)
 REV = "a" * 40
 JUDGE_REV = "b" * 40
 COMMIT = "c" * 40
 CANONICAL = "334e7151edfd9fe958afcded67417b9315d2d26b693b51f91b998c5d9638b531"
+SYNTHETIC_AUTHORITY = {}
+
+
+@pytest.fixture(autouse=True)
+def arithmetic_uses_explicit_synthetic_authority(monkeypatch):
+    """Arithmetic fixtures get a test authority; production has no override."""
+    import src.eval.aggregate_dev as module
+    SYNTHETIC_AUTHORITY.clear()
+    monkeypatch.setattr(module, "load_canonical_authority", lambda *args, **kwargs: {
+        "by_source": SYNTHETIC_AUTHORITY,
+    })
 
 
 def _write(path: Path, payload) -> None:
@@ -133,6 +145,10 @@ def build_ledger(root: Path, specs: list[dict], *, kind: str = "run", method: st
             "members": family_members,
         }
     family = {"review_status": "reviewed", "frozen": True, "families": families}
+    for row in index_rows:
+        SYNTHETIC_AUTHORITY[(row["source_dataset"], row["source_id"])] = {
+            **row, "family_hs_label": families[row["family_id"]]["hs_label"],
+        }
     source_dir = root / "sources"
     _write(source_dir / "index.json", index_rows)
     _jsonl(source_dir / "prompts.jsonl", prompt_rows)
@@ -275,6 +291,29 @@ def test_import_does_not_load_torch():
     sys.modules.pop("torch", None)
     import src.eval.aggregate_dev  # noqa: F401
     import src.eval.calibration  # noqa: F401
+
+
+def test_real_canonical_authority_rejects_unknown_source_before_prompt_read(tmp_path, monkeypatch):
+    import src.eval.aggregate_dev as module
+    from src.eval.dev_runner import load_canonical_authority
+    built = build_ledger(tmp_path, [_spec("not-a-frozen-source")])
+    monkeypatch.setattr(module, "load_canonical_authority", load_canonical_authority)
+    sources = json.loads(built["sources"].read_text())
+    prompt_path = Path(sources["prompts"])
+    original = Path.read_bytes
+    def guarded_read(path):
+        if path == prompt_path:
+            raise AssertionError("prompt bytes opened before canonical containment")
+        return original(path)
+    monkeypatch.setattr(Path, "read_bytes", guarded_read)
+    report = aggregate_ledger(
+        built["ledger"], tmp_path / "checked", sources_path=built["sources"],
+        calibration_report_path=built["calibration"], runtime_evidence_path=built["runtime"],
+    )
+    assert report["metrics_eligible"] is False
+    assert report["metrics_written"] is False
+    assert any("canonical membership mismatch" in reason for reason in report["reasons"])
+    assert not (tmp_path / "checked/metrics.json").exists()
     assert "torch" not in sys.modules
 
 
