@@ -68,7 +68,7 @@ python scripts/ingest_gpu_artifacts.py /path/to/hs_gpu_artifacts_<run_id>.zip --
 
 ## If something fails
 
-- Out of memory: genuine allocation failures enable the CPU bf16 variant on a T4. Auth and logic errors do not. D5 refuses the dual-resident fp32 conversion when available RAM or total RAM is under 32 GiB, so a Kaggle host restart does not kill the process before that variant starts. If the host still kills the kernel, report incomplete and do not invent a KL. Do not cut a long case that actually ran. A missing long case stays incomplete.
+- Out of memory: genuine allocation failures enable the CPU bf16 variant on a T4. Auth and logic errors do not. D5 refuses the dual-resident fp32 conversion when available RAM or total RAM is under 32 GiB, so a Kaggle host restart does not kill the process before that variant starts. If the host still kills the kernel, report incomplete and do not invent a KL. Version 6 died during the bf16 `from_pretrained` call while the donor was resident, after D5 had already skipped fp32. D6 loads that TL copy with `from_pretrained_no_processing` and no live donor. A later host kill is still incomplete. Do not cut a long case that actually ran. A missing long case stays incomplete.
 - NaN or inf guard abort: do not retry in fp16; use fp32 and log deviation D2.
 - 401 or 403 from Hugging Face: the secret is missing, unattached, or the HF account lost model access. Check Add-ons > Secrets; ask Vedant if access is the problem.
 - GPU quota exhausted or no GPU offered: stop and tell Vedant the reset time Kaggle shows. Do not move to a paid provider or create accounts.

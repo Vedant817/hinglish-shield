@@ -1,0 +1,24 @@
+{
+  "artifact_kind": "setup-smoke",
+  "split": "example",
+  "kernel_url": "https://www.kaggle.com/code/vedant817/hinglish-shield-gpu-parity?scriptVersionId=366569645",
+  "kernel_version": 8,
+  "observed_worker_status": "COMPLETE",
+  "source_config_commit": "ea04bf61628c51b7a7c802b9276dc3be6b474b10",
+  "embedded_prereg_source_sha256": "2945f03cbf33f6eb9af075bf61a8913f05191ddc159e9215950aac98bf2766f6",
+  "embedded_prereg_matches_committed_text": true,
+  "runtime_prereg_file_available": false,
+  "checks_recomputed": [
+    "bf16_provisional_short_and_long",
+    "fp16_guard_per_prompt_summary"
+  ],
+  "original_fp32_status": "incomplete",
+  "locate_credit_granted": false,
+  "metrics_eligible": false,
+  "limitations": [
+    "Provisional bf16 variant is not the original fp32 gate",
+    "Embedded prereg hash matches source; notebook did not have the prereg file on the runtime filesystem",
+    "Fixture generations and dtype checks are not scored dev ASR",
+    "WildGuard and multilingual human calibration are separate unfinished gates"
+  ]
+}
