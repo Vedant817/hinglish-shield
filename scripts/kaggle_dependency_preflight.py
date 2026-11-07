@@ -10,6 +10,7 @@ from __future__ import annotations
 import ast
 import hashlib
 import importlib.metadata
+import inspect
 import json
 import subprocess
 import sys
@@ -18,6 +19,8 @@ import urllib.request
 import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
+
+from scripts.dependency_closure import check_dependency_closure
 
 NOTEBOOK_REVISION = "fceabfa61bea73bf0b81dadc316766c02b9b82c2"
 # SHA-256 of committed notebook bytes, not a Windows checkout's line endings.
@@ -62,8 +65,17 @@ def notebook_pins(data: bytes) -> dict:
     return pins
 
 
+def _checker_ast(node: ast.AST) -> str:
+    return ast.dump(node, include_attributes=False)
+
+
 def notebook_checker(data: bytes):
-    """Compile only the checker definition from the hash-verified notebook."""
+    """Verify the notebook checker matches the reviewed local implementation.
+
+    The notebook function is parsed for identity only. It is never compiled or
+    executed, so a hash collision or a future notebook edit cannot run code in
+    the preflight process.
+    """
     notebook_pins(data)
     definitions = []
     for cell in json.loads(data)["cells"]:
@@ -75,9 +87,10 @@ def notebook_checker(data: bytes):
                            if isinstance(node, ast.FunctionDef) and node.name == "check_dependency_closure")
     if len(definitions) != 1:
         raise ValueError("missing or duplicate dependency checker")
-    namespace = {}
-    exec(compile(ast.Module(body=definitions, type_ignores=[]), "pinned_dependency_checker", "exec"), namespace)
-    return namespace["check_dependency_closure"]
+    expected = ast.parse(inspect.getsource(check_dependency_closure)).body[0]
+    if not isinstance(expected, ast.FunctionDef) or _checker_ast(definitions[0]) != _checker_ast(expected):
+        raise ValueError("notebook dependency checker differs from the reviewed implementation")
+    return check_dependency_closure
 
 
 def install_arguments(pins: dict) -> list[str]:
@@ -142,15 +155,21 @@ def main(output_parent: Path = Path("/kaggle/working")) -> int:
         scoped = checker(pins["DEPENDENCY_ROOTS"])
         write_json(out / "dependency_check.json", scoped)
         if not scoped["passed"]:
-            raise RuntimeError("project dependency closure failed; imports skipped as in the notebook")
+            raise RuntimeError("scoped dependency closure failed; inspect dependency_check.json")
         direct_sources = {}
         for package, pin in (("circuitkit", "CIRCUITKIT_SHA"), ("safetune", "SAFETUNE_SHA")):
             dist = importlib.metadata.distribution(package)
-            direct = json.loads(dist.read_text("direct_url.json") or "{}")
-            observed = direct.get("vcs_info", {}).get("commit_id")
+            try:
+                raw_direct = Path(dist.locate_file("direct_url.json")).read_bytes()
+            except OSError as exc:
+                raise RuntimeError(f"installed {package} has no readable direct_url.json") from exc
+            direct = json.loads(raw_direct.decode("utf-8")) if raw_direct else {}
+            observed = (direct.get("vcs_info") or {}).get("commit_id")
             direct_sources[package] = observed
+            if not observed:
+                raise RuntimeError(f"installed {package} has no VCS commit in direct_url.json")
             if observed != pins[pin]:
-                raise RuntimeError("installed Lexsi source revision differs from the notebook pin")
+                raise RuntimeError(f"installed {package} source revision differs from the notebook pin")
         versions["direct_sources"] = direct_sources
         write_json(out / "versions.json", versions)
         manifest["phase"] = "imports"

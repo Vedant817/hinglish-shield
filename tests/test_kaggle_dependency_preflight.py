@@ -1,5 +1,6 @@
 """The dependency probe never executes the notebook or fetches model weights."""
 import ast
+import inspect
 import json
 import zipfile
 from pathlib import Path
@@ -7,6 +8,7 @@ from pathlib import Path
 import pytest
 
 from scripts import kaggle_dependency_preflight as probe
+from scripts.dependency_closure import check_dependency_closure as shared_checker
 
 
 def test_current_install_list_still_agrees_with_preflight_without_executing_cells(monkeypatch):
@@ -34,6 +36,40 @@ def test_current_install_list_still_agrees_with_preflight_without_executing_cell
 def test_notebook_drift_is_refused_before_any_install():
     with pytest.raises(ValueError, match="hash mismatch"):
         probe.notebook_pins(b'{"cells":[]}')
+
+
+def test_preflight_never_executes_notebook_code():
+    tree = ast.parse(Path(probe.__file__).read_text(encoding="utf-8"))
+    calls = [
+        node for node in ast.walk(tree)
+        if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "exec"
+    ]
+    assert calls == []
+
+
+def test_preflight_checker_matches_shared_module():
+    local = ast.parse(inspect.getsource(probe.check_dependency_closure)).body[0]
+    shared = ast.parse(inspect.getsource(shared_checker)).body[0]
+    assert ast.dump(local, include_attributes=False) == ast.dump(shared, include_attributes=False)
+
+
+def test_notebook_checker_drift_is_refused_without_execution(monkeypatch):
+    path = Path(__file__).resolve().parents[1] / "notebooks/gpu_parity_and_baseline.ipynb"
+    raw = path.read_bytes().replace(b"\r\n", b"\n")
+    notebook = json.loads(raw)
+    changed = 0
+    for cell in notebook["cells"]:
+        if cell.get("cell_type") != "code":
+            continue
+        source = "".join(cell.get("source", []))
+        if '"passed": not errors' in source:
+            cell["source"] = source.replace('"passed": not errors', '"passed": True')
+            changed += 1
+    assert changed == 1
+    data = json.dumps(notebook).encode()
+    monkeypatch.setattr(probe, "NOTEBOOK_SHA256", probe.sha256(data))
+    with pytest.raises(ValueError, match="differs"):
+        probe.notebook_checker(data)
 
 
 def test_failure_still_archives_source_and_diagnostics(tmp_path, monkeypatch):

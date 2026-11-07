@@ -360,8 +360,28 @@ class TestGpuNotebook(unittest.TestCase):
         self.assertFalse(guard["passed"])
         guard_nan = self.ns["decide_fp16_guard"](1e-3, 0.99, 18, 20, True, True, 20)
         self.assertFalse(guard_nan["passed"])
-        guard_ok = self.ns["decide_fp16_guard"](1e-3, 0.99, 18, 20, False, True, 20)
+        guard_ok = self.ns["decide_fp16_guard"](
+            1e-3, 0.99, 18, 20, False, True, 20, kl_values=[1e-3] * 20
+        )
         self.assertTrue(guard_ok["passed"])
+        guard_omitted = self.ns["decide_fp16_guard"](1e-3, 0.99, 18, 20, False, True, 20)
+        self.assertFalse(guard_omitted["passed"])
+        guard_short = self.ns["decide_fp16_guard"](
+            1e-3, 0.99, 18, 20, False, True, 20, kl_values=[1e-3] * 19
+        )
+        self.assertFalse(guard_short["passed"])
+        guard_nan_kl = self.ns["decide_fp16_guard"](
+            1e-3, 0.99, 18, 20, False, True, 20, kl_values=[1e-3] * 19 + [float("nan")]
+        )
+        self.assertFalse(guard_nan_kl["passed"])
+        guard_inf_kl = self.ns["decide_fp16_guard"](
+            1e-3, 0.99, 18, 20, False, True, 20, kl_values=[1e-3] * 19 + [float("inf")]
+        )
+        self.assertFalse(guard_inf_kl["passed"])
+        guard_neg_kl = self.ns["decide_fp16_guard"](
+            1e-3, 0.99, 18, 20, False, True, 20, kl_values=[1e-3] * 19 + [-1e-12]
+        )
+        self.assertFalse(guard_neg_kl["passed"])
 
     def test_bf16_long_does_not_use_fp32_tolerance(self) -> None:
         decide_long = self.ns["decide_bf16_long"]
@@ -490,7 +510,9 @@ class TestGpuNotebook(unittest.TestCase):
         handles, _bad = attach(Root())
         self.assertEqual(len(handles), 2)
         self.assertTrue(attached(handles))
-        self.assertTrue(decide(1e-4, 1.0, 20, 20, False, True, 20)["passed"])
+        self.assertTrue(
+            decide(1e-4, 1.0, 20, 20, False, True, 20, kl_values=[1e-4] * 20)["passed"]
+        )
 
     def test_timer_is_assigned_before_use(self) -> None:
         src = cell_with("original_parity_sequential_fp32")
