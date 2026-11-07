@@ -53,9 +53,10 @@ def test_failure_still_archives_source_and_diagnostics(tmp_path, monkeypatch):
 
 
 @pytest.mark.parametrize("mutation", [None, "source_drift", "execution_claim", "missing_manifest"])
-def test_dependency_archive_is_hash_bound_and_never_parity_credit(tmp_path, mutation):
+@pytest.mark.parametrize("run_directory", ["kaggle-dependencies-2026-11-07-failed-1", "kaggle-dependencies-2026-11-07-imports"])
+def test_dependency_archive_is_hash_bound_and_never_parity_credit(tmp_path, mutation, run_directory):
     from scripts.ingest_gpu_artifacts import inspect_archive
-    root = Path(__file__).resolve().parents[1] / "runs" / "kaggle-dependencies-2026-11-07-failed-1"
+    root = Path(__file__).resolve().parents[1] / "runs" / run_directory
     manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
     files = {name: (root / name).read_bytes() for name in manifest["files_sha256"]}
     if mutation == "source_drift":

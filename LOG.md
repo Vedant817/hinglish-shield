@@ -138,3 +138,13 @@ scope. This operational adjustment is logged before any target or judge run;
 model acceptance thresholds, copied parity recipes and the frozen test are unchanged.
 The raw failed run is not relabeled a pass. The next actual check/import result
 remains pending.
+# 2026-11-07 IST: executed Kaggle scoped dependency and import check
+
+The successor private Kaggle preflight completed from committed source. Scoped
+transitive requirements and installed Lexsi VCS identities passed, then
+CircuitKIT compatibility, TransformerLens and SafeTune imported successfully.
+The raw global dependency failures remain recorded. Evidence and source hashes
+are under `runs/kaggle-dependencies-2026-11-07-imports/` with setup-smoke kind.
+The import log detected one T4, not an assumed two-device allocation. It also
+contains driver diagnostics from another imported runtime. No CUDA tensor
+computation, model loading, inference, parity, dtype guard or ASR was executed.

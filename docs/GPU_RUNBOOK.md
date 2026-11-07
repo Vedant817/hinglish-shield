@@ -101,7 +101,14 @@ The first executed dependency preflight is preserved in
 global pip check failed on the base environment and imports were skipped. It
 does not verify imports or model execution. That observed failure motivated the
 explicit dependency scope above; the original failure is retained rather than
-relabeled a pass. A subsequent scoped check and import run still need evidence.
+relabeled a pass.
+
+The successor is retained in `runs/kaggle-dependencies-2026-11-07-imports/`.
+Its scoped dependency check, installed Lexsi VCS revision checks and imports
+completed successfully on Kaggle. Global diagnostics still failed and are saved.
+The import subprocess detected one Tesla T4; do not infer two GPUs from the
+requested accelerator or the older hardware preflight. No CUDA tensor operation,
+model weights, inference, parity, dtype guard or judged baseline was executed.
 
 The model-free regression suite and metadata checks do not establish a successful
 Kaggle install, a short or long parity pass, a dtype guard pass, or a scored run.
