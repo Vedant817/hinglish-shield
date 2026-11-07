@@ -1,0 +1,27 @@
+{
+  "artifact_kind": "setup-smoke",
+  "split": "example",
+  "status": "queued_no_identity_result_yet",
+  "observed_at_utc": "2026-11-07T18:16:01.153979+00:00",
+  "source_main": "415dee284d968312812b2df3a9962bbb117b5c3e",
+  "source_commit": "2b77aba0cfa5aed8617d85aa3f026988e087bad7",
+  "script_sha256": "c8c5f68cef4bee28d9603f8e27266e09f837b040c156358c41bdf3857fbb711a",
+  "notebook_sha256": "7c7d2413b11e6de9ce80efa25256298766af7647e07ae2c8b32a61ddf8ce6c29",
+  "kernel_url": "https://www.kaggle.com/code/vedant817/hinglish-shield-gpu-parity",
+  "kernel_version": 9,
+  "is_private": true,
+  "accelerator_requested_enabled": false,
+  "legacy_machine_shape_in_payload": "NvidiaTeslaT4",
+  "actual_allocation_attested": false,
+  "purpose": "Pinned tokenizer metadata retrieval only, using existing attached credential; no weights, models, prompts, parity, Locate or generation",
+  "prior_v8_reports_changed": false,
+  "metrics_eligible": false,
+  "primary_asr": null,
+  "tests": "297 passed, 7 subtests passed; prompt-access audit guard active; mixed-reader module excluded",
+  "next_action": "Inspect completed identity.json and its exact checkpoint-asset hashes; never infer identity from worker completion alone",
+  "files_sha256": {
+    ".gitattributes": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da",
+    "model_free_tests.log": "6a4a0125d249c894dc559b09d67ae3abd4baa9781a5ce0adcd1aa24b2e73139a",
+    "requested-kernel-metadata.json": "67d07a159903372d8726e99cb376499b30eea99592fb599fa1b34986a203aea4"
+  }
+}
