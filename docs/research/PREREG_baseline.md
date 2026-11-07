@@ -109,6 +109,8 @@ D4 supersedes the numeric guard wording in D1. D1's free-tier decision and the d
 
 Nothing in D4 has been measured.
 
+D5 (2026-11-07, host-kill preflight). During the Kaggle GPU session the kernel reported that the notebook tried to allocate more memory than is available and restarted. No KL was measured. That restart is the platform killing the process. It is not a Python `MemoryError`, so the D4 bf16 variant never started. Before any fp32 `HookedTransformer.from_pretrained(hf_model=...)`, if available RAM or total RAM is under 32 GiB, the notebook raises `MemoryError` and uses the existing CPU bf16 path on a T4. 32 GiB is the documented 25 GiB conversion peak plus overhead, set above the about 31 GiB total RAM of this Kaggle GPU session so that allocation is not attempted. The D4 preflight that available RAM is under 13 GiB for one fp32 copy still applies to a single forward. Auth errors, missing names, asserts, and other logic errors still do not switch the gate. This preflight is not a pass of the fp32 1e-4 gate. A missing long case stays `incomplete`.
+
 ## Status
 
 Nothing in H1 has been measured. D4 above is a protocol deviation for the free-tier parity notebook, written before any GPU run, and it is not a result. Model revision, chat template hash, secondary judge, dataset hash and capability metric are unpinned. Family-grouped splits exist (D3); translations must re-run the cross-split check.

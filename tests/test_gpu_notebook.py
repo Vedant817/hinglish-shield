@@ -26,6 +26,8 @@ FUNC_NAMES = {
     "_all_finite_numbers",
     "_all_finite_kls",
     "is_memory_failure",
+    "host_ram_gib",
+    "refuse_fp32_conversion_if_short",
     "is_t4_accelerator",
     "bf16_cpu_device_or_refuse",
     "select_fp16_guard_reference",
@@ -547,6 +549,18 @@ class TestGpuNotebook(unittest.TestCase):
 
         self.assertTrue(is_memory(OutOfMemoryError("CUDA out of memory")))
         self.assertTrue(is_memory(RuntimeError("CUDA out of memory. Tried to allocate 2.00 GiB")))
+
+        refuse = self.ns["refuse_fp32_conversion_if_short"]
+        with self.assertRaises(MemoryError):
+            refuse(28.0, 31.3, 32.0)
+        with self.assertRaises(MemoryError):
+            refuse(40.0, 31.3, 32.0)
+        self.assertIsNone(refuse(40.0, 64.0, 32.0))
+        self.assertIsNone(refuse(None, 31.3, 32.0))
+        self.assertEqual(self.ns["CONVERSION_NEED_GIB"], 32.0)
+        self.assertEqual(self.ns["ONE_COPY_FP32_GIB"], 13.0)
+        for snippet in ("original_parity_sequential_fp32", "original_parity_long_prompt"):
+            self.assertIn("refuse_fp32_conversion_if_short", cell_with(snippet))
 
         for snippet in ("original_parity_sequential_fp32", "original_parity_long_prompt"):
             tree = ast.parse(cell_with(snippet))
