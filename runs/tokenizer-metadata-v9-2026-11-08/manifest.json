@@ -1,0 +1,46 @@
+{
+  "artifact_kind": "setup-smoke",
+  "split": "example",
+  "status": "worker_error_no_identity_report",
+  "worker_status": "KernelWorkerStatus.ERROR",
+  "observed_error_at": "2026-11-08T00:04:03.5246049+05:30",
+  "status_observations": [
+    {"at": "2026-11-07T23:51:25+05:30", "worker_status": "KernelWorkerStatus.QUEUED"},
+    {"at": "2026-11-07T23:53:56+05:30", "worker_status": "KernelWorkerStatus.QUEUED"},
+    {"at": "2026-11-07T23:56:28+05:30", "worker_status": "KernelWorkerStatus.QUEUED"},
+    {"at": "2026-11-07T23:59:00+05:30", "worker_status": "KernelWorkerStatus.QUEUED"},
+    {"at": "2026-11-08T00:01:32+05:30", "worker_status": "KernelWorkerStatus.QUEUED"},
+    {"at": "2026-11-08T00:04:03+05:30", "worker_status": "KernelWorkerStatus.ERROR"}
+  ],
+  "kernel_url": "https://www.kaggle.com/code/vedant817/hinglish-shield-gpu-parity",
+  "kernel_version_expected": 9,
+  "source_commit": "2b77aba0cfa5aed8617d85aa3f026988e087bad7",
+  "script_sha256_expected": "c8c5f68cef4bee28d9603f8e27266e09f837b040c156358c41bdf3857fbb711a",
+  "model_id": "CohereLabs/tiny-aya-global",
+  "model_revision": "af89d219b53ed9b13b8a4645f9c8028973510324",
+  "identity_json_present": false,
+  "tokenizer_config_present": false,
+  "blocker": "ValueError: No kernel name found in notebook and no override provided.",
+  "blocker_detail": "Papermill failed while resolving the notebook kernel, before cell execution. The metadata function did not run. No HTTP status is attested by this log.",
+  "secret_like_pattern_count": 0,
+  "chat_template_sha256_pinned": false,
+  "weights_loaded": null,
+  "generation_performed": null,
+  "metrics_eligible": false,
+  "primary_asr": null,
+  "accelerator_requested_enabled": false,
+  "legacy_machine_shape_in_launch_payload": "NvidiaTeslaT4",
+  "actual_allocation_attested": false,
+  "prior_v8_reports_changed": false,
+  "downloaded_output_dir": "kaggle-tokenizer-metadata-v9-output-20261108",
+  "files_sha256": {
+    ".gitattributes": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da",
+    "hinglish-shield-gpu-parity.log": "da4b69c2ab9c991619053b72b098497beb88c337b20ddbe344f1fd4a518f3eba"
+  },
+  "limitations": [
+    "Log and worker-status inspection check consistency only. They do not authenticate the machine.",
+    "The CLI output contained only the kernel log. Absence of identity.json is the observed download, not a retrieved unavailable report from the metadata script.",
+    "Worker ERROR is not metadata retrieval and supplies no template hash.",
+    "The launch payload disabled GPU and TPU but retained machine_shape NvidiaTeslaT4. This log does not attest what machine was allocated."
+  ]
+}
