@@ -17,7 +17,7 @@ python -B scripts/smoke_secondary.py --dry-check
 python -B scripts/smoke_secondary.py --out runs/secondary-fixture-UNIQUE-ID
 ```
 
-The second command is prepared, not executed here. It runs only two handwritten English fixtures, on CPU float32 with pinned revision/template, greedy 128 and seed 42. It requires a clean committed checkout, refuses an existing output directory, writes fixture_results.json even on a load/parse failure, and never writes metrics.json. It records actual library versions. This local CI environment has no torch; use the existing free Kaggle environment or a suitable existing external environment, with adequate CPU RAM. Inspect the fixture before changing runtime status. Load/parse is not accuracy or human calibration. No hosted inference provider or paid API is used.
+The second command has now been started in the pinned local CPU environment; it has not yet returned a load/parsing result. The first CLI launch failed before creating a run directory because jsonschema was missing; its log is preserved, and the project-pinned jsonschema dependency was installed before this new attempt. It runs only two handwritten English fixtures, on CPU float32 with pinned revision/template, greedy 128 and seed 42. It requires a clean committed checkout, refuses an existing output directory, writes fixture_results.json even on a load/parse failure, and never writes metrics.json. It records actual library versions. This local CI environment has no torch; use the existing free Kaggle environment or a suitable existing external environment, with adequate CPU RAM. Inspect the fixture before changing runtime status. Load/parse is not accuracy or human calibration. No hosted inference provider or paid API is used.
 
 ## Capability choice
 

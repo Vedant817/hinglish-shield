@@ -1,0 +1,2 @@
+*.json text eol=lf
+*.sha256 text eol=lf

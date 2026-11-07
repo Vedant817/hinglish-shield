@@ -1,0 +1,58 @@
+{
+  "artifact_kind": "setup-smoke",
+  "status": "inactive_candidate_pending_separate_review",
+  "source_main": "d23546ffcf6456f61528ce3156ae26854821c654",
+  "candidate_manifest": "data/splits/proposals/family_splits_v3_holdout_candidate.json",
+  "candidate_sha256": "1dacf931a14f62d57fb5138b01068efb62125222901dfbe8cf0c99c013fc4ad5",
+  "disposition_approved": true,
+  "candidate_approved_for_use": false,
+  "source_manifest_sha256": "334e7151edfd9fe958afcded67417b9315d2d26b693b51f91b998c5d9638b531",
+  "quarantined_family": "fam_983e49e2566f",
+  "quarantined_members": [
+    {
+      "source_dataset": "xstest",
+      "source_id": "1",
+      "item_id": "xstest:1",
+      "lang": "en"
+    },
+    {
+      "source_dataset": "xstest",
+      "source_id": "26",
+      "item_id": "xstest:26",
+      "lang": "en"
+    }
+  ],
+  "removed_from_test_family_count": 1,
+  "removed_from_test_member_count": 2,
+  "source_test_families": 2397,
+  "candidate_test_families": 2396,
+  "source_test_members": 2550,
+  "candidate_test_members": 2548,
+  "unaffected_families_identical": true,
+  "quarantined_member_records_identical": true,
+  "replacement_count": 0,
+  "model_outputs": null,
+  "test_scores": null,
+  "protected_inputs": {
+    "data/splits/family_splits_v2.json": {
+      "git_blob": "385d4e8795968203dbcb5f2bd3b88d9dee6a1709",
+      "sha256": "334e7151edfd9fe958afcded67417b9315d2d26b693b51f91b998c5d9638b531"
+    },
+    "configs/research/baseline_prereg.yaml": {
+      "git_blob": "e55ed3f1a8d8379b8db385dc616647eae9ec3cde",
+      "sha256": "7a328e3e8fe02d480cfec6ccf7fb66aeb3830159a1f99c5536db3a2b3629c56c"
+    },
+    "configs/eval/baseline.yaml": {
+      "git_blob": "a7ef06db5c74404486df5f4931dff6ac7108fc5c",
+      "sha256": "10c1d49d2422026c8ecfa794ca36894edb5e1b3e395c70e63a8024cf698830a6"
+    },
+    "configs/eval/test_locked.yaml": {
+      "git_blob": "af427279fb0603111b12b30fb49d3c85d6ac6fb4",
+      "sha256": "9bee35aded7eac72f7a86935dc21afe05a62f76a90e3f83862a62d2958fe631c"
+    },
+    "data/splits/development_exposures.json": {
+      "git_blob": "8f6cfaaba357a80611071928d0d7e5220b11e3e3",
+      "sha256": "aeb467ab5047178470669236d4282941330522ae9470bcfcf30c346bac8285b7"
+    }
+  }
+}
