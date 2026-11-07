@@ -181,3 +181,14 @@ The WildGuard fixture producer refuses a missing Git identity before importing
 torch, and calibration documentation distinguishes paired ledger counts from
 the supplied sheet's declared expected size. Focused synthetic regressions and
 smoke passed. No model/runtime safety score or human calibration was produced.
+
+## 2026-11-07 IST: WildGuard real-model fixture completed
+
+The pinned WildGuard checkpoint loaded on the existing free Kaggle T4 session
+and returned complete classifier fields through the strict AuditKIT adapter.
+Artifacts are preserved in `runs/wildguard-fixture-20261107T141335276834Z/` with
+fixture kind, null benchmark metrics, immutable model/source pins and checksums.
+The batch is English-only and uses safe response outputs; it is not judge
+accuracy, an unsafe-response positive control or multilingual calibration.
+The registry now distinguishes runtime verification from the pending human,
+secondary-judge and StrongREJECT gates. The frozen test was not accessed.

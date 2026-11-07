@@ -7,8 +7,23 @@
 - Source: `auditkit/model/hf_gen.py`, `HFGenModel` forwards revision, dtype and device-map options at model load. The WildGuard profile sends the raw classifier template with `apply_chat_template=False` and a generation cap of 32.
 - EXECUTED: import and signature inspection in an isolated Python 3.12 environment. A malformed-output parser probe returned value 0.0 with missing classifier fields. Local wrapper rejects incomplete or duplicate fields instead of counting them as safe.
 - Contract fixtures exercise the real installed GuardJudge with a fake transport. They are not WildGuard inference, judge calibration, or ASR evidence.
-- MODEL INFERENCE UNVERIFIED: authenticated config access for Tiny Aya global/base succeeded. WildGuard initially returned HTTP 403; a Nov 7 recheck returned HTTP 200 after the owner enabled access. This is configuration access only, with no judge weights loaded. A separate free Kaggle hardware preflight proved T4 access, without loading models. Platform secret attachment is still required for the model fixture.
+- Historical access stage: authenticated config access for Tiny Aya global/base succeeded. WildGuard initially returned HTTP 403; a Nov 7 recheck returned HTTP 200 after the owner enabled access. That stage established configuration access only. The executed fixture below supersedes the earlier model-inference-unverified status.
 - No downstream scoring is enabled by this ledger. Human calibration is required for validated Hinglish judgments.
+
+### Executed WildGuard model fixture
+
+The private existing-account Kaggle fixture completed on a Tesla T4 using the
+pinned judge revision and the strict local AuditKIT adapter. Its CUDA load and
+complete classifier parsing are now runtime-verified. The raw manifest, outputs,
+null fixture metrics and environment are preserved in
+`runs/wildguard-fixture-20261107T141335276834Z/`; the ingestion receipt binds their
+hashes and the downloaded archive. Source commit, judge identity, input-token
+diagnostics and peak GPU memory are recorded in the manifest.
+
+This batch uses English synthetic examples with safe response outputs. It does
+not establish judge accuracy or an unsafe-response positive control. Human
+agreement, secondary-judge runtime and Hindi/Hinglish validation remain open.
+No primary ASR, capability or over-refusal benchmark is reported by this fixture.
 
 Council round 2 correction: AuditKIT truncates its stored `raw` diagnostic text.
 The local custom profile now validates the complete output in its parse hook,
