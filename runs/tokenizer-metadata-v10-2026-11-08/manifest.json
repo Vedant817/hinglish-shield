@@ -1,0 +1,36 @@
+{
+  "artifact_kind": "setup-smoke",
+  "split": "example",
+  "status": "completed_no_identity_report",
+  "worker_status": "KernelWorkerStatus.COMPLETE",
+  "observed_kernel_version": 10,
+  "source_commit": "ec397a9573610920c991f46a865721790c3376e4",
+  "script_sha256_reported": "2dca404800a313658beb534b1d07277a6746192b318b371ba312e9f7bbc89c12",
+  "script_blob_sha256": "2dca404800a313658beb534b1d07277a6746192b318b371ba312e9f7bbc89c12",
+  "model_id": "CohereLabs/tiny-aya-global",
+  "model_revision": "af89d219b53ed9b13b8a4645f9c8028973510324",
+  "identity_status": "unavailable",
+  "error_type": "ConnectionError",
+  "identity_json_present": true,
+  "tokenizer_config_present": false,
+  "chat_template_sha256_pinned": false,
+  "weights_loaded": false,
+  "generation_performed": false,
+  "metrics_eligible": false,
+  "primary_asr": null,
+  "accelerator_requested_enabled": false,
+  "submitted_machine_shape_present": false,
+  "pulled_machine_shape": "None",
+  "actual_allocation_attested": false,
+  "files_sha256": {
+    ".gitattributes": "705fd4d6451a31d36b3df7de96f83f30ac976c9b4a6d1e51671d8e2f33e2d0da",
+    "hinglish-shield-gpu-parity.log": "6f8c25508c7ca2692cee58d5977f96ef97c7e228a8aa6b2849fdfde7ba7537e4",
+    "identity.json": "df7dc6e705a2ccd4b31a46605da63d97f6bfe5d4057dea54b0e1a37463584048"
+  },
+  "limitations": [
+    "Worker completion is not metadata success; identity.json status is unavailable.",
+    "No tokenizer_config.json was downloaded, so no raw asset or chat-template hash is recorded.",
+    "ConnectionError is reported without a phase or detail; it does not identify whether the failure was secret-provider or HTTP transport.",
+    "Log and worker-status inspection check consistency only. They do not authenticate the machine."
+  ]
+}

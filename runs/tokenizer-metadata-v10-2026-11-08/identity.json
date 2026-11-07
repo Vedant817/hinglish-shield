@@ -1,0 +1,15 @@
+{
+  "artifact_kind": "setup-smoke",
+  "split": "example",
+  "status": "unavailable",
+  "model_id": "CohereLabs/tiny-aya-global",
+  "model_revision": "af89d219b53ed9b13b8a4645f9c8028973510324",
+  "source_url": "https://huggingface.co/CohereLabs/tiny-aya-global/raw/af89d219b53ed9b13b8a4645f9c8028973510324/tokenizer_config.json",
+  "source_commit": "ec397a9573610920c991f46a865721790c3376e4",
+  "script_sha256": "2dca404800a313658beb534b1d07277a6746192b318b371ba312e9f7bbc89c12",
+  "weights_loaded": false,
+  "generation_performed": false,
+  "metrics_eligible": false,
+  "primary_asr": null,
+  "error_type": "ConnectionError"
+}
