@@ -107,6 +107,7 @@ def _row(
     item_id: str | None = None,
     family_id: str = "fam-1",
     source_id: str | None = None,
+    source_dataset: str = "synthetic",
     lang: str = "en",
     hs_label: str = "harm",
 ) -> dict[str, str]:
@@ -117,7 +118,7 @@ def _row(
         "sample_id": sample_id,
         "item_id": item,
         "family_id": family_id,
-        "source_dataset": "synthetic",
+        "source_dataset": source_dataset,
         "source_id": source,
         "lang": lang,
         "hs_label": hs_label,
@@ -184,7 +185,7 @@ def _bundle(
             "fam-1": {
                 "hs_label": "harm",
                 "members": members,
-                "source_dataset": "synthetic",
+                "source_dataset": specs[0]["source_dataset"],
                 "split": family_split,
             }
         },
@@ -1258,3 +1259,78 @@ def test_target_unload_failure_is_persisted(tmp_path: Path):
     assert cancelled["target_release_error"] == "RuntimeError"
     assert calls == []
     assert "UNLOAD_PRIVATE" not in (cancel_dir / "ledger" / "manifest.json").read_text(encoding="utf-8")
+
+
+def test_translated_language_is_not_aliased_onto_canonical_member(tmp_path: Path):
+    spec = _row("s1", lang="hinglish", source_id="src-en", item_id="item-en")
+    paths = _bundle(tmp_path, [spec], write_prompts=False)
+    authority = tmp_path / "canonical.json"
+    authority.write_bytes((json.dumps({
+        "families": {
+            "fam-1": {
+                "hs_label": "harm",
+                "members": [{
+                    "hs_label": "harm",
+                    "item_id": "item-en",
+                    "lang": "en",
+                    "source_dataset": "synthetic",
+                    "source_id": "src-en",
+                }],
+                "split": "dev",
+            }
+        },
+        "frozen": True,
+        "version": "family_splits_v2",
+    }, indent=2, sort_keys=True) + "\n").encode("utf-8"))
+    absent = tmp_path / "absent.jsonl"
+    calls, generator_factory, judge_factory = _blocked_factories()
+    with pytest.raises(DevRunnerError, match="canonical label") as caught:
+        run_dev_ledger(
+            config_path=paths["config"], index_path=paths["index"],
+            prompts_path=absent, family_manifest_path=paths["manifest"],
+            out_dir=tmp_path / "out", split="dev",
+            generator_factory=generator_factory, judge_factory=judge_factory,
+            canonical_manifest_path=authority,
+        )
+    assert caught.value.stage == "protocol"
+    assert calls == []
+    assert not absent.exists()
+
+
+def test_derived_rows_require_lineage_before_prompts(tmp_path: Path):
+    spec = _row("s1", lang="hinglish", source_dataset="reviewed_variant")
+    paths = _bundle(tmp_path, [spec], write_prompts=False)
+    absent = tmp_path / "absent.jsonl"
+    calls, generator_factory, judge_factory = _blocked_factories()
+    with pytest.raises(DevRunnerError, match="reviewed lineage contract is required"):
+        run_dev_ledger(
+            config_path=paths["config"], index_path=paths["index"],
+            prompts_path=absent, family_manifest_path=paths["manifest"],
+            out_dir=tmp_path / "out", split="dev",
+            generator_factory=generator_factory, judge_factory=judge_factory,
+        )
+    assert calls == []
+    assert not absent.exists()
+
+
+def test_canonical_rows_reject_unused_lineage_pins(tmp_path: Path):
+    paths = _bundle(tmp_path, [_row("s1")], write_prompts=False)
+    config = json.loads(paths["config"].read_text(encoding="utf-8"))
+    for key in (
+        "canonical_source_ids_sha256",
+        "review_sheet_sha256",
+        "reviewed_evidence_sha256",
+        "reviewed_lineage_sha256",
+    ):
+        config[key] = "a" * 64
+    paths["config"].write_text(json.dumps(config, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    absent = tmp_path / "absent.jsonl"
+    with pytest.raises(DevRunnerError, match="not used for canonical rows"):
+        run_dev_ledger(
+            config_path=paths["config"], index_path=paths["index"],
+            prompts_path=absent, family_manifest_path=paths["manifest"],
+            out_dir=tmp_path / "out", split="dev",
+            generator_factory=lambda _config: None,
+            judge_factory=lambda _config: None,
+        )
+    assert not absent.exists()
