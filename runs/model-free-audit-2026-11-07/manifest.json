@@ -1,0 +1,52 @@
+{
+  "artifact_kind": "setup-smoke",
+  "split": "example",
+  "purpose": "Bounded model-free engineering audit; not a model evaluation, safety result or benchmark",
+  "main_sha": "6ebc9bf0f067d4164a82af1c3bc9fada55353a13",
+  "handoff_sha": "3422aee0c7b9014dc82c5bdbd97cc3b3b13ad9da",
+  "integration_commit": "861fc623ceadcbeb0c74ff87aab7ac6a0a5f57af",
+  "integration_tree": "1e13eb7fc4f2ae07b90ffacd55e9888ced5dc027",
+  "metrics_eligible": false,
+  "independent_runtime_review": {
+    "status": "outstanding",
+    "prior_task": "hs-real-runtime-evidence-review-v8-wg",
+    "observed_thread_status": "interrupted",
+    "completed_verdict_available": false,
+    "cause": "Parent mistakenly cancelled the in-flight review; no acceptance inferred",
+    "preserved_progress": "Reviewer confirmed PR22 checkout excludes D6 and intended to inspect PR21 through git show. No final findings or verdict in its messages."
+  },
+  "limits": [
+    "No model download/GPU job in this audit",
+    "Original raw runtime reports and thresholds unchanged",
+    "Frozen holdout incident unresolved; guard remains active",
+    "Initial archive pytest failures are preserved and attributed to absent Git HEAD, then rerun in legitimate clean Git contexts without gate or test changes",
+    "Credential scan excluded mixed/test prompt payload content; filename inventory still checked",
+    "Split checker is the explicitly requested automated identity/count pass; it parses mixed CSVs but does not expose prompt fields in logs",
+    "Repository documentation only; Notion and off-repository submissions not audited"
+  ],
+  "files_sha256": {
+    ".gitattributes": "8b9c3028d6467ff3be7c793141927841d70f47f52d0590677438f488ca154992",
+    "audit_guard.py": "0127b8fa9e7670056f205f64559c3c600583030308ecaba6a55db70c6b4eb379",
+    "frozen_comparison.json": "773313c408dc0ef13b5e1d28e39cc2957f2eddab5d8b0825b09252b2511dee34",
+    "history_scan.json": "7d492a4057b79917dcf6ea82d2186329f8629a94ec7a19ac13111c9001d78806",
+    "integration-family_splits.log": "31369a480aac5971f3ffe06c9288ffe599a6ebf45cfde2d6d4edd8a6c95d47ba",
+    "integration-git-family_splits.log": "b6acf284894dfc0033d1d14e0ef264019dcbc6ddd88586f4147368cd78f2d1bb",
+    "integration-git-pytest.log": "aeda42c0e195c8cf036e0dd67c5fa6e8fd5d955a86c76b262b2466f5c927e05b",
+    "integration-git-smoke.log": "61e05b8192168cbecb91bfc5309adee1424bfb1f4defda28b1c091515530c872",
+    "integration-git-tests.json": "466d70e6a61cc04110851458b72551c68521225b4bff43833ab201287383ba6a",
+    "integration-pytest.log": "eb21dc9eabf194c92184511e18a9c590bd1222a0572356afeee761d79afe51b0",
+    "integration-smoke.log": "3ead63dbc6e9243b30a381a24b95abaebee1c54de81ca5737ddcaf49ebb7f15e",
+    "main-family_splits.log": "a0a8e8c0db010b175027a3f9e0d455901a5a7d1fdf70d8dc47a5401b22aa4e0e",
+    "main-git-family_splits.log": "8c78dfecc643164465fe46cda2e76a27bb2003378643c649155b93bf1b8d915e",
+    "main-git-pytest.log": "ef684795ed0843217c19d937025f0b3cc7c74f82010185ee1c6dad662bdad341",
+    "main-git-smoke.log": "3ead63dbc6e9243b30a381a24b95abaebee1c54de81ca5737ddcaf49ebb7f15e",
+    "main-git-tests.json": "f719a687c791a8d364728b8cb2daeb3e05a9b152dbdc29eb3a71697977a2ad8a",
+    "main-pytest.log": "1034b18fadc347571477eb4da997ca0846f7ca9e188da14a42ca1ff717d470f3",
+    "main-smoke.log": "3ead63dbc6e9243b30a381a24b95abaebee1c54de81ca5737ddcaf49ebb7f15e",
+    "pr_metadata.json": "a2ce4b73d4ed14ea3d1289943678ef4d54dedf049bad4bf7613d1d6e1407e439",
+    "runtime_recheck.json": "de70e1b8fc0a3792f08c1d5f7f79f0a18f81a75cbcea7e7efdd2509ac87e3c2f",
+    "snapshots.json": "210096a4a1f24c83b3967365f35acc58de7cf3636a4e874e78c971660666f938",
+    "tests.json": "d48a90e5b19e72b268587c0e2d49d6b363cf56cf80ae405fa43f966674629065",
+    "environment.json": "b2ae3df499bc85ccee6847f6c422979b60d62579cb822d2a2ff19a6f7cb8062d"
+  }
+}

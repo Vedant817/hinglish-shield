@@ -1,0 +1,14 @@
+{
+  "main_sha": "6ebc9bf0f067d4164a82af1c3bc9fada55353a13",
+  "pr21_head": "23c53c87e3da39d43f8492d77ea4a1ac3d55ac5e",
+  "pr22_head": "31d82aaf26cbd647b5d81c58451b0735e14f4c2b",
+  "integration_base": "6ebc9bf0f067d4164a82af1c3bc9fada55353a13",
+  "integration_tree": "1e13eb7fc4f2ae07b90ffacd55e9888ced5dc027",
+  "resolution": [
+    "LOG.md: preserve both appended entries, PR21 then PR22"
+  ],
+  "isolation": "git archive exports of exact main and combined tree; no branch checkout or merge commit",
+  "python": "C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\.venv-ci\\Scripts\\python.exe",
+  "integration_commit": "861fc623ceadcbeb0c74ff87aab7ac6a0a5f57af",
+  "integration_commit_published": false
+}

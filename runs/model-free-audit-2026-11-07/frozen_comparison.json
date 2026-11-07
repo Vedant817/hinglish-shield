@@ -1,0 +1,92 @@
+{
+  "handoff": {
+    "data/splits/family_splits_v2.json": {
+      "git_blob": "385d4e8795968203dbcb5f2bd3b88d9dee6a1709",
+      "sha256": "334e7151edfd9fe958afcded67417b9315d2d26b693b51f91b998c5d9638b531"
+    },
+    "configs/research/baseline_prereg.yaml": {
+      "git_blob": "e55ed3f1a8d8379b8db385dc616647eae9ec3cde",
+      "sha256": "7a328e3e8fe02d480cfec6ccf7fb66aeb3830159a1f99c5536db3a2b3629c56c"
+    },
+    "configs/eval/baseline.yaml": {
+      "git_blob": "a7ef06db5c74404486df5f4931dff6ac7108fc5c",
+      "sha256": "10c1d49d2422026c8ecfa794ca36894edb5e1b3e395c70e63a8024cf698830a6"
+    },
+    "configs/eval/test_locked.yaml": {
+      "git_blob": "af427279fb0603111b12b30fb49d3c85d6ac6fb4",
+      "sha256": "9bee35aded7eac72f7a86935dc21afe05a62f76a90e3f83862a62d2958fe631c"
+    }
+  },
+  "main": {
+    "data/splits/family_splits_v2.json": {
+      "git_blob": "385d4e8795968203dbcb5f2bd3b88d9dee6a1709",
+      "sha256": "334e7151edfd9fe958afcded67417b9315d2d26b693b51f91b998c5d9638b531"
+    },
+    "configs/research/baseline_prereg.yaml": {
+      "git_blob": "e55ed3f1a8d8379b8db385dc616647eae9ec3cde",
+      "sha256": "7a328e3e8fe02d480cfec6ccf7fb66aeb3830159a1f99c5536db3a2b3629c56c"
+    },
+    "configs/eval/baseline.yaml": {
+      "git_blob": "a7ef06db5c74404486df5f4931dff6ac7108fc5c",
+      "sha256": "10c1d49d2422026c8ecfa794ca36894edb5e1b3e395c70e63a8024cf698830a6"
+    },
+    "configs/eval/test_locked.yaml": {
+      "git_blob": "af427279fb0603111b12b30fb49d3c85d6ac6fb4",
+      "sha256": "9bee35aded7eac72f7a86935dc21afe05a62f76a90e3f83862a62d2958fe631c"
+    }
+  },
+  "pr21": {
+    "data/splits/family_splits_v2.json": {
+      "git_blob": "385d4e8795968203dbcb5f2bd3b88d9dee6a1709",
+      "sha256": "334e7151edfd9fe958afcded67417b9315d2d26b693b51f91b998c5d9638b531"
+    },
+    "configs/research/baseline_prereg.yaml": {
+      "git_blob": "e55ed3f1a8d8379b8db385dc616647eae9ec3cde",
+      "sha256": "7a328e3e8fe02d480cfec6ccf7fb66aeb3830159a1f99c5536db3a2b3629c56c"
+    },
+    "configs/eval/baseline.yaml": {
+      "git_blob": "a7ef06db5c74404486df5f4931dff6ac7108fc5c",
+      "sha256": "10c1d49d2422026c8ecfa794ca36894edb5e1b3e395c70e63a8024cf698830a6"
+    },
+    "configs/eval/test_locked.yaml": {
+      "git_blob": "af427279fb0603111b12b30fb49d3c85d6ac6fb4",
+      "sha256": "9bee35aded7eac72f7a86935dc21afe05a62f76a90e3f83862a62d2958fe631c"
+    }
+  },
+  "pr22": {
+    "data/splits/family_splits_v2.json": {
+      "git_blob": "385d4e8795968203dbcb5f2bd3b88d9dee6a1709",
+      "sha256": "334e7151edfd9fe958afcded67417b9315d2d26b693b51f91b998c5d9638b531"
+    },
+    "configs/research/baseline_prereg.yaml": {
+      "git_blob": "e55ed3f1a8d8379b8db385dc616647eae9ec3cde",
+      "sha256": "7a328e3e8fe02d480cfec6ccf7fb66aeb3830159a1f99c5536db3a2b3629c56c"
+    },
+    "configs/eval/baseline.yaml": {
+      "git_blob": "a7ef06db5c74404486df5f4931dff6ac7108fc5c",
+      "sha256": "10c1d49d2422026c8ecfa794ca36894edb5e1b3e395c70e63a8024cf698830a6"
+    },
+    "configs/eval/test_locked.yaml": {
+      "git_blob": "af427279fb0603111b12b30fb49d3c85d6ac6fb4",
+      "sha256": "9bee35aded7eac72f7a86935dc21afe05a62f76a90e3f83862a62d2958fe631c"
+    }
+  },
+  "integration": {
+    "data/splits/family_splits_v2.json": {
+      "git_blob": "385d4e8795968203dbcb5f2bd3b88d9dee6a1709",
+      "sha256": "334e7151edfd9fe958afcded67417b9315d2d26b693b51f91b998c5d9638b531"
+    },
+    "configs/research/baseline_prereg.yaml": {
+      "git_blob": "e55ed3f1a8d8379b8db385dc616647eae9ec3cde",
+      "sha256": "7a328e3e8fe02d480cfec6ccf7fb66aeb3830159a1f99c5536db3a2b3629c56c"
+    },
+    "configs/eval/baseline.yaml": {
+      "git_blob": "a7ef06db5c74404486df5f4931dff6ac7108fc5c",
+      "sha256": "10c1d49d2422026c8ecfa794ca36894edb5e1b3e395c70e63a8024cf698830a6"
+    },
+    "configs/eval/test_locked.yaml": {
+      "git_blob": "af427279fb0603111b12b30fb49d3c85d6ac6fb4",
+      "sha256": "9bee35aded7eac72f7a86935dc21afe05a62f76a90e3f83862a62d2958fe631c"
+    }
+  }
+}

@@ -1,0 +1,70 @@
+{
+  "main": {
+    "smoke": {
+      "command": "make smoke PYTHON=C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\.venv-ci\\Scripts\\python.exe",
+      "cwd": "C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\bounded-audit-20261107T143228Z\\main",
+      "exit_code": 0,
+      "log": "main-smoke.log",
+      "tail": [
+        "C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\.venv-ci\\Scripts\\python.exe scripts/smoke.py",
+        "OK: layout present, example metrics validate, packages import, stats ok"
+      ]
+    },
+    "pytest": {
+      "command": "C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\.venv-ci\\Scripts\\python.exe -B -m pytest -p no:cacheprovider -p audit_guard tests --ignore=tests/curate/test_translation_family_splits.py -q --tb=short --basetemp=C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\bounded-audit-20261107T143228Z\\main-pytest-temp",
+      "cwd": "C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\bounded-audit-20261107T143228Z\\main",
+      "exit_code": 1,
+      "log": "main-pytest.log",
+      "tail": [
+        "FAILED tests/eval/test_wildguard_smoke.py::test_smoke_keeps_fixture_status_and_unloads_before_retry[False]",
+        "FAILED tests/eval/test_wildguard_smoke.py::test_smoke_keeps_fixture_status_and_unloads_before_retry[True]",
+        "4 failed, 255 passed, 7 subtests passed in 22.12s"
+      ]
+    },
+    "family_splits": {
+      "command": "C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\.venv-ci\\Scripts\\python.exe -B scripts/check_translation_family_splits.py",
+      "cwd": "C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\bounded-audit-20261107T143228Z\\main",
+      "exit_code": 0,
+      "log": "main-family_splits.log",
+      "tail": [
+        "C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\bounded-audit-20261107T143228Z\\main\\data\\staging\\review\\vedant_review_nov7.csv: calibration=14 dev=12 test=33 UNMAPPED=0",
+        "RESULT: PASS (0 errors)",
+        "RUNNING: C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\.venv-ci\\Scripts\\python.exe -m src.curate.check_family_splits --manifest C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\bounded-audit-20261107T143228Z\\main\\data\\splits\\family_splits_v2.json C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\bounded-audit-20261107T143228Z\\main\\data\\staging\\translations\\batch01.csv C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\bounded-audit-20261107T143228Z\\main\\data\\staging\\translations\\aya_hinglish\\aya_hinglish_sample50.csv C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\bounded-audit-20261107T143228Z\\main\\data\\staging\\review\\vedant_review_nov7.csv"
+      ]
+    }
+  },
+  "integration": {
+    "smoke": {
+      "command": "make smoke PYTHON=C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\.venv-ci\\Scripts\\python.exe",
+      "cwd": "C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\bounded-audit-20261107T143228Z\\integration",
+      "exit_code": 0,
+      "log": "integration-smoke.log",
+      "tail": [
+        "C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\.venv-ci\\Scripts\\python.exe scripts/smoke.py",
+        "OK: layout present, example metrics validate, packages import, stats ok"
+      ]
+    },
+    "pytest": {
+      "command": "C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\.venv-ci\\Scripts\\python.exe -B -m pytest -p no:cacheprovider -p audit_guard tests --ignore=tests/curate/test_translation_family_splits.py -q --tb=short --basetemp=C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\bounded-audit-20261107T143228Z\\integration-pytest-temp",
+      "cwd": "C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\bounded-audit-20261107T143228Z\\integration",
+      "exit_code": 1,
+      "log": "integration-pytest.log",
+      "tail": [
+        "FAILED tests/eval/test_wildguard_smoke.py::test_smoke_keeps_fixture_status_and_unloads_before_retry[False]",
+        "FAILED tests/eval/test_wildguard_smoke.py::test_smoke_keeps_fixture_status_and_unloads_before_retry[True]",
+        "4 failed, 256 passed, 7 subtests passed in 18.84s"
+      ]
+    },
+    "family_splits": {
+      "command": "C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\.venv-ci\\Scripts\\python.exe -B scripts/check_translation_family_splits.py",
+      "cwd": "C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\bounded-audit-20261107T143228Z\\integration",
+      "exit_code": 0,
+      "log": "integration-family_splits.log",
+      "tail": [
+        "C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\bounded-audit-20261107T143228Z\\integration\\data\\staging\\review\\vedant_review_nov7.csv: calibration=14 dev=12 test=33 UNMAPPED=0",
+        "RESULT: PASS (0 errors)",
+        "RUNNING: C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\.venv-ci\\Scripts\\python.exe -m src.curate.check_family_splits --manifest C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\bounded-audit-20261107T143228Z\\integration\\data\\splits\\family_splits_v2.json C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\bounded-audit-20261107T143228Z\\integration\\data\\staging\\translations\\batch01.csv C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\bounded-audit-20261107T143228Z\\integration\\data\\staging\\translations\\aya_hinglish\\aya_hinglish_sample50.csv C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\bounded-audit-20261107T143228Z\\integration\\data\\staging\\review\\vedant_review_nov7.csv"
+      ]
+    }
+  }
+}

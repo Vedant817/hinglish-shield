@@ -1,0 +1,104 @@
+...................................................................F.... [ 27%]
+
+.................................F...................................... [ 55%]
+
+............................................FF.......................... [ 83%]
+
+............................................                      [100%]
+
+================================== FAILURES ===================================
+
+_ test_actual_wildguard_fixture_producer_format_is_consumable_with_fake_backend _
+
+tests\eval\test_aggregation_review_regressions.py:182: in test_actual_wildguard_fixture_producer_format_is_consumable_with_fake_backend
+
+    assert producer.main(["--revision", JUDGE_REV, "--out", str(out)]) == 0
+
+E   AssertionError: assert 2 == 0
+
+E    +  where 2 = <function main at 0x000001DD03051800>(['--revision', 'bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb', '--out', 'C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\bounded-audit-20261107T143228Z\\integration-pytest-temp\\test_actual_wildguard_fixture_0\\producer'])
+
+E    +    where <function main at 0x000001DD03051800> = <module 'src.eval.smoke_wildguard' from 'C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\bounded-audit-20261107T143228Z\\integration\\src\\eval\\smoke_wildguard.py'>.main
+
+---------------------------- Captured stdout call -----------------------------
+
+{"artifact_kind": "fixture", "status": "incomplete", "output": "C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\bounded-audit-20261107T143228Z\\integration-pytest-temp\\test_actual_wildguard_fixture_0\\producer"}
+
+---------------------------- Captured stderr call -----------------------------
+
+fatal: ambiguous argument 'HEAD': unknown revision or path not in the working tree.
+
+Use '--' to separate paths from revisions, like this:
+
+'git <command> [<revision>...] -- [<file>...]'
+
+______ test_real_path_rejects_self_authored_dev_manifest_before_prompts _______
+
+tests\eval\test_dev_runner.py:1012: in test_real_path_rejects_self_authored_dev_manifest_before_prompts
+
+    with pytest.raises(DevRunnerError, match="unsupported model contract") as caught:
+
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+E   AssertionError: Regex pattern did not match.
+
+E     Expected regex: 'unsupported model contract'
+
+E     Actual message: 'unpinned full_commit'
+
+_______ test_smoke_keeps_fixture_status_and_unloads_before_retry[False] _______
+
+tests\eval\test_wildguard_smoke.py:51: in test_smoke_keeps_fixture_status_and_unloads_before_retry
+
+    assert main(["--revision", "a" * 40, "--out", str(output)]) == 0
+
+E   AssertionError: assert 2 == 0
+
+E    +  where 2 = main(['--revision', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', '--out', 'C:\\Users\\vedan\\Documents\\Resources\\Code\\hin...ield-scratch\\bounded-audit-20261107T143228Z\\integration-pytest-temp\\test_smoke_keeps_fixture_statu0\\fixture-smoke'])
+
+---------------------------- Captured stdout call -----------------------------
+
+{"artifact_kind": "fixture", "status": "incomplete", "output": "C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\bounded-audit-20261107T143228Z\\integration-pytest-temp\\test_smoke_keeps_fixture_statu0\\fixture-smoke"}
+
+---------------------------- Captured stderr call -----------------------------
+
+fatal: ambiguous argument 'HEAD': unknown revision or path not in the working tree.
+
+Use '--' to separate paths from revisions, like this:
+
+'git <command> [<revision>...] -- [<file>...]'
+
+_______ test_smoke_keeps_fixture_status_and_unloads_before_retry[True] ________
+
+tests\eval\test_wildguard_smoke.py:51: in test_smoke_keeps_fixture_status_and_unloads_before_retry
+
+    assert main(["--revision", "a" * 40, "--out", str(output)]) == 0
+
+E   AssertionError: assert 2 == 0
+
+E    +  where 2 = main(['--revision', 'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa', '--out', 'C:\\Users\\vedan\\Documents\\Resources\\Code\\hin...ield-scratch\\bounded-audit-20261107T143228Z\\integration-pytest-temp\\test_smoke_keeps_fixture_statu1\\fixture-smoke'])
+
+---------------------------- Captured stdout call -----------------------------
+
+{"artifact_kind": "fixture", "status": "incomplete", "output": "C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\bounded-audit-20261107T143228Z\\integration-pytest-temp\\test_smoke_keeps_fixture_statu1\\fixture-smoke"}
+
+---------------------------- Captured stderr call -----------------------------
+
+fatal: ambiguous argument 'HEAD': unknown revision or path not in the working tree.
+
+Use '--' to separate paths from revisions, like this:
+
+'git <command> [<revision>...] -- [<file>...]'
+
+=========================== short test summary info ===========================
+
+FAILED tests/eval/test_aggregation_review_regressions.py::test_actual_wildguard_fixture_producer_format_is_consumable_with_fake_backend
+
+FAILED tests/eval/test_dev_runner.py::test_real_path_rejects_self_authored_dev_manifest_before_prompts
+
+FAILED tests/eval/test_wildguard_smoke.py::test_smoke_keeps_fixture_status_and_unloads_before_retry[False]
+
+FAILED tests/eval/test_wildguard_smoke.py::test_smoke_keeps_fixture_status_and_unloads_before_retry[True]
+
+4 failed, 256 passed, 7 subtests passed in 18.84s
+

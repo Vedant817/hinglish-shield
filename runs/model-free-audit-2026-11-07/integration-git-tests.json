@@ -1,0 +1,30 @@
+{
+  "head": "861fc623ceadcbeb0c74ff87aab7ac6a0a5f57af",
+  "tree": "1e13eb7fc4f2ae07b90ffacd55e9888ced5dc027",
+  "cwd": "C:\\Users\\vedan\\.t3\\worktrees\\hinglish-shield\\t3-6257e591",
+  "smoke": {
+    "command": "make smoke PYTHON=C:/Users/vedan/Documents/Resources/Code/hinglish-shield-scratch/.venv-ci/Scripts/python.exe",
+    "exit_code": 0,
+    "tail": [
+      "C:/Users/vedan/Documents/Resources/Code/hinglish-shield-scratch/.venv-ci/Scripts/python.exe scripts/smoke.py",
+      "OK: layout present, example metrics validate, packages import, stats ok"
+    ]
+  },
+  "pytest": {
+    "command": "C:/Users/vedan/Documents/Resources/Code/hinglish-shield-scratch/.venv-ci/Scripts/python.exe -B -m pytest -p no:cacheprovider -p audit_guard tests --ignore=tests/curate/test_translation_family_splits.py -q --tb=short --basetemp=C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\bounded-audit-20261107T143228Z\\integration-git-pytest-temp",
+    "exit_code": 0,
+    "tail": [
+      "\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m.\u001b[0m\u001b[32m                      [100%]\u001b[0m",
+      "\u001b[32m\u001b[32m\u001b[1m260 passed\u001b[0m, \u001b[32m\u001b[1m7 subtests passed\u001b[0m\u001b[32m in 16.87s\u001b[0m\u001b[0m"
+    ]
+  },
+  "family_splits": {
+    "command": "C:/Users/vedan/Documents/Resources/Code/hinglish-shield-scratch/.venv-ci/Scripts/python.exe -B scripts/check_translation_family_splits.py",
+    "exit_code": 0,
+    "tail": [
+      "C:\\Users\\vedan\\.t3\\worktrees\\hinglish-shield\\t3-6257e591\\data\\staging\\review\\vedant_review_nov7.csv: calibration=14 dev=12 test=33 UNMAPPED=0",
+      "RESULT: PASS (0 errors)"
+    ]
+  },
+  "post_test_git_status": ""
+}

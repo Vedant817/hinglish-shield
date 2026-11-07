@@ -1,19 +1,31 @@
-# Hinglish Shield handoff (2026-11-06 IST)
+# Hinglish Shield handoff (2026-11-07 IST)
 
 For Vedant and any fresh coding agent taking over from the LX bots.
 
 No em dashes in this file.
 
+## Current development boundaries (Nov 7)
+
+- Development review uses only `data/staging/review/vedant_review_nov7_calibration_dev.csv`: 26 calibration/dev rows. The historical mixed queue contains 59 rows, including 33 test rows. Do not open or print its prompt content. The requested family-split checker is an identity/count audit, not development review or scoring.
+- HinGE human quality labels and IndicGuard source labels do not approve our finance translations and do not label our generated responses. Translation admission still requires explicit human accepts with lineage; judge calibration requires human labels of the actual generated responses. Missing labels stay unavailable.
+- `fam_983e49e2566f` in `data/splits/development_exposures.json` is an unresolved frozen-holdout contamination incident. Preserve the original manifest byte-for-byte. The locked-test guard must remain enabled pending a separately reviewed prospective resolution. No test generation, scoring or tuning before the single Nov 11 frozen-arm pass, and no pass until that resolution and all prerequisites are satisfied. See `docs/INTEGRITY_LOG.md`.
+- Nov 8 preliminary H1 work is dev-only. Pin the reviewed data, model revision, chat template, judge, dtype and effective generation settings before the run.
+- PR21's v8 evidence is a provisional D4 CPU bf16 variant result. Its short mean KL exceeds the original `1e-4` threshold. Original fp32 short-plus-4196 credit is incomplete; weight-backed Locate/Repair acceptance stays blocked. Do not change tolerances after seeing v8. D5/D6 are logged operational deviations; preserve raw artifacts and hashes.
+- PR22 establishes English WildGuard load/parsing only. Both fixture responses are safe. It does not establish judge accuracy, an unsafe-response positive control, or Hindi/Hinglish calibration. Fixture outputs are not ASR.
+- Next executable work is the reviewed multilingual lineage and response-calibration pack, followed by a pinned dev baseline, then gated Locate/Repair. Passing CI or Kilo alone does not authorize acceptance or merge.
+
+Bounded verification: `docs/audits/2026-11-07-bounded-verification.md`.
+
 ## Current main
 
 - Repo: https://github.com/Vedant817/hinglish-shield
 - Branch: `main`
-- Tip SHA at handoff write time: `a6f5b60b98af12915041a4766359c5aac4e4b165` (verify with `git rev-parse HEAD` after pull; the HANDOFF PR may add one commit on top)
+- Tip SHA at handoff write time: `6ebc9bf0f067d4164a82af1c3bc9fada55353a13` at this audit (verify `origin/main` again; this documentation is proposed via PR)
 - Notion HQ: https://app.notion.com/p/40f047502f5881d4aa86d150111b9355
 - Task Board: https://app.notion.com/p/033ead4a50f24e6e98105c33d6b646e6
 - Agent Playbook: https://app.notion.com/p/40f047502f58811c9d99f53600cb6ab0
 
-## Merged today (verify on GitHub)
+## Historical Nov 6 merge snapshot (verify current state on GitHub)
 
 | PR | Title | Notes |
 | --- | --- | --- |
@@ -26,7 +38,7 @@ No em dashes in this file.
 | #10 | Kaggle GPU parity notebook + GPU_RUNBOOK | Draft marked ready; tip includes D4 sequential fp32 + 4196-token long gate + parity-copy verify. Notebook had 0 outputs and no token literals |
 | #11 | Setup-smoke Tiny Aya CPU artifacts | Merged after syncing with main |
 
-Open PRs at handoff: none.
+Open PRs at the Nov 6 snapshot: none. This is historical, not the current PR queue.
 
 ## Local verification on this box (2026-11-06 IST)
 
@@ -53,16 +65,16 @@ These are pipeline integrity checks, not ASR or language-gap results.
 
 ## What is open (priority)
 
-1. **Vedant: Kaggle GPU run** using `notebooks/gpu_parity_and_baseline.ipynb` on main. Follow `docs/GPU_RUNBOOK.md`; agents use `docs/KAGGLE_AGENT.md` (web and CLI steps, filing results, failure handling). Free tier only. Expect about 60 to 240 minutes wall time; the long fp32 4196-token case alone is a rough estimate of about 20 to 90 extra minutes. Download `hs_gpu_artifacts_*.zip` into `runs/`. Fixtures are not scored metrics.
-2. **Vedant: Hindi and Hinglish review** (Task Board Human P0, Nov 7): https://app.notion.com/40f047502f588116ab55c2304137b52d and review sheet `data/staging/review/vedant_review_nov7.csv`. Related value task: https://app.notion.com/40f047502f58817eb784dfecd51cab2c
+1. **Review existing runtime evidence:** PR21 preserves v8 parity/guard artifacts; PR22 preserves the English WildGuard fixture. Do not rerun solely because this historical handoff once requested a launch. Follow the current development boundaries above; fixtures are not scored metrics.
+2. **Vedant: Hindi and Hinglish review** (Task Board Human P0, Nov 7): https://app.notion.com/40f047502f588116ab55c2304137b52d and review sheet `data/staging/review/vedant_review_nov7_calibration_dev.csv`. Related value task: https://app.notion.com/40f047502f58817eb784dfecd51cab2c
 3. **Data freeze** before any test scoring: finish HI/Hinglish variants on calibration/dev; keep test frozen; re-run family cross-split check.
-4. **Nov 8:** preliminary H1 on **dev** only (`configs/eval/baseline.yaml`). RUNTIME-VERIFY WildGuard first.
-5. **Nov 9 Locate gate:** CircuitKIT credit needs the Kaggle parity result (sequential fp32 short+long KL < 1e-4, or logged incomplete/bf16 variant).
-6. **Nov 11:** single locked test pass (`configs/eval/test_locked.yaml`) after Repair arm frozen. Never retune on test.
+4. **Nov 8:** preliminary H1 on **dev** only (`configs/eval/baseline.yaml`), after pinned identity, reviewed data and judge-calibration gates. PR22 establishes English WildGuard fixture load/parsing only.
+5. **Nov 9 Locate gate:** original sequential fp32 short+long KL credit remains incomplete. A logged incomplete or provisional bf16 variant is not original credit and does not unlock the weight-backed repair path.
+6. **Nov 11:** planned single locked test pass (`configs/eval/test_locked.yaml`), blocked until the holdout incident has a separately reviewed prospective resolution and the Repair arm is frozen. Never retune on test.
 7. Writer P0s: HF article and pitch (no invented numbers): https://app.notion.com/40f047502f58812cb515f2dc909208e8
 8. Submit: internal target complete Nov 14 IST; hard outer deadline Nov 15 17:29:59 IST (Task Board).
 
-### Data freeze conflicts (resolved in code, still track in docs)
+### Data freeze decisions and unresolved holdout incident
 
 - Family splits 20/30/50 (prereg) vs old item-level 50/15/35: **v2 family splits are on main** (`data/splits/family_splits_v2.json`). Realized ratios logged in prereg deviation D3 (~18.9 / 30.4 / 50.7).
 - Baseline on test: **dev** for Nov 8 preliminary; **test** only via `test_locked.yaml` on Nov 11.
@@ -73,7 +85,7 @@ These are pipeline integrity checks, not ASR or language-gap results.
 
 - No hardcoded or fabricated metrics. Every reported number needs `runs/<id>/metrics.json` with `artifact_kind: run` (fixtures use `artifact_kind: fixture`).
 - Preregistered protocol: `docs/research/PREREG_baseline.md` + Experiment Protocol pages in Notion.
-- Frozen test evaluated once (`--i-understand-single-shot`).
+- Frozen test evaluated once (`--i-understand-single-shot`), only after the unresolved exposure incident is prospectively resolved and reviewed. Do not waive or remove its guard.
 - No secrets, vendor trees, or venvs in git.
 - Paid compute / new accounts / other-repo issues or PRs / HF publishing: Vedant OK required.
 - No em dashes in docs or submissions.
@@ -112,7 +124,7 @@ python3 -m venv .venv && source .venv/bin/activate
 make install
 pip install pytest   # for unit tests
 make smoke
-python -m pytest tests/ -q
+python -m pytest tests/ --ignore=tests/curate/test_translation_family_splits.py -q
 ```
 
 Lexsi libraries: prefer **separate venvs** per lib (especially SafeTune on Python 3.12+). Box smoke logs live under `runs/setup-smoke-2026-11-06/`. HF_TOKEN must be available for gated Tiny Aya loads; never print it. For Kaggle, put HF_TOKEN in Kaggle Secrets only.
@@ -162,12 +174,12 @@ Integrity rules (non-negotiable):
 Standing permission: Vedant said agents may push, open PRs, and merge in Vedant817/hinglish-shield under the constraints above.
 
 Next work in priority order:
-1. Run or help Vedant run the Kaggle GPU job by following docs/KAGGLE_AGENT.md (Vedant does sign-in, phone verification and typing the HF_TOKEN secret if you cannot hold it securely). Ingest hs_gpu_artifacts zip under runs/. Record parity short/long KL; incomplete if long case missing. Do not treat fixtures as ASR.
-2. Support Vedant's Nov 7 Hindi/Hinglish review of data/staging/review/vedant_review_nov7.csv; apply labeled fixes without inventing translations.
+1. Review the preserved PR21 v8 and PR22 WildGuard fixture evidence using docs/KAGGLE_AGENT.md. Original fp32 short+long parity is incomplete; the D4 bf16 result is provisional. Do not treat fixtures as ASR or unlock weight-backed Locate/Repair.
+2. Support Vedant's Nov 7 Hindi/Hinglish review of data/staging/review/vedant_review_nov7_calibration_dev.csv; apply labeled fixes without inventing translations.
 3. Complete calibration/dev language coverage; keep test frozen; re-run scripts/check_translation_family_splits.py.
-4. RUNTIME-VERIFY WildGuard; Nov 8 preliminary baseline on dev only; write real metrics.json.
-5. If parity passes, Locate refusal directions on calibration/dev only.
-6. Repair steering sweep on calibration/dev; freeze arm; Nov 11 locked test once.
+4. WildGuard English fixture runtime is evidenced in PR22; accuracy and multilingual human calibration remain unverified. Nov 8 preliminary baseline is dev-only and requires all admission gates before writing real metrics.json.
+5. Only after the original parity credit and remaining runtime pins pass, Locate refusal directions on calibration/dev only. A provisional bf16 result is insufficient for the weight-backed path.
+6. Repair steering sweep on calibration/dev; freeze arm. Nov 11 locked test stays blocked pending a separately reviewed prospective holdout resolution. Preserve the original manifest and exposure guard.
 7. Keep Writer article numbers tied only to run artifacts.
 8. Prepare submission materials for Nov 14 IST (hard stop Nov 15 17:29:59 IST).
 

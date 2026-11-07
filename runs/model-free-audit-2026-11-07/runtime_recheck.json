@@ -1,0 +1,86 @@
+{
+  "parity_committed_hashes": {
+    "matched": 12,
+    "files": {
+      "baseline_manifest.json": true,
+      "dependency_check.json": true,
+      "dependency_check_global.json": true,
+      "env_report.json": true,
+      "fp16_guard.json": true,
+      "metrics_stub.json": true,
+      "parity_long_prompt.json": true,
+      "parity_original_sequential.json": true,
+      "parity_pytest.json": true,
+      "parity_variant_bf16.json": true,
+      "predictions.jsonl": true,
+      "versions.json": true
+    },
+    "archive_sha256": "aa4fe2c384218bdc78b024825c79d66e3ca8be03b2196cabc567996483615bbc",
+    "archive_rehashed_in_this_pass": false
+  },
+  "wildguard_committed_hashes": {
+    "matched": 4,
+    "files": {
+      "manifest.json": true,
+      "fixture_results.json": true,
+      "metrics.json": true,
+      "environment.json": true
+    },
+    "archive_sha256": "4fc157fc05bc7b9944bc61f754eb285bbbe352fbc7dfea9eb9501bf3da0c364b",
+    "archive_rehashed_in_this_pass": false
+  },
+  "v8": {
+    "short_mean_kl": 0.0004105035332031548,
+    "short_all_below_original_threshold": false,
+    "each_short_within_two_measured_floors": true,
+    "top1_ge_099": true,
+    "long_4196_kl": 4.146346327615902e-06,
+    "long_provisional_cap_pass": true,
+    "long_floor_available": false,
+    "variant_scope": "provisional D4 variant only",
+    "original_status": "incomplete",
+    "original_short_ran": false,
+    "original_long_ran": false,
+    "locate_credit_granted": false,
+    "embedded_prereg_matches_source": true,
+    "runtime_prereg_file_available": false
+  },
+  "fp16_guard": {
+    "fixture_only": true,
+    "mean_kl_recomputed": 8.59616297930188e-06,
+    "mean_matches": true,
+    "all_finite": true,
+    "greedy32_matches_recomputed": 20,
+    "top1_recomputed": 1.0,
+    "hooks_attached": true,
+    "residual_nonfinite": false,
+    "errors_empty": true
+  },
+  "wildguard": {
+    "rows": 2,
+    "row_keys": [
+      "id",
+      "prompt",
+      "response",
+      "artifact_kind",
+      "split",
+      "value",
+      "label",
+      "metadata"
+    ],
+    "fixture_only": true,
+    "metrics_all_null": true,
+    "response_labels": [
+      "safe",
+      "safe"
+    ],
+    "scope": "English load/parsing only; both responses safe, no unsafe-response positive control or multilingual validation"
+  },
+  "holdout_guard": {
+    "probe": "Synthetic pinned metadata passed to guard only; no prompt access or generation/scoring",
+    "errors": [
+      "test holdout contains a development-exposed family: fam_983e49e2566f"
+    ],
+    "exposure_still_blocked": true
+  }
+}
