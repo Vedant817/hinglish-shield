@@ -1,7 +1,8 @@
 """Pinned Qwen3Guard response-output contract; no weights or network on import.
 
-This contract does not replace the unavailable secondary runtime adapter.
+The runtime adapter lives in src.eval.secondary_adapter and stays separate.
 Parse complete classifier output before retaining any shortened diagnostics.
+Controversial stays unresolved and is never a safe or binary-scored row.
 """
 from __future__ import annotations
 

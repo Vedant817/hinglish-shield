@@ -12,6 +12,8 @@ from .judges import (
     LLMSecondaryJudge,
     cohens_kappa,
     kappa_report,
+    shared_binary_label,
+    secondary_binary_agreement,
 )
 from .metrics_io import (
     load_schema,
@@ -42,6 +44,8 @@ __all__ = [
     "LLMSecondaryJudge",
     "cohens_kappa",
     "kappa_report",
+    "shared_binary_label",
+    "secondary_binary_agreement",
     "load_schema",
     "load_metrics",
     "validate_metrics",
