@@ -1,0 +1,27 @@
+{
+  "accept_preregistered_bf16_variant": false,
+  "credit": false,
+  "ignored_ingestion_json": true,
+  "original": {
+    "gate": "original_fp32_short_and_long",
+    "kl_tolerance": 0.0001,
+    "long_present": false,
+    "recorded_claim_consistent": true,
+    "recorded_passed": false,
+    "recorded_status": "incomplete",
+    "short_present": false,
+    "status": "incomplete"
+  },
+  "reason": "variant pass is not accepted",
+  "status": "incomplete",
+  "variant": {
+    "passed": true,
+    "provisional": true,
+    "reason": null,
+    "recorded_passed": true,
+    "status": "pass",
+    "top1_need": 0.99,
+    "top1_ok": true,
+    "used_fp32_tol": false
+  }
+}

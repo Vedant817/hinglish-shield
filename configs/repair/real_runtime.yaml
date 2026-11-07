@@ -22,6 +22,6 @@ decoding:
   temperature: null
   top_p: null
 judge_model_id: allenai/wildguard
-judge_revision: ""
+judge_revision: cbba4823f3e8020e5a74a5e29bf85072def6f2ff  # pinned from the verified English primary fixture; not parity credit
 circuit_scores: null
 circuitkit_source: null
