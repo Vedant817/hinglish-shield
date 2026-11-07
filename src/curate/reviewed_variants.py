@@ -834,8 +834,6 @@ def verify_ledger_lineage(
     if sha256_bytes(review_sheet_bytes) != pins.get("review_sheet_sha256"):
         raise ReviewedVariantError("reviewed lineage mismatch")
     payload = _parse_lineage(lineage_bytes)
-    if payload.get("review_sheet_sha256") != pins["review_sheet_sha256"]:
-        raise ReviewedVariantError("reviewed lineage mismatch")
     if payload.get("schema") != "reviewed_lineage_v1" or payload.get("frozen") is not True:
         raise ReviewedVariantError("reviewed lineage mismatch")
     if payload.get("acceptance_policy") != ACCEPTANCE_POLICY:
@@ -877,6 +875,8 @@ def verify_ledger_lineage(
         if found != wanted:
             raise ReviewedVariantError("reviewed lineage mismatch")
         _assert_authority_lineage(found, authority)
+    if payload.get("review_sheet_sha256") != pins["review_sheet_sha256"]:
+        raise ReviewedVariantError("reviewed lineage mismatch")
     source_sha = payload.get("canonical_source_ids_sha256")
     prompts_sha = payload.get("prompts_sha256")
     evidence = payload.get("evidence_sha256")
