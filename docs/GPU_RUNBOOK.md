@@ -18,7 +18,7 @@ run while TL is still resident. See prereg D4 in `docs/research/PREREG_baseline.
 2. Create a notebook (or upload `notebooks/gpu_parity_and_baseline.ipynb`) and set **Settings → Accelerator → GPU T4 x2**.
 3. Add secret `HF_TOKEN` (Add-ons → Secrets) for the Hugging Face account that already accepted Tiny Aya terms. Never paste the token into a cell.
 4. Leave `CURATED_PROMPTS_PATH` unset. This notebook refuses a curated JSONL. Generations here are fixtures (`artifact_kind: fixture`, `split: example`). A scored curated run belongs in a separate pipeline. `max_new_tokens` 64 is fixture length only. Scored generation stays at 256.
-5. Click **Run All**. Expected wall time: roughly 60 to 240 minutes (install + parity + fp16 guard + short fixture baseline). On a Kaggle host of about 31 GiB, D5 refuses the dual-resident fp32 conversion before the platform can kill the kernel, and the CPU bf16 variant runs instead. A larger host that has at least 32 GiB available and 32 GiB total still attempts sequential fp32, including the long 4196-token forward (a planning guess of about 20 to 90 minutes, not a measurement). Stop early only if a cell hard-fails.
+5. Click **Run All**. Expected wall time: roughly 60 to 240 minutes (install + parity + fp16 guard + short fixture baseline). On a Kaggle host of about 31 GiB, D5 refuses the dual-resident fp32 conversion before the platform can kill the kernel, and the CPU bf16 variant runs instead. D6 loads that TransformerLens copy with `from_pretrained_no_processing` and no live HF donor. A larger host that has at least 32 GiB available and 32 GiB total still attempts sequential fp32, including the long 4196-token forward (a planning guess of about 20 to 90 minutes, not a measurement). Stop early only if a cell hard-fails.
 6. Download `hs_gpu_artifacts_<run_id>.zip` from `/kaggle/working/` and copy it into the repo as `runs/<run_id>/` (unzip so manifests are visible). Never commit tokens or model weights.
 
 ## Gate details (prereg D4)
@@ -56,6 +56,7 @@ There is no git commit pin. An earlier draft cited a commit id that is not in th
    KL <= 2 * that floor. This notebook does not manufacture a long floor with another
    fp32 4196 forward, and it does not reuse the short floor. Predeclared provisional
    long rule when the floor is unavailable: that long KL < 1e-2. Missing long stays `incomplete`.
+   D6, after kernel version 6: the host killed the process during bf16 `from_pretrained` while the HF donor was still alive. No KL was measured. The CPU bf16 path now releases HF, returns allocator pages, and calls `HookedTransformer.from_pretrained_no_processing` (`fold_ln` off) with no live donor. That is still not the fp32 1e-4 gate.
 
 ### fp16 guard (before any later scored T4 baseline; supersedes D1 numeric thresholds)
 
