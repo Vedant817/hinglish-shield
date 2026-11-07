@@ -1,5 +1,7 @@
-"""In-process Tiny Aya load, proposed direction, and dev hook ledger.
+"""In-process Tiny Aya load, proposed direction, and dev generation ledger.
 
+Real weights steer with CircuitKIT ActivationSteering.steer, one forward per
+new token. Injected fixtures keep the labeled residual hook and are not runs.
 Gates run before prompt reads and before any model factory. A missing pin,
 a missing original fp32 parity credit, or a dirty source tree fails closed.
 Nothing here invents ASR, a chat-template hash, or a refusal mechanism.
@@ -243,7 +245,8 @@ def load_runtime_index(path: Path) -> list[dict[str, str]]:
 
 def _load_derived_index(payload: Sequence[Mapping[str, Any]]) -> list[dict[str, str]]:
     """Index loader that keeps review_status for lineage admission."""
-    from .membership import SHA256_RE, _token
+    from .membership import _token
+    from src.eval.dev_runner import is_lower_hex
 
     rows: list[dict[str, str]] = []
     seen: set[str] = set()
@@ -260,7 +263,7 @@ def _load_derived_index(payload: Sequence[Mapping[str, Any]]) -> list[dict[str, 
             raise RepairError(f"repair index refuses split {row['split']}", stage="membership")
         if row["lang"] not in ITEM_LANGS or row["hs_label"] not in ITEM_HS_LABELS:
             raise RepairError("canonical label mismatch", stage="membership")
-        if SHA256_RE.fullmatch(row["prompt_hash"]) is None:
+        if not is_lower_hex(row["prompt_hash"], 64):
             raise RepairError("missing prompt_hash", stage="membership")
         if row["sample_id"] in seen:
             raise RepairError("duplicate repair index id", stage="membership")
@@ -620,6 +623,8 @@ def _argmax(logits: Sequence[float]) -> int:
 
 
 def install_alpha_hook(model: Any, vector: Sequence[float], alpha: float, layer_name: str, counter: dict[str, int]) -> None:
+    if getattr(model, "real_weights", False):
+        raise RepairError("real weights refuse the residual hook", stage="runtime")
     if getattr(model, "uses_tensors", False):
         torch = model.torch
 
@@ -648,7 +653,9 @@ def generate_greedy(
     max_new_tokens: int,
     eos_ids: set[int],
 ) -> dict[str, Any]:
-    """One autoregressive loop. Each step is a forward that runs the hook, not one steer() call named generation."""
+    """Fixture autoregressive loop. Real weights must call ActivationSteering.steer instead."""
+    if hooks and getattr(model, "real_weights", False):
+        raise RepairError("real weights refuse the residual hook", stage="runtime")
     if model.hook_count() != 0:
         raise RepairError("forward found a leftover hook", stage="runtime")
     counter = {"n": 0}
@@ -687,6 +694,110 @@ def generate_greedy(
             model.reset_hooks()
             if model.hook_count() != 0:
                 raise RepairError("hooks survived cleanup", stage="runtime")
+
+
+def generate_with_activation_steering(
+    bundle: Any,
+    token_ids: Sequence[int],
+    *,
+    circuit_scores: Mapping[str, float],
+    steering_vectors: Mapping[str, Sequence[float]],
+    coefficient: float,
+    credit: Mapping[str, Any],
+    max_new_tokens: int,
+    eos_ids: set[int],
+) -> dict[str, Any]:
+    """One ActivationSteering.steer forward per new token. Does not install the residual hook."""
+    if getattr(bundle, "real_weights", False) is not True:
+        raise RepairError("ActivationSteering.steer is the real-weight path", stage="runtime")
+    if not steering_vectors:
+        raise RepairError("real weights refuse the residual hook; ActivationSteering vectors are missing", stage="circuitkit")
+    if bundle.hook_count() != 0:
+        raise RepairError("forward found a leftover hook", stage="runtime")
+    from .circuitkit_backend import steer_coefficient
+
+    ids = [int(token) for token in token_ids]
+    new_ids: list[int] = []
+    counts: list[int] = []
+    prepared = {
+        name: _torch_tensor(bundle, list(values), dtype_name="float32")
+        for name, values in steering_vectors.items()
+    }
+    try:
+        for _ in range(max_new_tokens):
+            result = steer_coefficient(
+                bundle.model,
+                circuit_scores,
+                prepared,
+                _torch_tensor(bundle, [ids], dtype_name="long"),
+                float(coefficient),
+                credit=credit,
+            )
+            if bundle.hook_count() != 0:
+                raise RepairError("hooks survived cleanup", stage="runtime")
+            count = result.get("effective_hook_count")
+            if type(count) is not int or count < 1:
+                raise RepairError("effective hook count is 0", stage="runtime")
+            counts.append(count)
+            nxt = _argmax(_last_logits(result.get("output")))
+            new_ids.append(nxt)
+            ids.append(nxt)
+            if nxt in eos_ids:
+                break
+    finally:
+        if bundle.hook_count() != 0:
+            bundle.reset_hooks()
+    if not counts:
+        raise RepairError("effective hook count is 0", stage="runtime")
+    flags = generation_flags(new_ids, eos_ids, max_new_tokens=max_new_tokens)
+    return {
+        "new_token_ids": new_ids,
+        "hook_count": min(counts),
+        "steer_calls": len(new_ids),
+        "library_call": "ActivationSteering.steer",
+        "eos": flags["eos"],
+        "truncated": flags["truncated"],
+        "new_token_count": flags["new_token_count"],
+    }
+
+
+def _torch_tensor(bundle: Any, data: Any, *, dtype_name: str) -> Any:
+    torch = getattr(bundle, "torch", None)
+    if torch is None:
+        raise RepairError("ActivationSteering.steer needs the loaded torch runtime", stage="runtime")
+    dtype = getattr(torch, dtype_name, None)
+    if dtype is None:
+        raise RepairError("ActivationSteering.steer needs the loaded torch runtime", stage="runtime")
+    return torch.tensor(data, dtype=dtype)
+
+
+def _last_logits(output: Any) -> list[float]:
+    if isinstance(output, list):
+        row: Any = output
+        while isinstance(row, list) and row and isinstance(row[0], list):
+            row = row[-1]
+        if not isinstance(row, list) or not row:
+            raise RepairError("ActivationSteering.steer returned no logits", stage="runtime")
+        return [_finite_float(value) for value in row]
+    current = output
+    detach = getattr(current, "detach", None)
+    if callable(detach):
+        current = detach()
+    if hasattr(current, "float"):
+        current = current.float()
+    if hasattr(current, "cpu"):
+        current = current.cpu()
+    ndim = getattr(current, "ndim", None)
+    if ndim == 3:
+        current = current[0, -1]
+    elif ndim == 2:
+        current = current[-1]
+    elif ndim != 1:
+        raise RepairError("ActivationSteering.steer returned no logits", stage="runtime")
+    values = current.tolist() if hasattr(current, "tolist") else None
+    if not isinstance(values, list) or not values:
+        raise RepairError("ActivationSteering.steer returned no logits", stage="runtime")
+    return [_finite_float(value) for value in values]
 
 
 def _append_jsonl(path: Path, record: Mapping[str, Any]) -> None:
@@ -895,11 +1006,11 @@ def _library_extract(
     injected: bool,
 ) -> dict[str, Any]:
     """Call ActivationSteering only on a real handle. Injected fixtures record that the call was not run."""
-    if injected or not getattr(bundle, "real_weights", False):
+    if not getattr(bundle, "real_weights", False):
         return {
             "call": None,
             "ran": False,
-            "reason": "injected fixture does not run ActivationSteering",
+            "reason": "injected fixture does not run ActivationSteering" if injected else "handle is not real weights",
             "not_the_protocol_resid_vector": True,
             "proven_refusal_mechanism": False,
         }
@@ -921,13 +1032,14 @@ def _library_extract(
         credit=credit,
     )
     vectors = extracted.get("vectors") or {}
+    if not isinstance(vectors, Mapping) or not vectors:
+        raise RepairError("CircuitKIT returned no steering vectors", stage="circuitkit")
     norms = {}
+    as_lists: dict[str, list[float]] = {}
     for name, tensor in vectors.items():
-        detach = getattr(tensor, "detach", None)
-        if callable(detach):
-            norms[name] = float(tensor.detach().float().norm().cpu())
-        else:
-            norms[name] = None
+        values = _vector_as_list(tensor)
+        as_lists[str(name)] = values
+        norms[str(name)] = _l2(values)
     return {
         "call": "ActivationSteering.compute_steering_vector",
         "ran": True,
@@ -935,11 +1047,69 @@ def _library_extract(
         "position_reduction": "last_index_of_unpadded_batch",
         "nodes": extracted.get("nodes"),
         "vector_norms": norms,
+        "vectors_as_lists": as_lists,
         "not_the_protocol_resid_vector": True,
-        "note": "Library nodes are attention or MLP hook points. The steered vector is the protocol residual.",
+        "protocol_resid_not_used_for_steering": True,
+        "note": "Library nodes are attention or MLP hook points. Steering uses these vectors through ActivationSteering.steer. The protocol residual is recorded and is not the steered vector.",
         "proven_refusal_mechanism": False,
         "source_sha": SOURCE_SHA,
     }
+
+
+def _vector_as_list(tensor: Any) -> list[float]:
+    current = tensor
+    detach = getattr(current, "detach", None)
+    if callable(detach):
+        current = detach()
+    if hasattr(current, "float"):
+        current = current.float()
+    if hasattr(current, "cpu"):
+        current = current.cpu()
+    if hasattr(current, "reshape"):
+        current = current.reshape(-1)
+    if hasattr(current, "tolist"):
+        values = current.tolist()
+    elif isinstance(current, list):
+        values = current
+    else:
+        raise RepairError("CircuitKIT vector is not numeric", stage="circuitkit")
+    if not isinstance(values, list) or not values:
+        raise RepairError("CircuitKIT vector is not numeric", stage="circuitkit")
+    return [_finite_float(value) for value in values]
+
+
+def _finite_float(value: Any) -> float:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise RepairError("CircuitKIT vector is not numeric", stage="circuitkit")
+    number = float(value)
+    if number != number or number == float("inf") or number == float("-inf"):
+        raise RepairError("CircuitKIT vector is not numeric", stage="circuitkit")
+    return number
+
+
+def _l2(values: Sequence[float]) -> float:
+    return sum(value * value for value in values) ** 0.5
+
+
+def _require_library_vectors(direction: Mapping[str, Any]) -> dict[str, list[float]]:
+    library = direction.get("activation_steering")
+    if not isinstance(library, dict) or library.get("ran") is not True:
+        raise RepairError(
+            "real weights refuse the residual hook; ActivationSteering vectors are missing",
+            stage="circuitkit",
+        )
+    raw = library.get("vectors_as_lists")
+    if not isinstance(raw, dict) or not raw:
+        raise RepairError(
+            "real weights refuse the residual hook; ActivationSteering vectors are missing",
+            stage="circuitkit",
+        )
+    cleaned: dict[str, list[float]] = {}
+    for name, values in raw.items():
+        if not isinstance(name, str) or name == "" or not isinstance(values, list) or not values:
+            raise RepairError("CircuitKIT vector is not numeric", stage="circuitkit")
+        cleaned[name] = [_finite_float(value) for value in values]
+    return cleaned
 
 
 def run_real_sweep(
@@ -1025,25 +1195,41 @@ def run_real_sweep(
     fatal: BaseException | None = None
     arm_rows: dict[str, list[dict[str, Any]]] = {}
     prompts: list[dict[str, Any]] = []
+    use_library = False
     try:
         bundle = factory(runtime, source_path)
+        use_library = getattr(bundle, "real_weights", False) is True
+        library_vectors = _require_library_vectors(direction) if use_library else {}
         prompts = (prompt_loader or load_prompts)(dev_prompts_path, dev_rows)
         eos_ids = set(bundle.eos_ids()) if hasattr(bundle, "eos_ids") else set()
         arms = _arm_plan(vector, random_vector)
         for arm in arms:
             produced = []
+            steered_vectors = _steered_node_vectors(arm, library_vectors) if use_library and arm["hooks"] else None
             for row in prompts:
                 tokens = _encode(bundle, row)
-                generated = generate_greedy(
-                    bundle,
-                    tokens,
-                    vector=arm["vector"],
-                    alpha=arm["alpha"],
-                    layer_name=str(protocol["layer_name"]),
-                    hooks=arm["hooks"],
-                    max_new_tokens=MAX_NEW_TOKENS,
-                    eos_ids=eos_ids,
-                )
+                if steered_vectors is None:
+                    generated = generate_greedy(
+                        bundle,
+                        tokens,
+                        vector=arm["vector"],
+                        alpha=arm["alpha"],
+                        layer_name=str(protocol["layer_name"]),
+                        hooks=arm["hooks"],
+                        max_new_tokens=MAX_NEW_TOKENS,
+                        eos_ids=eos_ids,
+                    )
+                else:
+                    generated = generate_with_activation_steering(
+                        bundle,
+                        tokens,
+                        circuit_scores=scores,
+                        steering_vectors=steered_vectors,
+                        coefficient=float(arm["alpha"]),
+                        credit=credit,
+                        max_new_tokens=MAX_NEW_TOKENS,
+                        eos_ids=eos_ids,
+                    )
                 record = {
                     "sample_id": row["sample_id"],
                     "family_id": row["family_id"],
@@ -1056,6 +1242,7 @@ def run_real_sweep(
                     "truncated": generated["truncated"],
                     "status": "ok",
                     "response": None,
+                    "library_call": generated.get("library_call"),
                 }
                 if getattr(bundle, "real_weights", False) and hasattr(bundle, "decode"):
                     record["response"] = bundle.decode(generated["new_token_ids"])
@@ -1129,8 +1316,10 @@ def run_real_sweep(
         "circuit_scores_present": True,
         "scores_are_not_a_discovered_circuit": True,
         "disclaimer": protocol["disclaimer"],
-        "generation": "per_step_hook_forward",
-        "not_a_single_steer_call": True,
+        "generation": "ActivationSteering.steer" if use_library else "per_step_hook_forward",
+        "not_a_single_steer_call": not use_library,
+        "library_steer_per_new_token": use_library,
+        "library_call": "ActivationSteering.steer" if use_library else None,
     }
     _common_stamp(report, injected=injected, pins=runtime, credit=dtype_evidence)
     if injected:
@@ -1138,6 +1327,13 @@ def run_real_sweep(
     report["content_sha256"] = content_sha256(report)
     write_json(out_path, report)
     return report
+
+
+def _steered_node_vectors(arm: Mapping[str, Any], library_vectors: Mapping[str, Sequence[float]]) -> dict[str, list[float]]:
+    """Seed 7 norm match per library node. CircuitKIT get_random_baseline_vectors has no seed."""
+    if arm["id"] == "random_norm_matched_seed_7":
+        return {name: random_norm_matched(values, seed=7) for name, values in library_vectors.items()}
+    return {name: list(values) for name, values in library_vectors.items()}
 
 
 def _arm_plan(vector: Sequence[float], random_vector: Sequence[float]) -> list[dict[str, Any]]:

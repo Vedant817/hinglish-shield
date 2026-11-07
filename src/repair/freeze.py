@@ -3,7 +3,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 from .errors import RepairError
 from .fixture_model import MODEL_ID, TINY_AYA_ID, RandomWeightFixture
@@ -124,12 +124,33 @@ def _peek(path: Path) -> dict[str, Any]:
 
 def write_freeze_manifest(sweep_path: Path, direction_path: Path, out_path: Path) -> dict[str, Any]:
     peeked = _peek(sweep_path)
-    if peeked.get("generation") == "per_step_hook_forward":
+    if peeked.get("generation") in {"per_step_hook_forward", "ActivationSteering.steer"}:
         manifest = build_measured_freeze(sweep_path, direction_path)
     else:
         manifest = build_freeze_manifest(sweep_path, direction_path)
     write_json(out_path, manifest)
     return manifest
+
+
+def _measured_intervention(sweep: Mapping[str, Any]) -> str:
+    generation = sweep.get("generation")
+    if generation == "per_step_hook_forward":
+        return "runtime_hook"
+    if generation == "ActivationSteering.steer":
+        if sweep.get("library_steer_per_new_token") is not True or sweep.get("not_a_single_steer_call") is not False:
+            raise RepairError(
+                "freeze refused: library generation is not per-token ActivationSteering.steer",
+                stage="freeze",
+            )
+        if (
+            sweep.get("artifact_kind") != "run"
+            or sweep.get("factory_injected") is not False
+            or sweep.get("not_tiny_aya") is not False
+            or sweep.get("weights_executed_by_this_command") is not True
+        ):
+            raise RepairError("freeze refused: library generation is not a real-weight run", stage="freeze")
+        return "ActivationSteering.steer"
+    raise RepairError("freeze refused: sweep is not a per-step hook ledger", stage="freeze")
 
 
 def build_measured_freeze(sweep_path: Path, direction_path: Path) -> dict[str, Any]:
@@ -140,8 +161,7 @@ def build_measured_freeze(sweep_path: Path, direction_path: Path) -> dict[str, A
 
     sweep = _load_object(sweep_path, "sweep report")
     direction = _load_object(direction_path, "frozen direction")
-    if sweep.get("generation") != "per_step_hook_forward":
-        raise RepairError("freeze refused: sweep is not a per-step hook ledger", stage="freeze")
+    intervention = _measured_intervention(sweep)
     if sweep.get("direction_sha256") != direction.get("content_sha256"):
         raise RepairError("sweep direction hash does not match the frozen direction", stage="freeze")
     if sweep.get("primary_asr") is not None or sweep.get("metrics_eligible") is not False:
@@ -175,7 +195,7 @@ def build_measured_freeze(sweep_path: Path, direction_path: Path) -> dict[str, A
         raise RepairError("freeze refused: direction norm is zero", stage="freeze")
     manifest: dict[str, Any] = {
         "verification_pathway": "measured_evidence",
-        "intervention_type": "runtime_hook",
+        "intervention_type": intervention,
         "static_checkpoint": False,
         "safetune_superior": False,
         "circuit_superiority": False,
@@ -223,6 +243,9 @@ def verify_measured(payload: dict[str, Any]) -> dict[str, Any]:
         raise RepairError("freeze manifest hash does not match its contents", stage="freeze")
     if payload.get("verification_pathway") != "measured_evidence":
         raise RepairError("freeze manifest is not measured evidence", stage="freeze")
+    intervention = payload.get("intervention_type")
+    if intervention not in {"runtime_hook", "ActivationSteering.steer"}:
+        raise RepairError("freeze manifest is not a measured intervention", stage="freeze")
     if payload.get("static_checkpoint") is not False or payload.get("safetune_superior") is not False:
         raise RepairError("freeze manifest claims an unmeasured method win", stage="freeze")
     if payload.get("circuit_superiority") is not False or payload.get("proven_refusal_mechanism") is not False:
@@ -253,7 +276,8 @@ def verify_measured(payload: dict[str, Any]) -> dict[str, Any]:
         "verification_pathway": "measured_evidence",
         "weights_reloaded": False,
         "runtime_verified_on_pretrained_weights": False,
-        "runtime_hook": True,
+        "runtime_hook": intervention == "runtime_hook",
+        "activation_steering": intervention == "ActivationSteering.steer",
         "decision": recomputed.get("decision"),
         "n_families": recomputed.get("n_families"),
         "primary_asr": None,

@@ -2,20 +2,19 @@
 from __future__ import annotations
 
 import json
-import re
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from src.eval.dev_runner import (
     CANONICAL_FAMILY_MANIFEST,
     CANONICAL_FAMILY_MANIFEST_SHA256,
+    is_lower_hex,
     load_canonical_authority,
 )
 
 from .errors import RepairError
 from .jsonutil import sha256_bytes, sha256_text, strict_json_bytes
 
-SHA256_RE = re.compile(r"[0-9a-f]{64}")
 REPAIR_SPLITS = frozenset({"calibration", "dev"})
 INDEX_FIELDS = (
     "sample_id",
@@ -91,7 +90,7 @@ def load_index(path: Path) -> list[dict[str, str]]:
             raise RepairError("unsupported language", stage="membership")
         if row["hs_label"] not in ITEM_HS_LABELS:
             raise RepairError("missing hs_label", stage="membership")
-        if SHA256_RE.fullmatch(row["prompt_hash"]) is None:
+        if not is_lower_hex(row["prompt_hash"], 64):
             raise RepairError("missing prompt_hash", stage="membership")
         if row["sample_id"] in seen:
             raise RepairError("duplicate repair index id", stage="membership")

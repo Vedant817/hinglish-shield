@@ -536,11 +536,265 @@ def test_injected_ledger_unloads_the_target_before_the_judge(tmp_path: Path):
     assert report["metrics_eligible"] is False
     assert report["generation"] == "per_step_hook_forward"
     assert report["not_a_single_steer_call"] is True
+    assert report["library_steer_per_new_token"] is False
+    assert report["library_call"] is None
     assert report["alpha_zero_matches_base"] is True
     assert report["judge"]["primary_asr"] is None
     assert report["judge"]["judge_constructed"] is True
     assert report["judge"]["judge_unloaded"] is True
     assert report["freeze_allowed"] is False
+
+
+class _FakeTorch:
+    long = "long"
+    float32 = "float32"
+
+    def tensor(self, data, dtype=None):
+        return {"data": data, "dtype": dtype}
+
+
+class RealWeightStandIn(LifecycleBundle):
+    """real_weights is true so the sweep must call ActivationSteering, not the residual hook."""
+
+    real_weights = True
+
+    def __init__(self, events: list[str]) -> None:
+        super().__init__(events)
+        self.model = object()
+        self.torch = _FakeTorch()
+        self.hook_installs = 0
+
+    def add_hook(self, name: str, fn, dir: str = "fwd") -> None:
+        self.hook_installs += 1
+        super().add_hook(name, fn, dir)
+
+    def encode_user(self, prompt: str) -> list[int]:
+        if prompt == "harm":
+            return [5, 5]
+        if prompt == "benign":
+            return [1, 1]
+        raise RepairError("unexpected prompt", stage="runtime")
+
+
+def _text_prompts(_path, rows: list[dict]) -> list[dict]:
+    loaded = []
+    for row in rows:
+        item = dict(row)
+        item["prompt"] = row["hs_label"]
+        loaded.append(item)
+    return loaded
+
+
+def _judge_factory(_runtime):
+    class Judge:
+        def judge_one(self, *_args, **_kwargs):
+            raise AssertionError("missing response text was judged")
+
+        def unload(self) -> None:
+            return None
+
+    return Judge()
+
+
+def test_real_weights_refuse_the_residual_hook():
+    model = DeterministicTensorFixture()
+    model.real_weights = True
+    with pytest.raises(RepairError, match="residual hook") as caught:
+        generate_greedy(
+            model,
+            [1],
+            vector=[1.0, 0.0, 0.0, 0.0],
+            alpha=1.0,
+            layer_name=LAYER_NAME,
+            hooks=True,
+            max_new_tokens=1,
+            eos_ids=set(),
+        )
+    assert caught.value.stage == "runtime"
+    assert model.hook_count() == 0
+
+
+def test_real_weights_refuse_a_sweep_without_library_vectors(tmp_path: Path):
+    parity = tmp_path / "parity"
+    _good_parity(parity)
+    runtime = tmp_path / "runtime.yaml"
+    _runtime(runtime)
+    calibration = [_row("calibration", "harm"), _row("calibration", "benign")]
+    dev = [_row("dev", "harm"), _row("dev", "benign")]
+    cal_index = tmp_path / "cal.json"
+    dev_index = tmp_path / "dev.json"
+    _write_index(cal_index, calibration)
+    _write_index(dev_index, dev)
+    events: list[str] = []
+    direction = locate_with_model(
+        protocol_path=PROTOCOL,
+        provenance_path=PROVENANCE,
+        runtime_config_path=runtime,
+        index_path=cal_index,
+        manifest_path=CANONICAL_FAMILY_MANIFEST,
+        prompts_path=tmp_path / "cal-prompts.jsonl",
+        out_path=tmp_path / "direction.json",
+        parity_run=parity,
+        circuit_scores={"MLP 0": 1.0},
+        model_factory=lambda _runtime, _source: LifecycleBundle(events),
+        prompt_loader=lambda _path, rows: _prompts(rows),
+        code_check=_clean,
+        source_check=_source_ok,
+    )
+    assert direction["activation_steering"]["ran"] is False
+    with pytest.raises(RepairError, match="residual hook") as caught:
+        run_real_sweep(
+            protocol_path=PROTOCOL,
+            provenance_path=PROVENANCE,
+            runtime_config_path=runtime,
+            sweep_path=SWEEP,
+            direction_path=tmp_path / "direction.json",
+            calibration_index_path=cal_index,
+            dev_index_path=dev_index,
+            dev_prompts_path=tmp_path / "dev-prompts.jsonl",
+            manifest_path=CANONICAL_FAMILY_MANIFEST,
+            out_path=tmp_path / "sweep.json",
+            parity_run=parity,
+            circuit_scores={"MLP 0": 1.0},
+            model_factory=lambda _runtime, _source: RealWeightStandIn(events),
+            judge_factory=_judge_factory,
+            prompt_loader=_text_prompts,
+            code_check=_clean,
+            source_check=_source_ok,
+        )
+    assert caught.value.stage == "circuitkit"
+
+
+def test_real_weights_steer_with_activation_steering(tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    calls: list[dict] = []
+
+    def fake_extract(_model, scores, source_examples, target_examples, *, credit):
+        assert credit["credit"] is True
+        assert scores == {"MLP 0": 1.0}
+        assert source_examples and target_examples
+        return {"nodes": ["MLP 0"], "vectors": {"MLP 0": [0.0, 1.0, 0.0, 0.0]}}
+
+    def fake_steer(_model, scores, vectors, inputs, coefficient, *, credit):
+        assert credit["credit"] is True
+        assert scores == {"MLP 0": 1.0}
+        assert isinstance(inputs, dict) and inputs["dtype"] == "long"
+        assert isinstance(inputs["data"][0], list)
+        vector = vectors["MLP 0"]
+        assert vector["dtype"] == "float32"
+        calls.append({"coefficient": float(coefficient), "vector": tuple(vector["data"])})
+        if float(coefficient) == 0.0:
+            output = [0.0, 10.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        else:
+            output = [10.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+        return {"effective_hook_count": 2, "steered_nodes": ["MLP 0"], "output": output}
+
+    monkeypatch.setattr("src.repair.circuitkit_backend.extract_last_token", fake_extract)
+    monkeypatch.setattr("src.repair.circuitkit_backend.steer_coefficient", fake_steer)
+    parity = tmp_path / "parity"
+    _good_parity(parity)
+    runtime = tmp_path / "runtime.yaml"
+    _runtime(runtime)
+    calibration = [_row("calibration", "harm"), _row("calibration", "benign")]
+    dev = [_row("dev", "harm"), _row("dev", "benign")]
+    cal_index = tmp_path / "cal.json"
+    dev_index = tmp_path / "dev.json"
+    _write_index(cal_index, calibration)
+    _write_index(dev_index, dev)
+    events: list[str] = []
+
+    def factory(_runtime, _source):
+        return RealWeightStandIn(events)
+
+    direction = locate_with_model(
+        protocol_path=PROTOCOL,
+        provenance_path=PROVENANCE,
+        runtime_config_path=runtime,
+        index_path=cal_index,
+        manifest_path=CANONICAL_FAMILY_MANIFEST,
+        prompts_path=tmp_path / "cal-prompts.jsonl",
+        out_path=tmp_path / "direction.json",
+        parity_run=parity,
+        circuit_scores={"MLP 0": 1.0},
+        model_factory=factory,
+        prompt_loader=_text_prompts,
+        code_check=_clean,
+        source_check=_source_ok,
+    )
+    assert direction["activation_steering"]["ran"] is True
+    assert direction["activation_steering"]["call"] == "ActivationSteering.compute_steering_vector"
+    assert direction["activation_steering"]["vectors_as_lists"] == {"MLP 0": [0.0, 1.0, 0.0, 0.0]}
+    assert direction["activation_steering"]["protocol_resid_not_used_for_steering"] is True
+    assert direction["not_tiny_aya"] is True
+    assert direction["artifact_kind"] == "fixture"
+    assert direction["primary_asr"] is None
+    events.clear()
+    handles: list[RealWeightStandIn] = []
+
+    def sweep_factory(_runtime, _source):
+        handle = RealWeightStandIn(events)
+        handles.append(handle)
+        return handle
+
+    report = run_real_sweep(
+        protocol_path=PROTOCOL,
+        provenance_path=PROVENANCE,
+        runtime_config_path=runtime,
+        sweep_path=SWEEP,
+        direction_path=tmp_path / "direction.json",
+        calibration_index_path=cal_index,
+        dev_index_path=dev_index,
+        dev_prompts_path=tmp_path / "dev-prompts.jsonl",
+        manifest_path=CANONICAL_FAMILY_MANIFEST,
+        out_path=tmp_path / "sweep.json",
+        parity_run=parity,
+        circuit_scores={"MLP 0": 1.0},
+        model_factory=sweep_factory,
+        judge_factory=_judge_factory,
+        prompt_loader=_text_prompts,
+        code_check=_clean,
+        source_check=_source_ok,
+    )
+    assert calls
+    assert {item["coefficient"] for item in calls} == {0.0, 1.0}
+    library_vector = (0.0, 1.0, 0.0, 0.0)
+    steered = {item["vector"] for item in calls if item["coefficient"] == 1.0}
+    assert library_vector in steered
+    assert any(vector != library_vector for vector in steered)
+    assert events[-1] == "target_unloaded"
+    assert handles[-1].hook_installs == 0
+    assert report["generation"] == "ActivationSteering.steer"
+    assert report["library_steer_per_new_token"] is True
+    assert report["not_a_single_steer_call"] is False
+    assert report["library_call"] == "ActivationSteering.steer"
+    assert report["artifact_kind"] == "fixture"
+    assert report["model_id"] == "fixture/injected"
+    assert report["primary_asr"] is None
+    assert report["metrics_eligible"] is False
+    assert report["not_tiny_aya"] is True
+    assert report["alpha_zero_matches_base"] is True
+    assert report["freeze_allowed"] is False
+
+
+def test_library_freeze_refuses_a_fixture_label(tmp_path: Path):
+    payload = {
+        "generation": "ActivationSteering.steer",
+        "library_steer_per_new_token": True,
+        "not_a_single_steer_call": False,
+        "artifact_kind": "fixture",
+        "factory_injected": True,
+        "not_tiny_aya": True,
+        "weights_executed_by_this_command": False,
+    }
+    payload["content_sha256"] = content_sha256(payload)
+    direction = {"vector": [1.0, 0.0]}
+    direction["content_sha256"] = content_sha256(direction)
+    sweep_path = tmp_path / "sweep.json"
+    direction_path = tmp_path / "direction.json"
+    sweep_path.write_text(json.dumps(payload), encoding="utf-8")
+    direction_path.write_text(json.dumps(direction), encoding="utf-8")
+    with pytest.raises(RepairError, match="real-weight") as caught:
+        build_measured_freeze(sweep_path, direction_path)
+    assert caught.value.stage == "freeze"
 
 
 def test_accept_requires_the_family_floor_and_recomputed_evidence(tmp_path: Path):
