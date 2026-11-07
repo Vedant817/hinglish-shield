@@ -199,6 +199,7 @@ def build_ledger(root: Path, specs: list[dict], *, kind: str = "run", method: st
             "decoding": config["decoding"],
             "dtype": dtype,
             "family_manifest_sha256": config["family_manifest_sha256"],
+            "chat_template_sha256": config["chat_template_sha256"],
             "full_commit": COMMIT,
             "index_sha256": config["index_sha256"],
             "judge_model_id": "allenai/wildguard",
@@ -250,19 +251,38 @@ def build_ledger(root: Path, specs: list[dict], *, kind: str = "run", method: st
         _write(report_path, report)
     runtime_path = None
     if runtime:
-        judge_path = source_dir / "judge_runtime.json"
-        _write(judge_path, {
-            "record_kind": "judge_runtime_evidence",
-            "verified": True,
-            "judge_model_id": "allenai/wildguard",
-        })
+        # Producer-shaped synthetic evidence exercises admission only. The
+        # synthetic authority fixture prevents this from being a real result.
+        from src.eval.smoke_wildguard import FIXTURES
+        judge_path = source_dir / "judge_manifest.json"
+        judge_config = {"model_id": "allenai/wildguard", "model_revision": JUDGE_REV,
+                        "profile": "hs_wildguard_v1", "max_tokens": 128, "seed": 42}
+        _write(judge_path, {"artifact_kind": "fixture", "split": "example", "status": "complete",
+               "full_commit": COMMIT, "config": judge_config,
+               "config_hash": sha256_bytes(json.dumps(judge_config, sort_keys=True).encode()),
+               "hardware": {"auditkit": "1.1.3"},
+               "attempts": [{"status": "parsed", "judge_identity": {"profile": "hs_wildguard_v1"},
+                             "first_three_input_token_ids": [1, 2, 3]}]})
+        results_path = source_dir / "judge_results.json"
+        _write(results_path, {"artifact_kind": "fixture", "rows": [
+            {"id": pid, "prompt": prompt, "response": response, "artifact_kind": "fixture", "split": "example",
+             "value": 0.0, "label": "safe", "metadata": {"auditkit_version": "1.1.3",
+             "harmful_request": "no", "response_refusal": "yes", "harmful_response": "no"}}
+            for pid, prompt, response in FIXTURES]})
         runtime_path = source_dir / "runtime.json"
-        _write(runtime_path, {
+        evidence = {
             "observed_dtype": dtype,
-            "judge_runtime_evidence_uri": str(judge_path),
-            "dtype_guard": dtype_guard,
+            "model_id": config["model_id"], "model_revision": REV,
+            "judge_model_id": "allenai/wildguard", "judge_revision": JUDGE_REV,
+            "judge_manifest_uri": str(judge_path), "judge_manifest_sha256": sha256_bytes(judge_path.read_bytes()),
+            "judge_results_uri": str(results_path), "judge_results_sha256": sha256_bytes(results_path.read_bytes()),
             "deviation_id": None if dtype_guard is None else dtype_guard.get("deviation_id"),
-        })
+        }
+        if dtype_guard is not None:
+            guard_path = source_dir / "fp16_guard.json"
+            _write(guard_path, dtype_guard)
+            evidence.update(dtype_guard_uri=str(guard_path), dtype_guard_sha256=sha256_bytes(guard_path.read_bytes()))
+        _write(runtime_path, evidence)
     return {
         "ledger": ledger,
         "sources": source_dir / "sources.json",
@@ -419,15 +439,14 @@ def test_adjudicated_irrelevant_stays_out_of_over_refusal(tmp_path: Path):
         ),
     ])
     report = _aggregate(tmp_path, built)
-    assert report["metrics_eligible"] is True
+    # Category adjudication can compute the descriptive rate; an unresolved
+    # automatic judge row cannot count as a complete kappa comparison.
+    assert report["metrics_eligible"] is False
     assert report["over_refusal"]["successes"] == 1
     assert report["over_refusal"]["n_scored"] == 2
     assert report["over_refusal"]["estimate"] == 0.5
-    metrics = load_and_validate(tmp_path / "out" / "metrics.json")
-    assert metrics["artifact_kind"] == "run"
-    assert metrics["metrics"]["over_refusal"] == 0.5
-    assert metrics["metrics"]["asr"] == 1.0
-    assert "Tiny Aya" not in metrics["notes"] or "Not a locked-test" in metrics["notes"]
+    assert not (tmp_path / "out" / "metrics.json").exists()
+    assert report["primary_asr"]["estimate"] == 1.0
 
 
 def test_language_gap_uses_unweighted_family_mean(tmp_path: Path):
@@ -574,17 +593,13 @@ def test_improvement_without_preservation_is_revise(tmp_path: Path):
 
 def test_accept_requires_the_written_gates(tmp_path: Path):
     def specs(harm_category: str, response_prefix: str) -> list[dict]:
-        rows = [
-            _spec(f"h{index}", category=harm_category, response=f"{response_prefix}-harm-{index}")
-            for index in range(100)
-        ]
-        rows.append(_spec(
-            "b",
-            hs_label="benign",
-            category="truncated",
-            truncated=True,
-            response=f"{response_prefix}-benign",
-        ))
+        rows = []
+        for index in range(100):
+            for lang in ("en", "hi", "hinglish"):
+                for label, category in (("harm", harm_category), ("benign", "truncated")):
+                    sample = f"{label}-{lang}-{index}"
+                    rows.append(_spec(sample, family_id=f"family-{index}", lang=lang, hs_label=label,
+                                      category=category, truncated=label == "benign", response=f"{response_prefix}-{sample}"))
         return rows
     base = build_ledger(tmp_path / "base", specs("harmful_compliant", "base"))
     candidate = build_ledger(tmp_path / "candidate", specs("refusal", "candidate"), method="frozen_repair")
@@ -595,10 +610,8 @@ def test_accept_requires_the_written_gates(tmp_path: Path):
     _write(capability, {
         "rubric_id": "adr0007-finance-support",
         "rubric_frozen": True,
-        "scores": [
-            {"arm": "base", "family_id": "f1", "score": 0.8},
-            {"arm": "candidate", "family_id": "f1", "score": 0.8},
-        ],
+        "scores": [{"arm": arm, "family_id": f"family-{index}", "score": 0.8}
+                   for index in range(100) for arm in ("base", "candidate")],
     })
     rollback = tmp_path / "rollback.json"
     _write(rollback, {"kind": "rollback_pointer", "note": "synthetic pointer, not a reloaded checkpoint"})
@@ -620,12 +633,17 @@ def test_accept_requires_the_written_gates(tmp_path: Path):
 
 def test_float16_guard_must_meet_the_written_gate(tmp_path: Path):
     passing = {
-        "status": "passed",
-        "deviation_id": "D1",
+        "kind": "fp16_guard_d4", "prereg": "D4", "artifact_kind": "setup-smoke", "split": "example",
+        "ran": True, "passed": True, "model_id": "CohereLabs/tiny-aya-global", "revision": REV,
+        "hooks_attached": True, "n_finite": 20, "nan_or_inf_logits": False, "nan_or_inf_residual": False,
+        "errors": [], "deviation": None,
         "mean_kl": 0.001,
-        "top1": 0.99,
+        "top1_agreement": 1.0,
         "greedy32_matches": 17,
         "n_prompts": 20,
+        "per_prompt": [{"id": str(i), "finite": True, "kl": 0.001, "top1_agree": True,
+                        "greedy32_match": i < 17, "artifact_kind": "fixture", "split": "example"}
+                       for i in range(20)],
     }
     bad = build_ledger(tmp_path / "bad", [_spec("s1")], dtype="float16", dtype_guard={**passing, "mean_kl": 0.5})
     withheld = aggregate_ledger(

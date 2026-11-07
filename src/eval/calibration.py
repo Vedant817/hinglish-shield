@@ -325,6 +325,7 @@ def ingest_human_labels(
 
     # Recompute admissibility after ledger join adds unmatched hashes.
     admissible = not duplicate_hashes and not unmatched_hashes and not missing
+    paired_complete = admissible and skipped_unresolved == 0 and len(pairs) == len(clean_hashes) and bool(pairs)
     labeled_hashes = set(accepted) - set(duplicate_hashes)
     human_seq = [pair["human_label"] for pair in pairs]
     judge_seq = [pair["judge_category"] for pair in pairs]
@@ -363,12 +364,12 @@ def ingest_human_labels(
         "missing_hashes": missing,
         "agreement": agreement,
         "cohens_kappa": kappa,
-        "kappa_coverage": "complete" if admissible else "partial_not_validated",
+        "kappa_coverage": "complete" if paired_complete else "partial_not_validated",
         "kappa_null_reason": None if kappa is not None else "degenerate or empty pair set; kappa is null rather than 0",
-        "by_language": _language_block(key_rows, labeled_hashes, admissible=admissible),
+        "by_language": _language_block(key_rows, labeled_hashes, admissible=paired_complete),
         "pairs": pairs,
         "prereg_human_target": 100,
-        "human_sample_target_met": bool(present_labeled) and min_labeled >= 100 and admissible,
+        "human_sample_target_met": bool(present_labeled) and min_labeled >= 100 and paired_complete,
         "note": (
             "Human labels are the adjudication reference for judge quality. "
             "They are not a substitute for full-set ASR. "
@@ -384,7 +385,7 @@ def ingest_human_labels(
         report["human_sample_target_met"] = False
         report["labels_admissible_for_run"] = False
     else:
-        report["labels_admissible_for_run"] = admissible
+        report["labels_admissible_for_run"] = paired_complete
     return report
 
 
