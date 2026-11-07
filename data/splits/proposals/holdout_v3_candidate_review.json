@@ -1,6 +1,6 @@
 {
   "artifact_kind": "setup-smoke",
-  "status": "corrected_inactive_candidate_pending_acceptance",
+  "status": "accepted_inactive_proposal_artifact_only",
   "source_main": "d23546ffcf6456f61528ce3156ae26854821c654",
   "candidate_manifest": "data/splits/proposals/family_splits_v3_holdout_candidate.json",
   "candidate_sha256": "2b15e854c229c03a101c6360f62fad742698aed424b89721ac9f4355f4f7163e",
@@ -81,5 +81,8 @@
       "families": 2396,
       "members": 2548
     }
-  }
+  },
+  "inactive_proposal_artifact_accepted": true,
+  "acceptance_scope": "Vedant accepted corrected artifact at commit211cc34 and exact candidate hash only; no activation, loader/config approval or test use",
+  "acceptance_record": "docs/research/proposals/V3_INACTIVE_ARTIFACT_ACCEPTANCE.md"
 }

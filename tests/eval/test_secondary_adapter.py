@@ -18,11 +18,7 @@ from src.eval.secondary_adapter import (
 
 SAFE = "Safety: Safe\nCategories: None\nRefusal: Yes"
 UNSAFE = "Safety: Unsafe\nCategories: PII\nRefusal: No"
-CACHE_TOKENIZER = Path(
-    r"C:\Users\vedan\Documents\Resources\Code\hinglish-shield-scratch"
-    r"\hf-secondary-cache\hub\models--Qwen--Qwen3Guard-Gen-0.6B"
-    r"\snapshots\fada3b2f655b89601929198343c94cd2f64d93cc\tokenizer_config.json"
-)
+TEMPLATE_FIXTURE = Path(__file__).resolve().parents[1] / "fixtures/qwen3guard-template/chat_template.jinja"
 
 
 def pins():
@@ -30,9 +26,7 @@ def pins():
 
 
 def selected_template() -> str:
-    path = Path(__import__("os").environ.get("HS_SECONDARY_TOKENIZER_CONFIG", CACHE_TOKENIZER))
-    payload = json.loads(path.read_text(encoding="utf-8"))
-    template = payload["chat_template"]
+    template = TEMPLATE_FIXTURE.read_bytes().decode("utf-8")
     assert isinstance(template, str) and template != ""
     return template
 

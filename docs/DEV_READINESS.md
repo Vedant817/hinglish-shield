@@ -1,6 +1,6 @@
 # Sequential dev launch readiness
 
-The D7 proposal passed independent research review for presentation only; the human disposition question remains pending. No v3 manifest or permission to test exists. Its decision is separate from dev membership: the incident stays quarantined from development, and the existing canonical v2 containment guards stay unchanged.
+Vedant approved D7 disposition and separately accepted the corrected v3 candidate as an inactive proposal artifact only (SHA-256 `2b15e854c229c03a101c6360f62fad742698aed424b89721ac9f4355f4f7163e`). No active manifest/config/loader or exposure guard changes are approved. The initial candidate review remains historically Revise; correction tests and later human artifact acceptance do not retroactively change that verdict. Nov 11 IST embargo and all scientific gates remain.
 
 The actual calibration/dev-only exporter was run against the 26-row sheet. It exited 2 with `blocked_no_explicit_accept`. All verdicts are unreviewed, eligible variants/behaviors are zero, no prompt files were written, and matched multilingual ADR coverage is zero. The reports are in `runs/dev-readiness-2026-11-07/`, labeled setup-smoke, metrics-ineligible. There is no ASR or metrics.json. This is an unavailable report, not an experimental null finding.
 
@@ -10,7 +10,7 @@ Qwen3Guard-Gen-0.6B is selected as the independent secondary LLM guard. Public m
 
 The real fixture at `runs/secondary-fixture-local-20261107-2/` now records a successful pinned CPU load and two complete classifier outputs (safe reporting, unsafe endorsement). Config/script and cached tokenizer/template hashes were recomputed, and both outputs reparsed. This is English fixture load/parsing only; not accuracy, human calibration or an integrated secondary dev judge. The pre-run protocol JSON remains unchanged as historical provenance.
 
-The new strict parser checks the complete three-line response output before any diagnostic truncation. Missing/duplicate/unknown fields fail; Controversial stays unresolved and is never counted safe. A future secondary agreement path must explicitly filter unresolved outputs and report their coverage; do not pass them blindly into a binary kappa calculation. This parser and a config-only dry-check are verified locally. The existing LLMSecondaryJudge remains unavailable. No primary ASR or result-admission gate is changed by choosing this model.
+The new strict parser checks the complete three-line response output before any diagnostic truncation. Missing/duplicate/unknown fields fail; Controversial stays unresolved and is never counted safe. A future secondary agreement path must explicitly filter unresolved outputs and report their coverage; do not pass them blindly into a binary kappa calculation. This parser and a config-only dry-check are verified locally. LLMSecondaryJudge now connects to the selected pinned adapter; an unconfigured instance still refuses. Model-free pin/lifecycle/agreement checks pass, while the new adapter fixture is being verified separately from the older loader fixture. No primary ASR or result-admission gate is changed by choosing this model.
 
 Fixture verifier commands, after committing the exact source and using an existing free/local environment with torch and transformers installed:
 
