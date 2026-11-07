@@ -1,0 +1,19 @@
+{
+  "artifact_kind": "fixture",
+  "split": "example",
+  "status": "validated",
+  "kernel_url": "https://www.kaggle.com/code/vedant817/hinglish-shield-wildguard-fixture",
+  "archive_sha256": "4fc157fc05bc7b9944bc61f754eb285bbbe352fbc7dfea9eb9501bf3da0c364b",
+  "files_sha256": {
+    "manifest.json": "3ca214046642f19386cdf9aff380bea4fdc96ccdb459b7f0b634d0a2846b6d45",
+    "fixture_results.json": "3568a3248759da683b447998f5cf6df57f0cbb11ff906ccb3fff1d39140f950e",
+    "metrics.json": "c3c85a143269efb0aff8515cb0f29afc85b8f2fe6c7ac2cbb87fdd1ceab13b7f",
+    "environment.json": "922d6dda050e7b57227a4eb0c61cb21728b001914778327420d638b89d58b471"
+  },
+  "validation_scope": "Pinned WildGuard real CUDA load and complete classifier parsing on English fixtures",
+  "benchmark_metrics_eligible": false,
+  "limitations": [
+    "Not judge accuracy, ASR or multilingual human calibration",
+    "Fixture response examples are safe outputs; no unsafe-response positive control in this batch"
+  ]
+}

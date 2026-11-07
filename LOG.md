@@ -191,3 +191,14 @@ preflight refused its conversion. Raw reports, archive checksums and provenance
 are in `runs/kaggle-parity-v8-2026-11-07/`. The embedded prereg hash matches the
 committed source; the runtime prereg file was unavailable. No Locate acceptance
 flag was changed. Generations remain fixtures and scored ASR stays null.
+
+## 2026-11-07 IST: WildGuard real-model fixture completed
+
+The pinned WildGuard checkpoint loaded on the existing free Kaggle T4 session
+and returned complete classifier fields through the strict AuditKIT adapter.
+Artifacts are preserved in `runs/wildguard-fixture-20261107T141335276834Z/` with
+fixture kind, null benchmark metrics, immutable model/source pins and checksums.
+The batch is English-only and uses safe response outputs; it is not judge
+accuracy, an unsafe-response positive control or multilingual calibration.
+The registry now distinguishes runtime verification from the pending human,
+secondary-judge and StrongREJECT gates. The frozen test was not accessed.

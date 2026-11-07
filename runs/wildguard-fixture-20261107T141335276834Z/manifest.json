@@ -1,0 +1,47 @@
+{
+  "artifact_kind": "fixture",
+  "split": "example",
+  "status": "complete",
+  "created_at": "2026-11-07T14:13:35.502292+00:00",
+  "full_commit": "6ebc9bf0f067d4164a82af1c3bc9fada55353a13",
+  "config": {
+    "model_id": "allenai/wildguard",
+    "model_revision": "cbba4823f3e8020e5a74a5e29bf85072def6f2ff",
+    "profile": "hs_wildguard_v1",
+    "max_tokens": 128,
+    "seed": 42
+  },
+  "config_hash": "2a6f364555dd89982409b29a86b948cb1ff4b305f0e53ef51b2647fe3e1cf552",
+  "attempts": [
+    {
+      "device": "cuda",
+      "dtype": "float16",
+      "status": "parsed",
+      "judge_identity": {
+        "name": "guard_judge:hs_wildguard_v1",
+        "kind": "security",
+        "guard_model": "hf:allenai/wildguard",
+        "profile": "hs_wildguard_v1",
+        "assess": "response",
+        "policy": null,
+        "max_tokens": 128,
+        "single_message": false
+      },
+      "first_three_input_token_ids": [
+        1,
+        29557,
+        29534
+      ],
+      "peak_gpu_memory_bytes": 14548377600
+    }
+  ],
+  "limitations": [
+    "English fixtures only; not judge accuracy, ASR, or multilingual validation"
+  ],
+  "hardware": {
+    "gpu": "Tesla T4",
+    "torch": "2.11.0+cu130",
+    "transformers": "5.22.1",
+    "auditkit": "1.1.3"
+  }
+}

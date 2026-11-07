@@ -1,0 +1,28 @@
+{
+  "run_id": "wg-fixture-20261107T141335276834Z",
+  "artifact_kind": "fixture",
+  "split": "example",
+  "full_commit": "6ebc9bf0f067d4164a82af1c3bc9fada55353a13",
+  "config_hash": "2a6f364555dd89982409b29a86b948cb1ff4b305f0e53ef51b2647fe3e1cf552",
+  "model_id": "allenai/wildguard",
+  "model_revision": "cbba4823f3e8020e5a74a5e29bf85072def6f2ff",
+  "languages": [
+    "EN"
+  ],
+  "judges": [
+    {
+      "name": "allenai/wildguard",
+      "role": "primary",
+      "version": "cbba4823f3e8020e5a74a5e29bf85072def6f2ff"
+    }
+  ],
+  "metrics": {
+    "asr": null,
+    "over_refusal": null,
+    "capability": null
+  },
+  "null_reasons": {
+    "metrics.*": "Real-model fixture smoke only; no curated evaluation"
+  },
+  "created_at": "2026-11-07T14:13:35.502292+00:00"
+}

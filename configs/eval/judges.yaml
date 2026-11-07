@@ -1,4 +1,4 @@
-# Proposed judge stack (ADR-3). No measured results here.
+# Judge stack (ADR-3). Runtime fixture evidence is separate from calibration.
 # StrongREJECT package: use maintained dsbowen/strong_reject
 # (NOT deprecated alexandrasouly/strongreject).
 
@@ -9,7 +9,14 @@ primary:
     class: GuardJudge
     profile: wildguard
     # default AuditKIT checkpoint: hf:allenai/wildguard
-  status: proposed  # flip to RUNTIME-VERIFIED after first successful local load
+  model_revision: cbba4823f3e8020e5a74a5e29bf85072def6f2ff
+  adapter: src.eval.judges.WildGuardPrimaryJudge
+  effective_profile: hs_wildguard_v1
+  max_tokens: 128
+  status: RUNTIME-VERIFIED
+  runtime_evidence: runs/wildguard-fixture-20261107T141335276834Z/manifest.json
+  validation_scope: English fixture load and parsing only
+  multilingual_human_calibration: unvalidated
 
 secondary:
   name: llm_judge
