@@ -1,0 +1,4 @@
+C:/Users/vedan/Documents/Resources/Code/hinglish-shield-scratch/.venv-ci/Scripts/python.exe scripts/smoke.py
+
+OK: layout present, example metrics validate, packages import, stats ok
+

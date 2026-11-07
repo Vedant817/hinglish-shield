@@ -2,6 +2,15 @@
 
 Use this when an agent (with a browser and/or a shell on Vedant's machine) runs the GPU parity and fixture-generation notebook for Vedant. Free tier only, on Vedant's existing Kaggle account. No new accounts, no paid upgrades. Source of truth: `docs/GPU_RUNBOOK.md`, prereg D4 in `docs/research/PREREG_baseline.md`, and `notebooks/gpu_parity_and_baseline.ipynb` on `main`. Verify the notebook's prereg source hash before launch. This is not the Nov 8 scored dev baseline. Leave `CURATED_PROMPTS_PATH` unset.
 
+## Current evidence and development boundary (Nov 7)
+
+- Development review is limited to `data/staging/review/vedant_review_nov7_calibration_dev.csv` (26 rows). The mixed historical review queue contains 33 test rows; do not open or print its prompt content. The family-split checker reports identity/count invariants only.
+- Public HinGE quality ratings and IndicGuard source labels are not accepts for our finance translations and are not human labels of our generated responses. Keep translation admission and response calibration separate.
+- The exposure of frozen family `fam_983e49e2566f` is unresolved. Preserve the frozen manifest and required exposure ledger/guard. A separately reviewed prospective resolution is required before the single Nov 11 frozen-arm test pass. No earlier test generation, scoring or tuning. Nov 8 H1 is dev-only.
+- PR21 preserves v8 raw reports and hashes. CPU bf16 meets the provisional D4 variant rule, while short mean KL exceeds the original `1e-4` gate. Original fp32 short-plus-4196 credit is incomplete, so weight-backed Locate/Repair acceptance remains blocked. D5 and D6 are explicit operational deviations; no threshold changes after observing v8.
+- PR22's pinned WildGuard fixture proves English load/parsing only. Both responses are safe. Judge accuracy, an unsafe-response positive control and multilingual human calibration remain unverified. No fixture result is ASR.
+- Review the existing evidence before launching another job. Any new launch needs a concrete unresolved runtime question and the pre-run identity pins, not an unchanged council loop.
+
 ## Before you start
 
 - Kaggle account must be Vedant's existing one and GPU-eligible (Settings shows phone verification). If it is not verified, stop and ask Vedant; verification is his step.
@@ -64,7 +73,7 @@ python scripts/ingest_gpu_artifacts.py /path/to/hs_gpu_artifacts_<run_id>.zip --
   - Parity: short and long KL must each be < 1e-4 to pass. If the 4196-token long case did not run, the result is `incomplete`, not a pass. Record fp32 vs bf16 fallback.
   - fp16 guard: any NaN or inf aborts. Record max diff and agreement rate; if it fails, scored T4 runs use fp32 (deviation D2).
   - Guard outputs are `artifact_kind: setup-smoke`; generation outputs are `artifact_kind: fixture`, all `split: example`. Never report them as ASR or dev results. The bf16 gate is a separate, possibly provisional variant; use D4's floor/provisional rules, not the original fp32 threshold.
-- Open a PR titled `Runs: Kaggle GPU parity <run_id>` and merge on green CI (standing permission). Update the Notion Task Board item for the Nov 9 Locate gate.
+- Open a PR titled `Runs: Kaggle GPU parity <run_id>` for independent artifact and protocol review. Green CI or Kilo alone is not acceptance. Do not merge merely to complete an audit. Update the Task Board with the actual gate status, including incomplete/provisional evidence.
 
 ## If something fails
 

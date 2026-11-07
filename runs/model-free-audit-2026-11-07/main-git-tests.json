@@ -1,0 +1,30 @@
+{
+  "smoke": {
+    "command": "make smoke PYTHON=C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\.venv-ci\\Scripts\\python.exe",
+    "cwd": "C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield",
+    "exit_code": 0,
+    "tail": [
+      "C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\.venv-ci\\Scripts\\python.exe scripts/smoke.py",
+      "OK: layout present, example metrics validate, packages import, stats ok"
+    ]
+  },
+  "pytest": {
+    "command": "C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\.venv-ci\\Scripts\\python.exe -B -m pytest -p no:cacheprovider -p audit_guard tests --ignore=tests/curate/test_translation_family_splits.py -q --tb=short --basetemp=C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\bounded-audit-20261107T143228Z\\main-git-pytest-temp",
+    "cwd": "C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield",
+    "exit_code": 0,
+    "tail": [
+      "...........................................                       [100%]",
+      "259 passed, 7 subtests passed in 16.19s"
+    ]
+  },
+  "family_splits": {
+    "command": "C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\.venv-ci\\Scripts\\python.exe -B scripts/check_translation_family_splits.py",
+    "cwd": "C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield",
+    "exit_code": 0,
+    "tail": [
+      "RESULT: PASS (0 errors)",
+      "RUNNING: C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield-scratch\\.venv-ci\\Scripts\\python.exe -m src.curate.check_family_splits --manifest C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield\\data\\splits\\family_splits_v2.json C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield\\data\\staging\\translations\\batch01.csv C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield\\data\\staging\\translations\\aya_hinglish\\aya_hinglish_sample50.csv C:\\Users\\vedan\\Documents\\Resources\\Code\\hinglish-shield\\data\\staging\\review\\vedant_review_nov7.csv"
+    ]
+  },
+  "post_test_git_status": ""
+}

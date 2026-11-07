@@ -1,0 +1,12 @@
+manifest family_splits_v2.json sha256=334e7151edfd9fe958afcded67417b9315d2d26b693b51f91b998c5d9638b531 families=4730 members=4976 frozen=True test_access=nov11_final_pass_only
+
+C:\Users\vedan\Documents\Resources\Code\hinglish-shield-scratch\bounded-audit-20261107T143228Z\integration\data\staging\translations\batch01.csv: calibration=2 dev=4 test=24 UNMAPPED=0
+
+C:\Users\vedan\Documents\Resources\Code\hinglish-shield-scratch\bounded-audit-20261107T143228Z\integration\data\staging\translations\aya_hinglish\aya_hinglish_sample50.csv: calibration=12 dev=11 test=27 UNMAPPED=0
+
+C:\Users\vedan\Documents\Resources\Code\hinglish-shield-scratch\bounded-audit-20261107T143228Z\integration\data\staging\review\vedant_review_nov7.csv: calibration=14 dev=12 test=33 UNMAPPED=0
+
+RESULT: PASS (0 errors)
+
+RUNNING: C:\Users\vedan\Documents\Resources\Code\hinglish-shield-scratch\.venv-ci\Scripts\python.exe -m src.curate.check_family_splits --manifest C:\Users\vedan\Documents\Resources\Code\hinglish-shield-scratch\bounded-audit-20261107T143228Z\integration\data\splits\family_splits_v2.json C:\Users\vedan\Documents\Resources\Code\hinglish-shield-scratch\bounded-audit-20261107T143228Z\integration\data\staging\translations\batch01.csv C:\Users\vedan\Documents\Resources\Code\hinglish-shield-scratch\bounded-audit-20261107T143228Z\integration\data\staging\translations\aya_hinglish\aya_hinglish_sample50.csv C:\Users\vedan\Documents\Resources\Code\hinglish-shield-scratch\bounded-audit-20261107T143228Z\integration\data\staging\review\vedant_review_nov7.csv
+

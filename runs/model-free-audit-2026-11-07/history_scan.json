@@ -1,0 +1,176 @@
+{
+  "scope": "PR13 through PR22 commit diffs; integration tracked non-prompt blobs. Mixed/test prompt payload files excluded from credential-content scanning, but filename/size inventory retained. No raw token match is printed.",
+  "prs": {
+    "13": {
+      "base": "3422aee0c7b9014dc82c5bdbd97cc3b3b13ad9da",
+      "head": "a8d903912c53e578abb73b6a51803cb09fee326f",
+      "files_changed": 10,
+      "frozen_net_changes": [],
+      "authored_added_em_dashes": []
+    },
+    "14": {
+      "base": "799b7c0d2d229808fdf13419935e4d1da6b03b5d",
+      "head": "15b60b9eba7254580a3195201a30e5e57addeb2a",
+      "files_changed": 43,
+      "frozen_net_changes": [],
+      "authored_added_em_dashes": []
+    },
+    "15": {
+      "base": "7d13143afa9064b2f76a29d5f76e2395b3f97c90",
+      "head": "0d744278e6b5bd0e9d5b6f00e29eba10c89dc50c",
+      "files_changed": 4,
+      "frozen_net_changes": [],
+      "authored_added_em_dashes": []
+    },
+    "16": {
+      "base": "4232bdb4edefff73465ab86eb43abca53947d64b",
+      "head": "7289b69da584411d722ea820e3666e93352598b7",
+      "files_changed": 7,
+      "frozen_net_changes": [],
+      "authored_added_em_dashes": []
+    },
+    "17": {
+      "base": "c944e1d6584b0d91818841a4d3e6a8a99dd1e08b",
+      "head": "a0a1dc507233d44417587d0b378f030b1f764474",
+      "files_changed": 11,
+      "frozen_net_changes": [],
+      "authored_added_em_dashes": []
+    },
+    "18": {
+      "base": "f620ae3ff876112680a16a92bbc25c1ac1cc05de",
+      "head": "964129ca3c724a77c7eca4a157a98914f39a2b8f",
+      "files_changed": 30,
+      "frozen_net_changes": [],
+      "authored_added_em_dashes": []
+    },
+    "19": {
+      "base": "2b415aecee5a12fabf3841aef4d6a6ed6d5ba307",
+      "head": "c66d53d4eaa2b4e05b4e3730c07e691f4c52a37e",
+      "files_changed": 37,
+      "frozen_net_changes": [],
+      "authored_added_em_dashes": []
+    },
+    "20": {
+      "base": "3013b6a665603daa036a386a88ee07f1e5685cda",
+      "head": "be74f6923fdfd1eaf521248e10c7012c3445c7e1",
+      "files_changed": 5,
+      "frozen_net_changes": [],
+      "authored_added_em_dashes": []
+    },
+    "21": {
+      "base": "6ebc9bf0f067d4164a82af1c3bc9fada55353a13",
+      "head": "23c53c87e3da39d43f8492d77ea4a1ac3d55ac5e",
+      "files_changed": 21,
+      "frozen_net_changes": [],
+      "authored_added_em_dashes": []
+    },
+    "22": {
+      "base": "6ebc9bf0f067d4164a82af1c3bc9fada55353a13",
+      "head": "31d82aaf26cbd647b5d81c58451b0735e14f4c2b",
+      "files_changed": 9,
+      "frozen_net_changes": [],
+      "authored_added_em_dashes": []
+    }
+  },
+  "frozen_field_history_changes": [],
+  "tracked_weight_or_sensitive_filenames": [],
+  "credential_pattern_paths": [],
+  "excluded_prompt_payload_paths": [
+    "data/curated/hs_benign_en/calibration/checksums.txt",
+    "data/curated/hs_benign_en/calibration/hs_eval.jsonl",
+    "data/curated/hs_benign_en/calibration/lexsi_provenance.json",
+    "data/curated/hs_benign_en/calibration/manifest.json",
+    "data/curated/hs_benign_en/calibration/ppo.jsonl",
+    "data/curated/hs_benign_en/calibration/rejected.jsonl",
+    "data/curated/hs_benign_en/dev/checksums.txt",
+    "data/curated/hs_benign_en/dev/hs_eval.jsonl",
+    "data/curated/hs_benign_en/dev/lexsi_provenance.json",
+    "data/curated/hs_benign_en/dev/manifest.json",
+    "data/curated/hs_benign_en/dev/ppo.jsonl",
+    "data/curated/hs_benign_en/dev/rejected.jsonl",
+    "data/curated/hs_benign_en/manifest.json",
+    "data/curated/hs_benign_en/test/checksums.txt",
+    "data/curated/hs_benign_en/test/hs_eval.jsonl",
+    "data/curated/hs_benign_en/test/lexsi_provenance.json",
+    "data/curated/hs_benign_en/test/manifest.json",
+    "data/curated/hs_benign_en/test/ppo.jsonl",
+    "data/curated/hs_benign_en/test/rejected.jsonl",
+    "data/curated/hs_harm_en/calibration/checksums.txt",
+    "data/curated/hs_harm_en/calibration/hs_eval.jsonl",
+    "data/curated/hs_harm_en/calibration/lexsi_provenance.json",
+    "data/curated/hs_harm_en/calibration/manifest.json",
+    "data/curated/hs_harm_en/calibration/ppo.jsonl",
+    "data/curated/hs_harm_en/calibration/rejected.jsonl",
+    "data/curated/hs_harm_en/dev/checksums.txt",
+    "data/curated/hs_harm_en/dev/hs_eval.jsonl",
+    "data/curated/hs_harm_en/dev/lexsi_provenance.json",
+    "data/curated/hs_harm_en/dev/manifest.json",
+    "data/curated/hs_harm_en/dev/ppo.jsonl",
+    "data/curated/hs_harm_en/dev/rejected.jsonl",
+    "data/curated/hs_harm_en/manifest.json",
+    "data/curated/hs_harm_en/test/checksums.txt",
+    "data/curated/hs_harm_en/test/hs_eval.jsonl",
+    "data/curated/hs_harm_en/test/lexsi_provenance.json",
+    "data/curated/hs_harm_en/test/manifest.json",
+    "data/curated/hs_harm_en/test/ppo.jsonl",
+    "data/curated/hs_harm_en/test/rejected.jsonl",
+    "data/interim/en/en_v0_summary.json",
+    "data/interim/en/hs_benign.jsonl",
+    "data/interim/en/hs_benign_calibration.jsonl",
+    "data/interim/en/hs_benign_dev.jsonl",
+    "data/interim/en/hs_benign_test.jsonl",
+    "data/interim/en/hs_harm.jsonl",
+    "data/interim/en/hs_harm_calibration.jsonl",
+    "data/interim/en/hs_harm_dev.jsonl",
+    "data/interim/en/hs_harm_test.jsonl",
+    "data/seeds/MANIFEST.json",
+    "data/seeds/aya_redteaming/aya_arb.jsonl",
+    "data/seeds/aya_redteaming/aya_eng.jsonl",
+    "data/seeds/aya_redteaming/aya_fra.jsonl",
+    "data/seeds/aya_redteaming/aya_hin.jsonl",
+    "data/seeds/aya_redteaming/aya_rus.jsonl",
+    "data/seeds/aya_redteaming/aya_spa.jsonl",
+    "data/seeds/aya_redteaming/aya_srp.jsonl",
+    "data/seeds/aya_redteaming/aya_tgl.jsonl",
+    "data/seeds/harmbench/LICENSE",
+    "data/seeds/harmbench/behavior_datasets/2_behaviors.csv",
+    "data/seeds/harmbench/behavior_datasets/extra_behavior_datasets/adv_training_behaviors.csv",
+    "data/seeds/harmbench/behavior_datasets/extra_behavior_datasets/advbench_behaviors.csv",
+    "data/seeds/harmbench/behavior_datasets/extra_behavior_datasets/tdc2023_test_phase_behaviors.csv",
+    "data/seeds/harmbench/behavior_datasets/harmbench_behaviors_multimodal_all.csv",
+    "data/seeds/harmbench/behavior_datasets/harmbench_behaviors_text_all.csv",
+    "data/seeds/harmbench/behavior_datasets/harmbench_behaviors_text_test.csv",
+    "data/seeds/harmbench/behavior_datasets/harmbench_behaviors_text_val.csv",
+    "data/seeds/or_bench/or-bench-80k.csv",
+    "data/seeds/or_bench/or-bench-hard-1k.csv",
+    "data/seeds/or_bench/or-bench-toxic.csv",
+    "data/seeds/xstest/LICENSE",
+    "data/seeds/xstest/xstest_prompts.csv",
+    "data/staging/review/vedant_review_nov7.csv",
+    "data/staging/review/vedant_review_nov7_calibration_dev.csv",
+    "data/staging/translations/aya_hinglish/aya_hinglish_sample50.csv",
+    "data/staging/translations/aya_hinglish/selection_meta.json",
+    "data/staging/translations/batch01.csv",
+    "data/staging/translations/curatorkit_export_mapping.json"
+  ],
+  "current_em_dashes_in_changed_authored_docs": [],
+  "metrics_files": [
+    {
+      "path": "runs/_example/metrics.json",
+      "artifact_kind": "fixture",
+      "split": "example",
+      "non_null_metrics": {}
+    },
+    {
+      "path": "runs/wildguard-fixture-20261107T141335276834Z/metrics.json",
+      "artifact_kind": "fixture",
+      "split": "example",
+      "non_null_metrics": {}
+    }
+  ],
+  "benchmark_claim_review": {
+    "candidates_reviewed": 67,
+    "classification": "Protocol thresholds, theoretical refuse-everything controls, labeled planning math, fixture diagnostics and engineering checks; no measured benchmark claim found in repository authored Markdown. README contains no measured benchmark result. Notion and off-repository submissions were not audited in this bounded pass.",
+    "measured_run_metrics_files": 0
+  }
+}
