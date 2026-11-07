@@ -19,22 +19,22 @@ import zipfile
 from datetime import datetime, timezone
 from pathlib import Path
 
-NOTEBOOK_REVISION = "5db659acc1225c5793a50f399bb63cf025696279"
+NOTEBOOK_REVISION = "fceabfa61bea73bf0b81dadc316766c02b9b82c2"
 # SHA-256 of committed notebook bytes, not a Windows checkout's line endings.
-NOTEBOOK_SHA256 = "199870eca74b24ecd4a980b451cc2ff35f65ccdde47bb383b2ab20621f28d060"
+NOTEBOOK_SHA256 = "864bc460772afc11fcda476400d3601487ed90c5be8978344614fb058017aa19"
 NOTEBOOK_URL = (
     "https://raw.githubusercontent.com/Vedant817/hinglish-shield/"
     + NOTEBOOK_REVISION + "/notebooks/gpu_parity_and_baseline.ipynb"
 )
 PIN_NAMES = frozenset({"TRANSFORMERS_PIN", "HF_HUB_PIN", "CIRCUITKIT_GIT", "CIRCUITKIT_SHA",
-                       "SAFETUNE_GIT", "SAFETUNE_SHA"})
+                       "SAFETUNE_GIT", "SAFETUNE_SHA", "DEPENDENCY_ROOTS"})
 
 
 def sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
 
 
-def notebook_pins(data: bytes) -> dict[str, str]:
+def notebook_pins(data: bytes) -> dict:
     if sha256(data) != NOTEBOOK_SHA256:
         raise ValueError("pinned notebook hash mismatch")
     notebook = json.loads(data)
@@ -52,7 +52,9 @@ def notebook_pins(data: bytes) -> dict[str, str]:
                     if target.id in pins:
                         raise ValueError("duplicate notebook pin")
                     value = ast.literal_eval(node.value)
-                    if not isinstance(value, str) or not value:
+                    valid = (isinstance(value, list) and value and all(isinstance(v, str) and v for v in value)
+                             if target.id == "DEPENDENCY_ROOTS" else isinstance(value, str) and value)
+                    if not valid:
                         raise ValueError("invalid notebook pin")
                     pins[target.id] = value
     if set(pins) != PIN_NAMES:
@@ -60,7 +62,25 @@ def notebook_pins(data: bytes) -> dict[str, str]:
     return pins
 
 
-def install_arguments(pins: dict[str, str]) -> list[str]:
+def notebook_checker(data: bytes):
+    """Compile only the checker definition from the hash-verified notebook."""
+    notebook_pins(data)
+    definitions = []
+    for cell in json.loads(data)["cells"]:
+        if cell.get("cell_type") != "code":
+            continue
+        source = cell.get("source", "")
+        source = "".join(source) if isinstance(source, list) else source
+        definitions.extend(node for node in ast.parse(source).body
+                           if isinstance(node, ast.FunctionDef) and node.name == "check_dependency_closure")
+    if len(definitions) != 1:
+        raise ValueError("missing or duplicate dependency checker")
+    namespace = {}
+    exec(compile(ast.Module(body=definitions, type_ignores=[]), "pinned_dependency_checker", "exec"), namespace)
+    return namespace["check_dependency_closure"]
+
+
+def install_arguments(pins: dict) -> list[str]:
     return [
         f"transformers=={pins['TRANSFORMERS_PIN']}", f"huggingface-hub=={pins['HF_HUB_PIN']}",
         "accelerate", "safetensors", "sentencepiece", "protobuf", "psutil", "pytest",
@@ -115,10 +135,24 @@ def main(output_parent: Path = Path("/kaggle/working")) -> int:
         if versions["transformers"] != pins["TRANSFORMERS_PIN"] or versions["huggingface-hub"] != pins["HF_HUB_PIN"]:
             raise RuntimeError("resolved HF stack differs from pinned notebook")
         check = subprocess.run([sys.executable, "-m", "pip", "check"], capture_output=True, text=True, timeout=120)
-        write_json(out / "dependency_check.json", {"artifact_kind": "setup-smoke", "split": "example",
-                   "passed": check.returncode == 0, "stdout": check.stdout, "stderr": check.stderr})
-        if check.returncode:
-            raise RuntimeError("pip check failed; imports skipped as in the notebook")
+        write_json(out / "dependency_check_global.json", {"artifact_kind": "setup-smoke", "split": "example",
+                   "scope": "entire_preinstalled_environment", "passed": check.returncode == 0,
+                   "stdout": check.stdout, "stderr": check.stderr})
+        checker = notebook_checker(notebook_bytes)
+        scoped = checker(pins["DEPENDENCY_ROOTS"])
+        write_json(out / "dependency_check.json", scoped)
+        if not scoped["passed"]:
+            raise RuntimeError("project dependency closure failed; imports skipped as in the notebook")
+        direct_sources = {}
+        for package, pin in (("circuitkit", "CIRCUITKIT_SHA"), ("safetune", "SAFETUNE_SHA")):
+            dist = importlib.metadata.distribution(package)
+            direct = json.loads(dist.read_text("direct_url.json") or "{}")
+            observed = direct.get("vcs_info", {}).get("commit_id")
+            direct_sources[package] = observed
+            if observed != pins[pin]:
+                raise RuntimeError("installed Lexsi source revision differs from the notebook pin")
+        versions["direct_sources"] = direct_sources
+        write_json(out / "versions.json", versions)
         manifest["phase"] = "imports"
         # CircuitKIT must install its compatibility hooks before TransformerLens.
         with (out / "imports.log").open("w", encoding="utf-8") as log:

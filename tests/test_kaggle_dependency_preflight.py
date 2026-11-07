@@ -25,6 +25,10 @@ def test_current_install_list_still_agrees_with_preflight_without_executing_cell
     # Evaluate the literal list/f-strings only, never the cell or an import.
     expected = eval(compile(ast.Expression(install_call.args[0]), "notebook_install_args", "eval"), {"__builtins__": {}}, pins)
     assert probe.install_arguments(pins) == expected
+    checker = probe.notebook_checker(raw)
+    from types import SimpleNamespace
+    synthetic = {"root": SimpleNamespace(version="1", requires=["missing>=1"])}
+    assert checker(["root"], lookup=synthetic.__getitem__)["passed"] is False
 
 
 def test_notebook_drift_is_refused_before_any_install():
