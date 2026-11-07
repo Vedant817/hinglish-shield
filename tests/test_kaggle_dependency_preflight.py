@@ -1,6 +1,7 @@
 """The dependency probe never executes the notebook or fetches model weights."""
 import ast
 import json
+import zipfile
 from pathlib import Path
 
 import pytest
@@ -45,3 +46,28 @@ def test_failure_still_archives_source_and_diagnostics(tmp_path, monkeypatch):
     assert manifest["files_sha256"]["preflight_source.py"] == probe.sha256(Path(probe.__file__).read_bytes())
     assert list(tmp_path.glob("*.zip"))
     assert not (directory / "metrics.json").exists()
+
+
+@pytest.mark.parametrize("mutation", [None, "source_drift", "execution_claim", "missing_manifest"])
+def test_dependency_archive_is_hash_bound_and_never_parity_credit(tmp_path, mutation):
+    from scripts.ingest_gpu_artifacts import inspect_archive
+    root = Path(__file__).resolve().parents[1] / "runs" / "kaggle-dependencies-2026-11-07-failed-1"
+    manifest = json.loads((root / "manifest.json").read_text(encoding="utf-8"))
+    files = {name: (root / name).read_bytes() for name in manifest["files_sha256"]}
+    if mutation == "source_drift":
+        files["preflight_source.py"] += b"\n# altered\n"
+    if mutation == "execution_claim":
+        manifest["model_inference"] = True
+    if mutation != "missing_manifest":
+        files["manifest.json"] = json.dumps(manifest).encode()
+    path = tmp_path / "dependency.zip"
+    with zipfile.ZipFile(path, "w") as archive:
+        for name, data in files.items():
+            archive.writestr(name, data)
+    if mutation:
+        with pytest.raises(ValueError):
+            inspect_archive(path)
+    else:
+        _, summary = inspect_archive(path)
+        assert summary["metrics_eligible"] is False
+        assert summary["original_parity"]["status"] == "incomplete"

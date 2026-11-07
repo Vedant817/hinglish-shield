@@ -43,6 +43,7 @@ FUNC_NAMES = {
     "refuse_curated_prompts",
     "guard_output_meta",
     "fixture_output_meta",
+    "check_dependency_closure",
 }
 
 
@@ -455,7 +456,10 @@ class TestGpuNotebook(unittest.TestCase):
         compat_line = src.index("import circuitkit.backends._tl_compat")
         self.assertLess(check_line, compat_line)
         self.assertIn('"dependency_check.json"', src)
-        self.assertIn('if check.returncode:', src)
+        self.assertIn('if not dependency_check["passed"]:', src)
+        self.assertIn('"dependency_check_global.json"', src)
+        self.assertIn('check_dependency_closure(DEPENDENCY_ROOTS)', src)
+        self.assertIn('observed != expected', src)
 
     def test_absent_or_empty_hooks_fail(self) -> None:
         attach = self.ns["attach_residual_hooks"]

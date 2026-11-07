@@ -1,0 +1,8 @@
+{
+  "CIRCUITKIT_GIT": "https://github.com/Lexsi-Labs/CircuitKIT.git",
+  "CIRCUITKIT_SHA": "e71d5e17fe6e2abfde47ec9a7fbaf31649601b78",
+  "HF_HUB_PIN": "1.33.0",
+  "SAFETUNE_GIT": "https://github.com/Lexsi-Labs/SafeTune.git",
+  "SAFETUNE_SHA": "3901a9f48a88984a181c8c9493be2d3a20ab160f",
+  "TRANSFORMERS_PIN": "5.22.1"
+}

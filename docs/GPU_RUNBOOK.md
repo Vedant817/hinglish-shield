@@ -88,9 +88,20 @@ CircuitKIT's declared `>=1.5,<2` range and Transformers `5.22.1`'s declared
 `>=1.31.0,<3.0` range. Published dependency metadata supports that intersection;
 it does not prove the complete environment installs or imports on Kaggle.
 The cell records the resolved Python, Torch, Transformers, HF Hub, TransformerLens
-and Accelerate versions, writes `dependency_check.json`, and stops before model
-loads if `pip check` fails. Preserve that failure artifact, including failures
-caused by the base Kaggle environment; do not use `--no-deps` to bypass it.
+and Accelerate versions. It preserves the global pip check in
+`dependency_check_global.json` and checks every active transitive requirement
+reachable from the explicit notebook package roots in `dependency_check.json`.
+Requested extras are included; missing packages, incompatible versions and
+unverified direct-URL dependencies fail closed. Installed CircuitKIT and SafeTune
+VCS commits must match their pins. Unrelated preinstalled packages are outside
+this scoped check. Do not use `--no-deps` to bypass dependency resolution.
+
+The first executed dependency preflight is preserved in
+`runs/kaggle-dependencies-2026-11-07-failed-1/`. Installation succeeded, then
+global pip check failed on the base environment and imports were skipped. It
+does not verify imports or model execution. That observed failure motivated the
+explicit dependency scope above; the original failure is retained rather than
+relabeled a pass. A subsequent scoped check and import run still need evidence.
 
 The model-free regression suite and metadata checks do not establish a successful
 Kaggle install, a short or long parity pass, a dtype guard pass, or a scored run.

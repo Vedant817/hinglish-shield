@@ -122,3 +122,19 @@ the executed source are archived as setup-smoke evidence. It loads no model
 weights, reads no prompt datasets and emits no metrics file. Local tests verify
 install-list agreement, source-drift refusal and failure artifact retention.
 This entry records preparation only; actual Kaggle execution is separate evidence.
+# 2026-11-07 IST: preserve executed dependency failure and scope its successor
+
+The private Kaggle dependency preflight executed from committed source, installed
+the pinned packages, then failed the global pip check before imports. The raw
+source, notebook, package versions, failure log and checksums are preserved under
+`runs/kaggle-dependencies-2026-11-07-failed-1/`. This is setup-smoke evidence only.
+No weights or model inference ran, and the original parity gate remains incomplete.
+
+The global failure listed conflicts in preinstalled packages. The successor
+records global diagnostics and independently checks all active transitive
+requirements of the explicit project roots, including extras. Installed Lexsi VCS
+commits must match the pins. Unrelated distributions are not certified by that
+scope. This operational adjustment is logged before any target or judge run;
+model acceptance thresholds, copied parity recipes and the frozen test are unchanged.
+The raw failed run is not relabeled a pass. The next actual check/import result
+remains pending.
