@@ -1,0 +1,21 @@
+{
+  "artifact_kind": "setup-smoke",
+  "split": "example",
+  "kernel_url": "https://www.kaggle.com/code/vedant817/hinglish-shield-dependency-preflight-5db659a",
+  "kernel_version": 2,
+  "observed_kernel_status": "COMPLETE",
+  "requested_accelerator": "NvidiaTeslaT4",
+  "observed_gpu_names": [
+    "Tesla T4"
+  ],
+  "cuda_available": true,
+  "cuda_tensor_compute_verified": false,
+  "source_git_revision": "9429cdda650d741048a7218d6abd27225e923e41",
+  "source_matches_committed_bytes": true,
+  "kaggle_log_sha256": "b3abc7582e17baee55c0c565de43dffea2e22f086d7dec1caf80d4e33081c2b7",
+  "limitations": [
+    "Dependency/import verification only; no parity, weights, model inference, dtype guard or ASR",
+    "Global dependency diagnostics remain failed and retained",
+    "Import log contains a CUDA-driver warning from another imported runtime; no CUDA tensor computation was tested"
+  ]
+}

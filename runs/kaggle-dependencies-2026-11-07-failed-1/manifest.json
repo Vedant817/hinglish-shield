@@ -1,0 +1,29 @@
+{
+  "artifact_kind": "setup-smoke",
+  "created_at": "2026-11-07T05:43:14.800903+00:00",
+  "error_type": "RuntimeError",
+  "files_sha256": {
+    "commands.json": "f612a7878393e4ff6f6750f2081c385c682898dc1292bd425a83198a64c6ca59",
+    "dependency_check.json": "07788dbfcafda67c2a46fdc569ee0f467153045b93aa5d826d7179186b167937",
+    "failure.log": "723a2fd9575e8411bda47ae2ceb3e8191a42bdd37f1a97185dc99d28734cffeb",
+    "install.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "pins.json": "25372fb924678b6b49290af205571b8953e32fcbefe10919b9bfba1b2c00c540",
+    "preflight_source.py": "094a3381c611744947df6c539fab3cef58bc5c42707e020e602eb567f95c8381",
+    "source_notebook.ipynb": "199870eca74b24ecd4a980b451cc2ff35f65ccdde47bb383b2ab20621f28d060",
+    "versions.json": "5359067382518e60ecc5141b25232dc55b7bea1507f62c65409de00c587018de"
+  },
+  "install_exit_code": 0,
+  "limitations": [
+    "Dependency and import verification only; no parity, dtype guard, judge accuracy or ASR",
+    "Does not verify gated access or platform secret attachment"
+  ],
+  "model_inference": false,
+  "model_weights_loaded": false,
+  "notebook_revision": "5db659acc1225c5793a50f399bb63cf025696279",
+  "notebook_sha256": "199870eca74b24ecd4a980b451cc2ff35f65ccdde47bb383b2ab20621f28d060",
+  "phase": "dependency_check",
+  "python": "3.13.16 (main, Oct  1 2026, 15:40:24) [GCC 13.3.0]",
+  "source_sha256": "094a3381c611744947df6c539fab3cef58bc5c42707e020e602eb567f95c8381",
+  "split": "example",
+  "status": "failed"
+}

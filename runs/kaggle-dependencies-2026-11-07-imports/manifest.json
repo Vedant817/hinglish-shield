@@ -1,0 +1,30 @@
+{
+  "artifact_kind": "setup-smoke",
+  "created_at": "2026-11-07T05:53:07.948514+00:00",
+  "files_sha256": {
+    "commands.json": "f612a7878393e4ff6f6750f2081c385c682898dc1292bd425a83198a64c6ca59",
+    "dependency_check.json": "a363b66c3bce68f5cd311d1fc8985f7318be044fc8f884e6692dccfe87935745",
+    "dependency_check_global.json": "f90f024df1f497d07fd9e0e2b8ee98713bd957ffcce2463880485b7ca01afdf3",
+    "imports.log": "b1b8ec2b09d84b21b4b584459e82c36285e1f7e00e69fdc3fc9accb3037e00eb",
+    "install.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "pins.json": "083ddb03deddc98ecfbd2d2e510067c81684dc9cdba2cf96f1d835b019635342",
+    "preflight_source.py": "bc9b3e7a48a05e9ebda942960e1b00e6acf7bee8e49ef144092c33bc7bf8a5a6",
+    "source_notebook.ipynb": "864bc460772afc11fcda476400d3601487ed90c5be8978344614fb058017aa19",
+    "versions.json": "fb18a995abad32e93bf67c6d36e4f7fc476a5926092c0850d843e1892eb2171c"
+  },
+  "imports_exit_code": 0,
+  "install_exit_code": 0,
+  "limitations": [
+    "Dependency and import verification only; no parity, dtype guard, judge accuracy or ASR",
+    "Does not verify gated access or platform secret attachment"
+  ],
+  "model_inference": false,
+  "model_weights_loaded": false,
+  "notebook_revision": "fceabfa61bea73bf0b81dadc316766c02b9b82c2",
+  "notebook_sha256": "864bc460772afc11fcda476400d3601487ed90c5be8978344614fb058017aa19",
+  "phase": "complete",
+  "python": "3.13.16 (main, Oct  1 2026, 15:40:24) [GCC 13.3.0]",
+  "source_sha256": "bc9b3e7a48a05e9ebda942960e1b00e6acf7bee8e49ef144092c33bc7bf8a5a6",
+  "split": "example",
+  "status": "complete"
+}

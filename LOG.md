@@ -102,6 +102,53 @@ Format per iteration: what, result, next. Times in IST. No em dashes.
 - review repairs: Grok's synthetic review caught untracked-source provenance and ignored decoding options. Real runs now require a committed matching runner and clean git worktree; ledgers record the LF source hash and dirty/matching flags. Unknown decoding keys are rejected. Earlier integration repairs cover source laundering, exact integer settings, base-only method and cleanup on failure/cancellation.
 - validation: Light CI-equivalent environment: 35 dev-ledger tests passed; combined suite 147 passed, 1 skipped; smoke passed. Models and judges are fake transports in these tests. No torch, model weights or GPU was used.
 - limits: Existing canonical EN/HI members only; Hinglish and Hindi benign variants need verified reviewed lineage before admission. Human calibration, numerical guard approval, real adapter runtime, category adjudication, preservation metrics and scored baseline remain incomplete. The locked test runner and frozen membership are unchanged.
+# 2026-11-07 IST: parity launch validation
+
+The GPU notebook now rejects invalid negative or nonnumeric KL values across
+original parity, bf16 comparison floors and the fp16 mean-KL guard. Invalid
+measured floors cannot become provisional passes. Thresholds and copied upstream
+prompts/formula/long specification are unchanged; raw values are not clipped.
+Pinned the parity checkpoint and tokenizer to the verified public base-model
+revision, supplied that tokenizer to TL, and made the install a joint resolution
+with an explicit HF Hub pin and a recorded pip dependency check before model loads.
+Validation: `tests/test_gpu_notebook.py` passed locally without torch or weights.
+The complete Kaggle dependency install and all model execution remain unverified.
+# 2026-11-07 IST: dependency-only Kaggle probe prepared
+
+Added a secret-free preflight script that hash-checks the committed parity
+notebook, extracts only install literals, and executes its dependency resolution,
+pip check and CircuitKIT-before-TransformerLens imports. Failure diagnostics and
+the executed source are archived as setup-smoke evidence. It loads no model
+weights, reads no prompt datasets and emits no metrics file. Local tests verify
+install-list agreement, source-drift refusal and failure artifact retention.
+This entry records preparation only; actual Kaggle execution is separate evidence.
+# 2026-11-07 IST: preserve executed dependency failure and scope its successor
+
+The private Kaggle dependency preflight executed from committed source, installed
+the pinned packages, then failed the global pip check before imports. The raw
+source, notebook, package versions, failure log and checksums are preserved under
+`runs/kaggle-dependencies-2026-11-07-failed-1/`. This is setup-smoke evidence only.
+No weights or model inference ran, and the original parity gate remains incomplete.
+
+The global failure listed conflicts in preinstalled packages. The successor
+records global diagnostics and independently checks all active transitive
+requirements of the explicit project roots, including extras. Installed Lexsi VCS
+commits must match the pins. Unrelated distributions are not certified by that
+scope. This operational adjustment is logged before any target or judge run;
+model acceptance thresholds, copied parity recipes and the frozen test are unchanged.
+The raw failed run is not relabeled a pass. The next actual check/import result
+remains pending.
+# 2026-11-07 IST: executed Kaggle scoped dependency and import check
+
+The successor private Kaggle preflight completed from committed source. Scoped
+transitive requirements and installed Lexsi VCS identities passed, then
+CircuitKIT compatibility, TransformerLens and SafeTune imported successfully.
+The raw global dependency failures remain recorded. Evidence and source hashes
+are under `runs/kaggle-dependencies-2026-11-07-imports/` with setup-smoke kind.
+The import log detected one T4, not an assumed two-device allocation. It also
+contains driver diagnostics from another imported runtime. No CUDA tensor
+computation, model loading, inference, parity, dtype guard or ASR was executed.
+
 # 2026-11-07 IST: dev aggregation admission review repairs
 
 The first independent PR17 review rejected the admission and release gates.

@@ -19,7 +19,12 @@ PINNED_PROMPTS_SHA256 = "3ab3ad15fba852e34e08b8c485e2e3c41adc8702aa80a0bbf62215d
 ALLOWED = {"env_report.json", "versions.json", "parity_original_sequential.json",
            "parity_long_prompt.json", "parity_variant_bf16.json", "parity_pytest.json",
            "parity_pytest.log", "fp16_guard.json", "predictions.jsonl", "metrics_stub.json",
-           "baseline_manifest.json"}
+           "baseline_manifest.json", "dependency_check.json", "dependency_check_global.json",
+           "commands.json", "failure.log", "install.log", "imports.log", "manifest.json",
+           "pins.json", "preflight_source.py", "source_notebook.ipynb"}
+DEPENDENCY_FILES = {"commands.json", "dependency_check.json", "dependency_check_global.json",
+                    "failure.log", "install.log", "imports.log", "manifest.json", "pins.json",
+                    "preflight_source.py", "source_notebook.ipynb", "versions.json"}
 
 
 def strict_json(data: bytes):
@@ -88,14 +93,19 @@ def inspect_archive(archive: Path) -> tuple[dict[str, bytes], dict]:
                 raise ValueError("Unsafe archive path")
             if stat.S_ISLNK(info.external_attr >> 16):
                 raise ValueError("Archive symlinks are forbidden")
-            key = name.rstrip("/").casefold()
-            if key in normalized:
-                raise ValueError("Duplicate archive entry")
-            normalized.add(key)
-            if info.is_dir():
+            # Identity is the casefolded basename. A directory and a file that
+            # differ only by a trailing slash, or by parent directory, still collide.
+            key = path.name.casefold()
+            if not key or key in {".", ".."}:
+                raise ValueError("Unsafe archive path")
+            if info.is_dir() or name.endswith("/"):
+                if key in normalized:
+                    raise ValueError("Duplicate archive entry")
+                normalized.add(key)
                 continue
-            if path.name not in ALLOWED or path.name in files:
+            if path.name not in ALLOWED or key in normalized or path.name in files:
                 raise ValueError("Unexpected or duplicate artifact filename")
+            normalized.add(key)
             if info.file_size > MAX_FILE_BYTES:
                 raise ValueError("Artifact exceeds import size limit")
             total += info.file_size
@@ -114,6 +124,11 @@ def inspect_archive(archive: Path) -> tuple[dict[str, bytes], dict]:
     for name, data in files.items():
         if name.endswith(".json"):
             strict_json(data)
+        if name in {"dependency_check.json", "dependency_check_global.json"}:
+            obj = strict_json(data)
+            if (not isinstance(obj, dict) or obj.get("artifact_kind") != "setup-smoke"
+                    or obj.get("split") != "example" or type(obj.get("passed")) is not bool):
+                raise ValueError("Dependency checks must remain setup-smoke diagnostics")
         if name == "metrics_stub.json":
             obj = strict_json(data)
             if (obj.get("artifact_kind") != "fixture" or obj.get("split") != "example"
@@ -130,6 +145,25 @@ def inspect_archive(archive: Path) -> tuple[dict[str, bytes], dict]:
                     row = strict_json(line)
                     if row.get("artifact_kind") != "fixture" or row.get("split") != "example":
                         raise ValueError("GPU notebook predictions must remain fixtures")
+    standalone_dependency = {"preflight_source.py", "source_notebook.ipynb", "commands.json",
+                             "install.log", "imports.log", "failure.log", "pins.json"}
+    if set(files) & standalone_dependency and "manifest.json" not in files:
+        raise ValueError("Dependency preflight manifest missing")
+    if "manifest.json" in files:
+        manifest = strict_json(files["manifest.json"])
+        if (not isinstance(manifest, dict) or set(files) - DEPENDENCY_FILES or manifest.get("artifact_kind") != "setup-smoke"
+                or manifest.get("split") != "example" or manifest.get("status") not in {"complete", "failed"}
+                or manifest.get("model_weights_loaded") is not False or manifest.get("model_inference") is not False):
+            raise ValueError("Dependency preflight cannot claim model execution or mix parity artifacts")
+        hashes = manifest.get("files_sha256")
+        if not isinstance(hashes, dict) or set(hashes) != set(files) - {"manifest.json"}:
+            raise ValueError("Dependency preflight file coverage mismatch")
+        if any(hashes[name] != hashlib.sha256(files[name]).hexdigest() for name in hashes):
+            raise ValueError("Dependency preflight file hash mismatch")
+        if (manifest.get("source_sha256") != hashes.get("preflight_source.py")
+                or manifest.get("notebook_sha256") != hashes.get("source_notebook.ipynb")
+                or not hashes.get("preflight_source.py") or not hashes.get("source_notebook.ipynb")):
+            raise ValueError("Dependency preflight source identity mismatch")
     summary = {"artifact_kind": "setup-smoke", "status": "inspected", "metrics_eligible": False,
                "archive_sha256": hashlib.sha256(archive.read_bytes()).hexdigest(),
                "files_sha256": {name: hashlib.sha256(data).hexdigest() for name, data in files.items()},
