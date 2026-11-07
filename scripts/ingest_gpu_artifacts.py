@@ -93,14 +93,19 @@ def inspect_archive(archive: Path) -> tuple[dict[str, bytes], dict]:
                 raise ValueError("Unsafe archive path")
             if stat.S_ISLNK(info.external_attr >> 16):
                 raise ValueError("Archive symlinks are forbidden")
-            key = name.rstrip("/").casefold()
-            if key in normalized:
-                raise ValueError("Duplicate archive entry")
-            normalized.add(key)
-            if info.is_dir():
+            # Identity is the casefolded basename. A directory and a file that
+            # differ only by a trailing slash, or by parent directory, still collide.
+            key = path.name.casefold()
+            if not key or key in {".", ".."}:
+                raise ValueError("Unsafe archive path")
+            if info.is_dir() or name.endswith("/"):
+                if key in normalized:
+                    raise ValueError("Duplicate archive entry")
+                normalized.add(key)
                 continue
-            if path.name not in ALLOWED or path.name in files:
+            if path.name not in ALLOWED or key in normalized or path.name in files:
                 raise ValueError("Unexpected or duplicate artifact filename")
+            normalized.add(key)
             if info.file_size > MAX_FILE_BYTES:
                 raise ValueError("Artifact exceeds import size limit")
             total += info.file_size

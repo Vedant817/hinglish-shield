@@ -98,6 +98,25 @@ def test_invalid_archives_fail_before_destination_creation(tmp_path, name, data)
     assert not destination.exists()
 
 
+def test_wrapper_directory_entry_is_not_an_artifact(tmp_path):
+    path = tmp_path / "wrapped.zip"
+    with zipfile.ZipFile(path, "w") as zipped:
+        zipped.writestr("hs_gpu_artifacts/", b"")
+        for name, data in payloads().items():
+            zipped.writestr("hs_gpu_artifacts/" + name, data)
+    assert inspect_archive(path)[1]["original_parity"]["status"] == "pass"
+
+
+def test_trailing_slash_twin_of_an_artifact_is_refused(tmp_path):
+    path = tmp_path / "twin.zip"
+    with zipfile.ZipFile(path, "w") as zipped:
+        for name, data in payloads().items():
+            zipped.writestr("hs_gpu_artifacts/" + name, data)
+        zipped.writestr("hs_gpu_artifacts/parity_long_prompt.json/", b"")
+    with pytest.raises(ValueError, match="Duplicate archive entry"):
+        inspect_archive(path)
+
+
 def test_nonfinite_json_refused(tmp_path):
     files = payloads()
     files["env_report.json"] = b'{"value":NaN}'

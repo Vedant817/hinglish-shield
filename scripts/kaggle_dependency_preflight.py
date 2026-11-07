@@ -154,6 +154,7 @@ def main(output_parent: Path = Path("/kaggle/working")) -> int:
         checker = notebook_checker(notebook_bytes)
         scoped = checker(pins["DEPENDENCY_ROOTS"])
         write_json(out / "dependency_check.json", scoped)
+        # The notebook has its own error text. This gate uses the boolean only.
         if not scoped["passed"]:
             raise RuntimeError("scoped dependency closure failed; inspect dependency_check.json")
         direct_sources = {}
