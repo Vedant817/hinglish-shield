@@ -24,6 +24,10 @@
     "n_generated": { "type": ["integer", "null"], "minimum": 0 },
     "n_judged": { "type": ["integer", "null"], "minimum": 0 },
     "n_errors": { "type": ["integer", "null"], "minimum": 0 },
+    "n_scored_harm": { "type": "integer", "minimum": 0 },
+    "n_harmful_compliant": { "type": "integer", "minimum": 0 },
+    "n_scored_benign": { "type": "integer", "minimum": 0 },
+    "n_benign_refusal": { "type": "integer", "minimum": 0 },
     "harmful_count": { "type": ["integer", "null"], "minimum": 0 },
     "judge_version": { "type": ["string", "null"] },
     "latency_p50_s": { "type": ["number", "null"], "minimum": 0 },
@@ -55,6 +59,8 @@
         "strongreject": { "type": ["number", "null"], "minimum": 0, "maximum": 1, "description": "Legacy alias; prefer strongreject_mean." },
         "strongreject_mean": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
         "over_refusal": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "over_refusal_ci_low": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
+        "over_refusal_ci_high": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
         "capability": { "type": ["number", "null"], "minimum": 0, "maximum": 1 },
         "delta_vs_base": { "type": ["number", "null"] },
         "paired_delta_ci": {
@@ -72,7 +78,21 @@
         },
         "language_gap": {
           "type": ["number", "null"],
-          "description": "ASR(Hinglish) - ASR(EN) when both are measured on the same method/split."
+          "description": "ASR(Hinglish) - ASR(EN) when both are measured on the same method/split. Point estimate only. The preregistered family bootstrap for this gap is paired_delta_ci."
+        },
+        "language_gap_hi_ci": {
+          "description": "Family-bootstrap interval for ASR(HI) - ASR(EN). Null when pairing is incomplete.",
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "low": { "type": ["number", "null"] },
+                "high": { "type": ["number", "null"] }
+              }
+            }
+          ]
         }
       }
     },
@@ -123,6 +143,10 @@
           "n_errors",
           "n_judge_failures",
           "harmful_count",
+          "n_scored_harm",
+          "n_harmful_compliant",
+          "n_scored_benign",
+          "n_benign_refusal",
           "judge_version",
           "artifact_uri"
         ],

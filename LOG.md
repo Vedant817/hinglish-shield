@@ -108,3 +108,30 @@ Format per iteration: what, result, next. Times in IST. No em dashes.
 - what: Replaced the unconditional CircuitKIT locate refusal with a gated in-process runtime. After recomputed original fp32 short-plus-4196 credit, a run can load pinned Tiny Aya, extract the proposed last-nonpad residual direction, write steered and unsteered dev rows, and unload the target before the judge. Missing credit, an empty chat template, missing node scores, test or relabeled membership, a fixture artifact, or a dirty source tree still fail closed. Hooks clear on success, error, and cancel. Accept still requires the ADR family floor.
 - result: Light interpreter pytest tests/repair: 29 passed. No test prompts and no weight download. External torch 2.15.0+cpu interpreter ran verify_circuitkit_contract exit 0 on its own in-process tensor module (vector L2 4.0, alpha 0 diff 0.0, alpha 1 diff 2.0, source e71d5e17). That script credit is not Locate credit. pip check printed no broken requirements. Installed huggingface-hub is 2.4.0 while the CircuitKIT source declares huggingface-hub>=1.5,<2. Deterministic tensor fixture evidence is runs/repair-deterministic-tensor-2026-11-07/fixture_results.json with artifact_kind fixture, split example, and primary_asr null. verify-freeze on that file returned verified true and weights_reloaded false. from_pretrained was not called.
 - next: A real Locate still needs an ingested original parity pass, a measured chat-template hash, caller node scores, a clean repair commit, and a judge revision before any scored dev ledger. No ASR is claimed.
+
+# 2026-11-07 IST: dev aggregation admission review repairs
+
+The first independent PR17 review rejected the admission and release gates.
+Repaired language-scoped family pairing without dropping both-arm failures,
+calibration pair/count conservation and partial kappa validation, missing benign
+language coverage, cross-arm identity recording, and explicit harmful/benign
+rate denominators. Published run rows now require a hash-bound aggregation
+sidecar. Runtime admission consumes hashed WildGuard fixture producer artifacts
+and the native notebook dtype-guard format, with revision and per-prompt checks.
+Pack acceptance additionally requires matched harmful and benign multilingual
+families; capability scores cannot cover only a favorable family subset.
+
+Validation: the permitted model-free eval, notebook and curation suites passed
+locally, and smoke passed. The producer interoperability test uses fake inference.
+No weights were loaded, no human labels were supplied and no measured run was
+promoted. Independent re-review is pending. Reviewed-variant aggregation
+integration and actual prerequisite runtime evidence remain outstanding.
+# 2026-11-07 IST: bounded aggregation re-review and follow-up
+
+The independent PR17 re-review accepted the repairs for the original admission
+findings and identified a single-arm capability mismatch. Capability aggregation
+now uses benign families, matching its documented contract and the release gate.
+The WildGuard fixture producer refuses a missing Git identity before importing
+torch, and calibration documentation distinguishes paired ledger counts from
+the supplied sheet's declared expected size. Focused synthetic regressions and
+smoke passed. No model/runtime safety score or human calibration was produced.
