@@ -1,0 +1,55 @@
+# Proposed Locate and steering protocol.
+# docs/EVAL_PLAN.md and docs/research/PREREG_baseline.md do not name an
+# extraction formula. README.md names an Arditi difference of means only as a
+# fallback if CircuitKIT cannot load Tiny Aya. This file is that declaration.
+# It is not a preregistered method and it is not evidence of a refusal mechanism.
+
+protocol_id: hs-repair-proposed-v1
+status: proposed_not_preregistered
+proven_refusal_mechanism: false
+acknowledged_not_a_proven_refusal_mechanism: true
+sources_checked:
+  - docs/EVAL_PLAN.md
+  - docs/research/PREREG_baseline.md
+  - docs/adr/0007-finance-workload-and-preservation-gates.md
+  - README.md
+  - configs/research/baseline_prereg.yaml
+convention: mean_target_minus_mean_source
+target_hs_label: harm
+source_hs_label: benign
+meaning: >
+  The vector is the mean residual of calibration harm rows minus the mean
+  residual of calibration benign rows at one declared layer and token position.
+  Adding a positive coefficient moves the hooked residual toward that
+  difference. The arithmetic is a difference of means. That arithmetic is not,
+  by itself, a demonstration that the direction mediates refusal.
+position: last_nonpad_token
+layer_index: 0
+layer_name: blocks.0.hook_resid_post
+vector_norm: raw_l2_recorded
+unit_normalize: false
+calibration_split_only: true
+freeze_before_dev_search: true
+random_control:
+  name: random_norm_matched_direction
+  seed: 7
+  match: l2_norm
+  library_note: >
+    CircuitKIT ActivationSteering.get_random_baseline_vectors matches the L2
+    norm with torch.randn_like and takes no seed. That call is not this control.
+alpha_zero:
+  name: alpha_zero_with_wrapper
+  wrapper_hook_required: true
+  addition_is_zero: true
+circuitkit:
+  source_sha: e71d5e17fe6e2abfde47ec9a7fbaf31649601b78
+  module: circuitkit.applications.steering.steering
+  class: ActivationSteering
+  extract: compute_steering_vector
+  apply: steer
+  position_reduction: last_index_of_rank2_else_refuse
+  credit: original_fp32_short_and_4196_long_or_explicitly_accepted_d4_bf16_variant
+claims_forbidden_unless_measured:
+  - safetune_superior
+  - static_checkpoint_repair
+  - circuit_superiority
