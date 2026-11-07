@@ -959,6 +959,13 @@ def _mark(manifest: dict[str, Any], phase: str, out_dir: Path) -> None:
     _write_json_atomic(out_dir / "manifest.json", manifest)
 
 
+def _reviewed_authority(path: Path, *, require_pinned_hash: bool) -> dict[str, Any]:
+    try:
+        return load_authority(path, require_pinned_hash=require_pinned_hash)
+    except ReviewedVariantError as exc:
+        raise DevRunnerError(str(exc)) from None
+
+
 def run_dev_ledger(
     *,
     config_path: Path,
@@ -1013,11 +1020,11 @@ def run_dev_ledger(
     if derived_rows:
         if not injected:
             assert_supported_model_contract(config)
-            authority = load_authority(CANONICAL_FAMILY_MANIFEST, require_pinned_hash=True)
+            authority = _reviewed_authority(CANONICAL_FAMILY_MANIFEST, require_pinned_hash=True)
         elif canonical_manifest_path is None:
             raise DevRunnerError("derived variants require canonical authority")
         else:
-            authority = load_authority(canonical_manifest_path, require_pinned_hash=False)
+            authority = _reviewed_authority(canonical_manifest_path, require_pinned_hash=False)
         if canonical_rows:
             assert_canonical_dev_membership(canonical_rows, authority)
         canonical_sha = str(authority["sha256"])

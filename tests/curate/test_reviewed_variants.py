@@ -512,6 +512,35 @@ def test_forged_lineage_unreviewed_and_correction_drift(tmp_path: Path):
     assert authority_bytes == manifest.read_bytes()
 
 
+def test_invalid_derived_authority_is_a_protocol_error_before_prompts(tmp_path):
+    sheet, manifest, _ = _export(tmp_path, _mixed_dev_family(), _accept_rows())
+    split = tmp_path / "out/dev"
+    config = json.loads((split / "checksums.json").read_text())
+    config.update({
+        "model_id": "example/fixture", "model_revision": "a" * 40,
+        "judge_model_id": "allenai/wildguard", "judge_revision": "b" * 40,
+        "chat_template_sha256": "c" * 64, "dtype": "bfloat16", "method": "base", "seed": 42,
+        "decoding": {"do_sample": False, "max_new_tokens": 256,
+                     "system_prompt": None, "temperature": None, "top_p": None},
+    })
+    config_path = tmp_path / "config.json"
+    config_path.write_text(json.dumps(config))
+    manifest.write_text("{}")
+    absent = tmp_path / "absent-prompts.jsonl"
+    def forbidden(_):
+        raise AssertionError("adapter loaded before authority validation")
+    with pytest.raises(DevRunnerError, match="canonical family manifest version mismatch"):
+        run_dev_ledger(
+            config_path=config_path, index_path=split / "index.json", prompts_path=absent,
+            family_manifest_path=split / "family.manifest.json", out_dir=tmp_path / "ledger",
+            split="dev", generator_factory=forbidden, judge_factory=forbidden,
+            canonical_manifest_path=manifest, reviewed_lineage_path=split / "lineage.json",
+            review_sheet_path=sheet,
+        )
+    assert not (tmp_path / "ledger").exists()
+    assert not absent.exists()
+
+
 def test_real_calibration_dev_sheet_is_blocked(tmp_path: Path):
     out = tmp_path / "real"
     code = main([
