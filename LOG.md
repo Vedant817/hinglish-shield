@@ -102,3 +102,14 @@ Format per iteration: what, result, next. Times in IST. No em dashes.
 - review repairs: Grok's synthetic review caught untracked-source provenance and ignored decoding options. Real runs now require a committed matching runner and clean git worktree; ledgers record the LF source hash and dirty/matching flags. Unknown decoding keys are rejected. Earlier integration repairs cover source laundering, exact integer settings, base-only method and cleanup on failure/cancellation.
 - validation: Light CI-equivalent environment: 35 dev-ledger tests passed; combined suite 147 passed, 1 skipped; smoke passed. Models and judges are fake transports in these tests. No torch, model weights or GPU was used.
 - limits: Existing canonical EN/HI members only; Hinglish and Hindi benign variants need verified reviewed lineage before admission. Human calibration, numerical guard approval, real adapter runtime, category adjudication, preservation metrics and scored baseline remain incomplete. The locked test runner and frozen membership are unchanged.
+# 2026-11-07 IST: parity launch validation
+
+The GPU notebook now rejects invalid negative or nonnumeric KL values across
+original parity, bf16 comparison floors and the fp16 mean-KL guard. Invalid
+measured floors cannot become provisional passes. Thresholds and copied upstream
+prompts/formula/long specification are unchanged; raw values are not clipped.
+Pinned the parity checkpoint and tokenizer to the verified public base-model
+revision, supplied that tokenizer to TL, and made the install a joint resolution
+with an explicit HF Hub pin and a recorded pip dependency check before model loads.
+Validation: `tests/test_gpu_notebook.py` passed locally without torch or weights.
+The complete Kaggle dependency install and all model execution remain unverified.
