@@ -354,3 +354,17 @@ Phase results, copied from the artifacts and not recomputed as a score:
 
 The locked test was not accessed. Original fp32 credit and the target template
 pin remain hard blockers for Locate/Repair and D8.
+
+## 2026-11-09 IST: full chat-template equality tests
+
+Added model-free tests that pin the complete template bytes at the target dev
+runner, the Qwen3Guard secondary adapter, the ZIP identity importer, and the
+in-process repair loader. Each path refuses a one-byte change such as a trailing
+space, newline, truncation, CRLF conversion, or prefix. The loader tests assert
+the model factory is not reached. The checked-in Qwen3Guard fixture still hashes
+to `b4230b556815baa1982c0b1eacb181ce965483ee20b1f6e4d9f375294900e02b`, and no
+Tiny Aya template pin is invented.
+
+Validation: 40 focused tests; full suite 400 passed, 1 skipped, 7 subtests;
+smoke passed. No model weights, judge, prompt file, test row, or metric was
+opened or produced.
