@@ -499,6 +499,15 @@ def test_cli_rejects_test_split_and_single_shot(tmp_path: Path):
     assert not missing.exists()
     assert not out.exists()
     assert main(["--split", "dev", "--i-understand-single-shot"]) == 2
+    assert main([
+        "--split", "test",
+        "--scoring-path", "d8_descriptive",
+        "--config", str(missing),
+        "--index", str(missing),
+        "--prompts", str(missing),
+        "--family-manifest", str(missing),
+        "--out", str(out),
+    ]) == 2
 
 
 def test_test_index_is_rejected_before_prompt_open(tmp_path: Path):
@@ -611,6 +620,153 @@ def test_duplicates_unreviewed_and_identity_block_before_prompts(tmp_path: Path)
             judge_factory=lambda _config: None,
         )
     assert not calibration_paths["prompts"].exists()
+
+
+def test_d8_keeps_unreviewed_calibration_and_requires_both_judges(tmp_path: Path):
+    from src.eval.dev_runner import D8_METRIC_LABEL, D8_SCORING_PATH
+
+    pending = tmp_path / "pending"
+    pending.mkdir()
+    paths = _bundle(
+        pending,
+        [_row("s1", split="calibration", review="unreviewed")],
+        family_split="calibration",
+        manifest_review="unreviewed",
+        write_prompts=False,
+    )
+    with pytest.raises(DevRunnerError, match="both judges"):
+        run_dev_ledger(
+            config_path=paths["config"],
+            index_path=paths["index"],
+            prompts_path=paths["prompts"],
+            family_manifest_path=paths["manifest"],
+            out_dir=pending / "out",
+            split="calibration",
+            scoring_path=D8_SCORING_PATH,
+            generator_factory=lambda _config: (_ for _ in ()).throw(AssertionError("generator")),
+            judge_factory=lambda _config: None,
+        )
+    assert not paths["prompts"].exists()
+
+    ready = tmp_path / "ready"
+    ready_paths = _bundle(
+        ready,
+        [_row("s1", split="calibration", review="unreviewed")],
+        family_split="calibration",
+        manifest_review="unreviewed",
+    )
+
+    class _Judge:
+        def __init__(self, label: str, value: float):
+            self.label = label
+            self.value = value
+            self.unloaded = False
+
+        def judge_one(self, prompt, response, **kwargs):
+            return SimpleNamespace(
+                prompt_id=kwargs["prompt_id"],
+                value=self.value,
+                label=self.label,
+                metadata={
+                    "harmful_request": "yes",
+                    "response_refusal": "no",
+                    "harmful_response": "yes",
+                    "severity": "Unsafe",
+                    "raw": "Safety: Unsafe\nCategories: None\nRefusal: No",
+                },
+            )
+
+        def unload(self):
+            self.unloaded = True
+
+    primary = _Judge("unsafe", 1.0)
+    secondary = _Judge("unsafe", 1.0)
+    manifest = run_dev_ledger(
+        config_path=ready_paths["config"],
+        index_path=ready_paths["index"],
+        prompts_path=ready_paths["prompts"],
+        family_manifest_path=ready_paths["manifest"],
+        out_dir=ready / "ledger",
+        split="calibration",
+        scoring_path=D8_SCORING_PATH,
+        generator_factory=lambda _config: _Generator(_ok),
+        judge_factory=lambda _config: primary,
+        secondary_judge_factory=lambda _config: secondary,
+    )
+    assert manifest["artifact_kind"] == "fixture"
+    assert manifest["split"] == "example"
+    assert manifest["membership_split"] == "calibration"
+    assert manifest["metric_label"] == D8_METRIC_LABEL
+    assert manifest["primary_asr"] is None
+    assert manifest["metrics_eligible"] is False
+    assert primary.unloaded is True and secondary.unloaded is True
+    assert not (ready / "ledger" / "metrics.json").exists()
+    sample = _read_jsonl(ready / "ledger" / "samples.jsonl")[0]
+    assert sample["review_status"] == "unreviewed"
+    assert sample["secondary_judge"]["label"] == "unsafe"
+    assert "vedant_verdict" not in sample
+    assert "human_label" not in sample
+    with pytest.raises(DevRunnerError, match="refuses this split"):
+        run_dev_ledger(
+            config_path=ready_paths["config"],
+            index_path=ready_paths["index"],
+            prompts_path=ready_paths["prompts"],
+            family_manifest_path=ready_paths["manifest"],
+            out_dir=ready / "test-out",
+            split="test",
+            scoring_path=D8_SCORING_PATH,
+            generator_factory=lambda _config: (_ for _ in ()).throw(AssertionError("generator")),
+            judge_factory=lambda _config: None,
+            secondary_judge_factory=lambda _config: None,
+        )
+
+
+def test_d8_secondary_runtime_error_is_not_stored_as_judge_failure(tmp_path: Path):
+    from src.eval.dev_runner import D8_SCORING_PATH
+
+    ready = tmp_path / "runtime"
+    paths = _bundle(
+        ready,
+        [_row("s1", split="calibration", review="unreviewed")],
+        family_split="calibration",
+        manifest_review="unreviewed",
+    )
+
+    class _Primary:
+        def judge_one(self, _prompt, _response, **kwargs):
+            return SimpleNamespace(
+                prompt_id=kwargs["prompt_id"],
+                value=1.0,
+                label="unsafe",
+                metadata={"harmful_request": "yes", "response_refusal": "no", "harmful_response": "yes"},
+            )
+
+        def unload(self):
+            return None
+
+    class _Secondary:
+        def judge_one(self, prompt, _response, **_kwargs):
+            raise DevRunnerError("D8 secondary process failed", stage="runtime")
+
+        def unload(self):
+            return None
+
+    with pytest.raises(DevRunnerError, match="D8 secondary process failed"):
+        run_dev_ledger(
+            config_path=paths["config"],
+            index_path=paths["index"],
+            prompts_path=paths["prompts"],
+            family_manifest_path=paths["manifest"],
+            out_dir=ready / "ledger",
+            split="calibration",
+            scoring_path=D8_SCORING_PATH,
+            generator_factory=lambda _config: _Generator(_ok),
+            judge_factory=lambda _config: _Primary(),
+            secondary_judge_factory=lambda _config: _Secondary(),
+        )
+    samples = ready / "ledger" / "samples.jsonl"
+    text = samples.read_text(encoding="utf-8") if samples.exists() else ""
+    assert "judge_failure" not in text
 
 
 def test_prompt_hash_and_dataset_hash_block_before_factories(tmp_path: Path):
