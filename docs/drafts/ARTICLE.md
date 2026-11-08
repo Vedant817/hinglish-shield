@@ -6,7 +6,11 @@ Financial-support assistants need to preserve useful answers while resisting req
 
 The pack separates source-family identity, translation review, generation, judging and admission of reported metrics. CuratorKIT preservation fixtures exposed why removing formatting can also remove an attack instruction. AuditKIT's WildGuard path and the pinned Qwen secondary adapter have real English fixture load/parsing evidence. Neither fixture establishes accuracy or multilingual calibration. CircuitKIT's steering interface has tensor-contract evidence; its original model parity gate is still incomplete. SafeTune dependency/import checks are not a trained repair result.
 
-The completed Kaggle bf16 result is a separately labeled provisional variant. It cannot be substituted for original fp32 credit. Fixture generations are not ASR. Hindi/Hinglish validation remains unavailable without fluent human labels of generated responses, and public translation quality or source safety labels cannot supply those labels.
+Original fp32 parity: Not run. Files under `runs/kaggle-parity-v8-2026-11-07/` are a provisional CPU bf16 variant. They are not original fp32 credit and not ASR. Do not copy KL values into this draft unless a later `metrics.json` with `artifact_kind: run` contains them. Fixture generations are not ASR.
+
+Target chat-template pin: Not run. `runs/tokenizer-metadata-v11-2026-11-08/` records `failure_phase` `secret_missing` and an unauthenticated HTTP 401. No tokenizer asset was downloaded. The Kaggle CLI cannot attach `HF_TOKEN`.
+
+Dev baseline: Not run. D8 says that run, when it happens, is automated-judge only: WildGuard primary and the pinned Qwen3Guard-Gen-0.6B secondary, labeled "automated-judge only, human calibration pending". Unreviewed rows are not human labels. Hindi and Hinglish human calibration remains unavailable. Public translation quality or source safety labels cannot supply response labels.
 
 A development exposure in the original held-out family inventory is recorded openly. The original frozen files are preserved. Vedant accepted the corrected holdout candidate as an inactive proposal artifact only; it does not grant test access or erase the incident. The final single-shot test remains embargoed until Nov 11 IST and until all scientific prerequisites pass.
 
