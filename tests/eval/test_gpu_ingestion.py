@@ -86,6 +86,31 @@ def test_identity_hash_mismatch_or_orphan_asset_refuses(tmp_path):
         inspect_archive(archive(tmp_path, files))
 
 
+def test_identity_template_hash_binds_the_complete_config_template(tmp_path):
+    template = "synthetic template\n"
+    asset = json.dumps({"chat_template": template}).encode()
+    identity = {
+        "artifact_kind": "setup-smoke", "split": "example",
+        "weights_loaded": False, "generation_performed": False,
+        "metrics_eligible": False, "primary_asr": None,
+        "status": "metadata_retrieved",
+        "model_id": "CohereLabs/tiny-aya-global",
+        "model_revision": "af89d219b53ed9b13b8a4645f9c8028973510324",
+        "tokenizer_config_sha256": hashlib.sha256(asset).hexdigest(),
+        "chat_template_sha256": hashlib.sha256(template.encode("utf-8")).hexdigest(),
+    }
+    files = {
+        "identity.json": json.dumps(identity).encode(),
+        "tokenizer_config.json": asset,
+    }
+    _, summary = inspect_archive(archive(tmp_path, files))
+    assert summary["target_identity"]["status"] == "metadata_retrieved"
+    identity["chat_template_sha256"] = hashlib.sha256(template.rstrip("\n").encode("utf-8")).hexdigest()
+    files["identity.json"] = json.dumps(identity).encode()
+    with pytest.raises(ValueError, match="hash binding"):
+        inspect_archive(archive(tmp_path, files))
+
+
 def test_import_recomputes_threshold_instead_of_trusting_passed(tmp_path):
     files = payloads()
     report = json.loads(files["parity_original_sequential.json"])
