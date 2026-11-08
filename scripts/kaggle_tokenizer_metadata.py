@@ -1,148 +1,202 @@
-"""Metadata-only identity fetch for the existing private Kaggle notebook.
+"""Target tokenizer identity capture for the private Kaggle notebook.
 
-No weights, model imports, prompt files, generation or metrics. Never log a secret.
+Downloads tokenizer metadata only. No weights, model imports, prompt files,
+generation, or scoring. Never writes or logs the secret value. The exact
+chat-template string is stored so the run can be audited without guessing.
 """
 from __future__ import annotations
 
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
-from urllib.error import HTTPError, URLError
-from urllib.parse import urlparse
-from urllib.request import HTTPRedirectHandler, Request, build_opener
+from typing import Any, Iterable, Mapping
 
 MODEL_ID = "CohereLabs/tiny-aya-global"
-REVISION = "af89d219b53ed9b13b8a4645f9c8028973510324"
-URL = f"https://huggingface.co/{MODEL_ID}/raw/{REVISION}/tokenizer_config.json"
-MAX_METADATA_BYTES = 2 * 1024 * 1024
-
-
-def notebook_document(script_source: str, source_commit: str) -> dict:
-    """A deterministic private-job document with papermill's required kernel."""
-    digest = hashlib.sha256(script_source.encode("utf-8")).hexdigest()
-    code = (
-        "from pathlib import Path\nimport hashlib\n"
-        f"source = {script_source!r}\n"
-        "namespace = {'__name__': 'hs_tokenizer_metadata_job'}\n"
-        "exec(compile(source, 'kaggle_tokenizer_metadata.py', 'exec'), namespace)\n"
-        f"assert hashlib.sha256(source.encode()).hexdigest() == {digest!r}\n"
-        "report = namespace['collect_identity'](Path('/kaggle/working/hs_tokenizer_metadata'), "
-        f"source_commit={source_commit!r}, source_sha256={digest!r}, public_fallback=True)\n"
-        "print({'artifact_kind': 'setup-smoke', 'status': report['status'], "
-        "'weights_loaded': False, 'generation_performed': False})\n"
-    )
-    return {"nbformat": 4, "nbformat_minor": 5,
-            "metadata": {"kernelspec": {"name": "python3", "display_name": "Python 3", "language": "python"},
-                         "language_info": {"name": "python"}},
-            "cells": [{"id": "metadata-only-fetch", "cell_type": "code", "metadata": {},
-                       "source": code, "execution_count": None, "outputs": []}]}
-
-
-def kernel_request() -> dict:
-    """Build minimal metadata; never inherit a GPU machine shape."""
-    return {"id": "vedant817/hinglish-shield-gpu-parity", "title": "hinglish-shield-gpu-parity",
-            "code_file": "tokenizer_metadata.ipynb", "language": "python", "kernel_type": "notebook",
-            "is_private": True, "enable_gpu": False, "enable_tpu": False, "enable_internet": True,
-            "dataset_sources": [], "competition_sources": [], "kernel_sources": []}
-
-
-class MetadataRedirect(HTTPRedirectHandler):
-    def redirect_request(self, req, fp, code, msg, headers, newurl):
-        redirected = super().redirect_request(req, fp, code, msg, headers, newurl)
-        destination = urlparse(newurl)
-        if redirected is not None and (destination.hostname != "huggingface.co" or destination.scheme != "https"):
-            redirected.remove_header("Authorization")
-        return redirected
-
-
-def existing_secret() -> str:
-    credential = os.environ.get("HF_TOKEN")
-    if not credential:
-        from kaggle_secrets import UserSecretsClient
-        credential = UserSecretsClient().get_secret("HF_TOKEN")
-    if not isinstance(credential, str) or not credential:
-        raise ValueError("existing secret is unavailable")
-    return credential
-
-
-PUBLIC_FETCH_NOTE = (
-    "Existing HF_TOKEN secret was unavailable. Tiny Aya tokenizer metadata may be "
-    "fetched without Authorization if the repository is public. This attempt did not send a credential."
+PINNED_REVISION = "af89d219b53ed9b13b8a4645f9c8028973510324"
+SCHEMA_VERSION = "target_identity_v2"
+TOKENIZER_FILES = ("special_tokens_map.json", "tokenizer.json", "tokenizer_config.json")
+OPTIONAL_TOKENIZER_FILES = (
+    "added_tokens.json",
+    "chat_template.jinja",
+    "merges.txt",
+    "vocab.json",
 )
+MAX_FILE_BYTES = 64 * 1024**2
+_SECRET = re.compile(r"hf_[A-Za-z0-9]{20,}|gh[pousr]_[A-Za-z0-9]{20,}")
 
 
-def _read_limited(open_url, request) -> bytes:
-    opener = open_url or build_opener(MetadataRedirect()).open
-    with opener(request, timeout=30) as response:
-        raw = response.read(MAX_METADATA_BYTES + 1)
-    if len(raw) > MAX_METADATA_BYTES:
-        raise ValueError("metadata is oversized")
-    return raw
+def sha256_bytes(data: bytes) -> str:
+    return hashlib.sha256(data).hexdigest()
 
 
-def _pin_asset(report: dict, out: Path, raw: bytes) -> None:
-    config = json.loads(raw)
-    template = config.get("chat_template") if isinstance(config, dict) else None
-    if not isinstance(template, str) or not template:
-        raise ValueError("checkpoint chat template is not a nonempty string")
-    # Save only the checkpoint asset, never credentials or request headers.
-    (out / "tokenizer_config.json").write_bytes(raw)
-    report.update(status="metadata_retrieved",
-                  tokenizer_config_sha256=hashlib.sha256(raw).hexdigest(),
-                  chat_template_sha256=hashlib.sha256(template.encode("utf-8")).hexdigest())
+def _redact(value: str) -> str:
+    return _SECRET.sub("[redacted]", value)[:500]
 
 
-def _record_transport_failure(report: dict, exc: Exception, *, prefix: str = "") -> None:
-    report[prefix + "error_type"] = type(exc).__name__
-    if isinstance(exc, HTTPError):
-        report[prefix + "http_status"] = exc.code
-    report[prefix + "failure_phase"] = "http_failure"
+def _write_json(path: Path, payload: Mapping[str, Any]) -> None:
+    path.write_text(
+        json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True, allow_nan=False) + "\n",
+        encoding="utf-8",
+    )
 
 
-def collect_identity(out: Path, *, source_commit: str, source_sha256: str,
-                     credential_provider=existing_secret, open_url=None,
-                     public_fallback: bool = False) -> dict:
-    out.mkdir(parents=True, exist_ok=False)
-    report = {
-        "artifact_kind": "setup-smoke", "split": "example", "status": "unavailable",
-        "model_id": MODEL_ID, "model_revision": REVISION, "source_url": URL,
-        "source_commit": source_commit, "script_sha256": source_sha256,
-        "weights_loaded": False, "generation_performed": False,
-        "metrics_eligible": False, "primary_asr": None, "auth_mode": "none",
-    }
-    try:
-        credential = credential_provider()
-    except Exception as exc:
-        # Provider text can contain the credential. Keep only the exception type.
-        report.update(error_type=type(exc).__name__, failure_phase="secret_missing",
-                      secret_status="missing", auth_mode="none", note=PUBLIC_FETCH_NOTE,
-                      public_fetch="not_attempted")
-        if public_fallback:
-            report["public_fetch"] = "attempted"
-            try:
-                raw = _read_limited(open_url, Request(URL))
-                _pin_asset(report, out, raw)
-                report["auth_mode"] = "unauthenticated_public"
-                report.pop("failure_phase", None)
-                report.pop("error_type", None)
-                report["note"] = (
-                    "Existing HF_TOKEN secret was unavailable. "
-                    "The checkpoint asset was fetched without Authorization."
+def select_chat_template(
+    config: Any, tokenizer_json: Any
+) -> tuple[str | None, str | None, str | None]:
+    """Return (name, source file, exact template string) from downloaded bytes."""
+    for source, payload in (
+        ("tokenizer_config.json", config),
+        ("tokenizer.json", tokenizer_json),
+    ):
+        if not isinstance(payload, Mapping):
+            continue
+        value = payload.get("chat_template")
+        if isinstance(value, str) and value.strip():
+            return None, source, value
+        if isinstance(value, Mapping):
+            name = "default" if isinstance(value.get("default"), str) else next(iter(value), None)
+            template = value.get(name) if isinstance(name, str) else None
+            if isinstance(template, str) and template.strip():
+                return name, source, template
+        if isinstance(value, list):
+            entries = [
+                entry
+                for entry in value
+                if isinstance(entry, Mapping)
+                and isinstance(entry.get("template"), str)
+                and entry["template"].strip()
+            ]
+            if entries:
+                chosen = next(
+                    (entry for entry in entries if entry.get("name") == "default"),
+                    entries[0],
                 )
-            except (HTTPError, URLError, ConnectionError, TimeoutError) as public_exc:
-                _record_transport_failure(report, public_exc, prefix="public_")
-            except Exception as public_exc:
-                report["public_error_type"] = type(public_exc).__name__
-    else:
-        report["auth_mode"] = "existing_secret"
-        report["secret_status"] = "present"
-        try:
-            raw = _read_limited(open_url, Request(URL, headers={"Authorization": "Bearer " + credential}))
-            _pin_asset(report, out, raw)
-        except (HTTPError, URLError, ConnectionError, TimeoutError) as exc:
-            _record_transport_failure(report, exc)
-        except Exception as exc:
-            report["error_type"] = type(exc).__name__
-    (out / "identity.json").write_bytes((json.dumps(report, indent=2) + "\n").encode())
+                name = chosen.get("name") if isinstance(chosen.get("name"), str) else None
+                return name, source, chosen["template"]
+    return None, None, None
+
+
+def tokenizer_file_names(names: Iterable[str]) -> list[str]:
+    """Keep root-level tokenizer files only. No repository subdirectories."""
+    selected: set[str] = set()
+    allowed = set(TOKENIZER_FILES) | set(OPTIONAL_TOKENIZER_FILES)
+    for name in names:
+        if not isinstance(name, str) or "/" in name or "\\" in name:
+            continue
+        if name in allowed:
+            selected.add(name)
+    return sorted(selected)
+
+
+def collect_identity(
+    out_dir: Path,
+    *,
+    source_commit: str,
+    source_sha256: str,
+    notebook_run_id: str | None = None,
+) -> dict[str, Any]:
+    """Resolve the model revision, hash tokenizer files, and pin the template.
+
+    The token is read from the environment by huggingface_hub. Only a presence
+    boolean is recorded. A failure writes a status artifact and copies no
+    tokenizer asset, so a later phase cannot mistake it for a pinned identity.
+    """
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    report: dict[str, Any] = {
+        "schema_version": SCHEMA_VERSION,
+        "artifact_kind": "setup-smoke",
+        "split": "example",
+        "status": "unavailable",
+        "model_id": MODEL_ID,
+        "requested_revision": PINNED_REVISION,
+        "model_revision": None,
+        "revision_matches_pin": False,
+        "tokenizer_files": {},
+        "tokenizer_config_sha256": None,
+        "chat_template": None,
+        "chat_template_sha256": None,
+        "chat_template_name": None,
+        "chat_template_source": None,
+        "hf_token_present": bool((os.environ.get("HF_TOKEN") or "").strip()),
+        "secret_status": "present" if (os.environ.get("HF_TOKEN") or "").strip() else "missing",
+        "weights_loaded": False,
+        "model_imported": False,
+        "generation_performed": False,
+        "metrics_eligible": False,
+        "primary_asr": None,
+        "source_commit": source_commit,
+        "source_commit_role": "repository_data_pin",
+        "source_sha256": source_sha256,
+        "notebook_run_id": notebook_run_id,
+        "failure_phase": None,
+        "error_type": None,
+        "error": None,
+    }
+    if not report["hf_token_present"]:
+        report["failure_phase"] = "secret_missing"
+        _write_json(out / "identity.json", report)
+        return report
+    try:
+        from huggingface_hub import HfApi, hf_hub_download
+
+        api = HfApi(token=True)
+        info = api.model_info(MODEL_ID, revision=PINNED_REVISION, token=True)
+        resolved = getattr(info, "sha", None)
+        report["model_revision"] = resolved
+        if not isinstance(resolved, str) or resolved != PINNED_REVISION:
+            report["failure_phase"] = "revision_unavailable"
+            raise RuntimeError("resolved model revision does not match the pinned revision")
+        report["revision_matches_pin"] = True
+        names = tokenizer_file_names(
+            [getattr(sibling, "rfilename", "") for sibling in (info.siblings or [])]
+        )
+        missing = [name for name in TOKENIZER_FILES if name not in names]
+        if missing:
+            report["failure_phase"] = "tokenizer_asset_missing"
+            raise RuntimeError("missing tokenizer assets: " + ", ".join(missing))
+        payloads: dict[str, Any] = {}
+        hashes: dict[str, dict[str, Any]] = {}
+        for name in names:
+            path = hf_hub_download(
+                repo_id=MODEL_ID, filename=name, revision=resolved, token=True
+            )
+            data = Path(path).read_bytes()
+            if len(data) > MAX_FILE_BYTES:
+                report["failure_phase"] = "tokenizer_asset_too_large"
+                raise RuntimeError("tokenizer asset exceeds the metadata size limit")
+            hashes[name] = {"sha256": sha256_bytes(data), "size": len(data)}
+            if name in {"tokenizer_config.json", "tokenizer.json"}:
+                payloads[name] = json.loads(data.decode("utf-8"))
+            if name == "tokenizer_config.json":
+                (out / "tokenizer_config.json").write_bytes(data)
+        report["tokenizer_files"] = hashes
+        report["tokenizer_config_sha256"] = hashes["tokenizer_config.json"]["sha256"]
+        template_name, template_source, template = select_chat_template(
+            payloads.get("tokenizer_config.json"), payloads.get("tokenizer.json")
+        )
+        if template is None:
+            report["failure_phase"] = "chat_template_missing"
+            raise RuntimeError("tokenizer assets do not contain a chat template")
+        report.update(
+            {
+                "status": "metadata_retrieved",
+                "chat_template": template,
+                "chat_template_sha256": sha256_bytes(template.encode("utf-8")),
+                "chat_template_name": template_name,
+                "chat_template_source": template_source,
+            }
+        )
+    except Exception as exc:
+        report["status"] = "unavailable"
+        if report["failure_phase"] is None:
+            report["failure_phase"] = "download_failed"
+        report["error_type"] = type(exc).__name__
+        report["error"] = _redact(str(exc))
+        (out / "tokenizer_config.json").unlink(missing_ok=True)
+        report["tokenizer_files"] = {}
+        report["tokenizer_config_sha256"] = None
+    _write_json(out / "identity.json", report)
     return report

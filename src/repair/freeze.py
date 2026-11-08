@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import math
 from pathlib import Path
 from typing import Any, Mapping
 
@@ -110,6 +111,175 @@ def build_freeze_manifest(sweep_path: Path, direction_path: Path) -> dict[str, A
         raise RepairError("freeze manifest must not claim Tiny Aya", stage="freeze")
     manifest["content_sha256"] = content_sha256(manifest)
     return manifest
+
+
+PROVISIONAL_MODEL_ID = "CohereLabs/tiny-aya-global"
+PROVISIONAL_MODEL_REVISION = "af89d219b53ed9b13b8a4645f9c8028973510324"
+PROVISIONAL_SCHEMA = "provisional_locate_v1"
+
+
+def _finite_vector(values: Any) -> bool:
+    if not isinstance(values, (list, tuple)) or len(values) < 2:
+        return False
+    for value in values:
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            return False
+        if not math.isfinite(float(value)):
+            return False
+    return True
+
+
+def _require_provisional_locate(direction: Mapping[str, Any]) -> None:
+    if (direction.get("schema_version") != PROVISIONAL_SCHEMA
+            or direction.get("provisional") is not True
+            or direction.get("original_fp32_credit") is not False
+            or direction.get("parity_credit") is not None):
+        raise RepairError(
+            "freeze refused: locate artifact is not provisional bf16 evidence", stage="freeze"
+        )
+    if (direction.get("model_id") != PROVISIONAL_MODEL_ID
+            or direction.get("model_revision") != PROVISIONAL_MODEL_REVISION
+            or direction.get("dtype") != "bfloat16"
+            or direction.get("node") != "MLP 0"
+            or type(direction.get("declared_score")) not in {int, float}
+            or isinstance(direction.get("declared_score"), bool)
+            or direction.get("declared_score") != 1.0):
+        raise RepairError("freeze refused: locate artifact pins do not match", stage="freeze")
+    if direction.get("metrics_eligible") is not False or direction.get("primary_asr") is not None:
+        raise RepairError("freeze refused: locate artifact invented metrics", stage="freeze")
+    if "test" in str(direction.get("split", "")):
+        raise RepairError("freeze refused: locate cannot use the locked test split", stage="freeze")
+    vector = direction.get("vector")
+    if not _finite_vector(vector):
+        raise RepairError("freeze refused: locate direction is missing or nonfinite", stage="freeze")
+    norm = l2_norm(vector)
+    declared_norm = direction.get("l2_norm")
+    if (isinstance(declared_norm, bool) or not isinstance(declared_norm, (int, float))
+            or not math.isfinite(float(declared_norm)) or norm == 0.0
+            or abs(float(declared_norm) - norm) > 1e-6):
+        raise RepairError("freeze refused: locate direction norm does not match", stage="freeze")
+    controls = direction.get("controls")
+    if not isinstance(controls, dict):
+        raise RepairError("freeze refused: locate controls are missing", stage="freeze")
+    zero = controls.get("alpha_zero_with_wrapper")
+    random_arm = controls.get("random_norm_matched_seed_7")
+    candidate = controls.get("candidate_alpha_1")
+    def _num(value):
+        return isinstance(value, (int, float)) and not isinstance(value, bool) and math.isfinite(float(value))
+
+    if (not isinstance(zero, dict) or zero.get("ran") is not True
+            or zero.get("matches_base") is not True or zero.get("max_abs_logit_diff") != 0.0
+            or not isinstance(candidate, dict) or candidate.get("ran") is not True
+            or not _num(candidate.get("max_abs_logit_diff"))
+            or candidate["max_abs_logit_diff"] <= 0
+            or not isinstance(random_arm, dict) or random_arm.get("ran") is not True
+            or not _num(random_arm.get("max_abs_logit_diff"))
+            or random_arm["max_abs_logit_diff"] <= 0
+            or not _num(random_arm.get("norm_gap"))
+            or random_arm["norm_gap"] > 1e-3):
+        raise RepairError("freeze refused: locate controls did not pass", stage="freeze")
+    checks = direction.get("checks")
+    if not isinstance(checks, dict) or checks.get("alpha_zero_matches_base") is not True:
+        raise RepairError("freeze refused: locate alpha-zero check is missing", stage="freeze")
+
+
+def build_provisional_bf16_freeze(direction_path: Path) -> dict[str, Any]:
+    """Freeze a provisional bf16 locate arm without granting fp32 parity credit."""
+    direction = _load_object(direction_path, "provisional locate direction")
+    _require_provisional_locate(direction)
+    manifest: dict[str, Any] = {
+        "schema_version": "provisional_bf16_freeze_v1",
+        "verification_pathway": "provisional_bf16_locate",
+        "intervention_type": "ActivationSteering.steer",
+        "static_checkpoint": False,
+        "safetune_superior": False,
+        "circuit_superiority": False,
+        "deployable_claim": False,
+        "provisional": True,
+        "original_fp32_credit": False,
+        "parity_credit": None,
+        "metrics_eligible": False,
+        "primary_asr": None,
+        "human_calibration": "pending",
+        "not_a_scored_test": True,
+        "proven_refusal_mechanism": False,
+        "model_id": direction["model_id"],
+        "model_revision": direction["model_revision"],
+        "split": direction.get("split"),
+        "dtype": "bfloat16",
+        "library": direction.get("library"),
+        "node": direction["node"],
+        "hook_point": direction.get("hook_point"),
+        "protocol_layer": direction.get("protocol_layer"),
+        "node_mapping": direction.get("node_mapping"),
+        "declared_score": direction["declared_score"],
+        "score_kind": direction.get("score_kind"),
+        "declared_arm": "candidate_alpha_1",
+        "alpha": 1.0,
+        "vector": direction["vector"],
+        "l2_norm": direction["l2_norm"],
+        "direction_sha256": direction["content_sha256"],
+        "controls": direction["controls"],
+        "checks": direction["checks"],
+        "limitations": direction.get("limitations", []),
+    }
+    manifest["content_sha256"] = content_sha256(manifest)
+    return manifest
+
+
+def verify_provisional_bf16_freeze(payload: dict[str, Any]) -> dict[str, Any]:
+    """Fresh-process check of a provisional locate freeze. No weights are reloaded."""
+    if payload.get("content_sha256") != content_sha256(payload):
+        raise RepairError("provisional freeze hash does not match its contents", stage="freeze")
+    if payload.get("verification_pathway") != "provisional_bf16_locate":
+        raise RepairError("freeze manifest is not a provisional locate freeze", stage="freeze")
+    if (payload.get("provisional") is not True
+            or payload.get("original_fp32_credit") is not False
+            or payload.get("parity_credit") is not None):
+        raise RepairError("provisional freeze cannot claim original fp32 credit", stage="freeze")
+    if (payload.get("primary_asr") is not None or payload.get("metrics_eligible") is not False
+            or payload.get("deployable_claim") is not False):
+        raise RepairError("provisional freeze invented metrics or a deployable claim", stage="freeze")
+    if payload.get("intervention_type") != "ActivationSteering.steer":
+        raise RepairError("provisional freeze is not an ActivationSteering arm", stage="freeze")
+    if payload.get("declared_arm") != "candidate_alpha_1" or payload.get("alpha") != 1.0:
+        raise RepairError("provisional freeze arm is not the declared candidate", stage="freeze")
+    _require_provisional_locate(
+        {
+            "schema_version": PROVISIONAL_SCHEMA,
+            "provisional": payload.get("provisional"),
+            "original_fp32_credit": payload.get("original_fp32_credit"),
+            "parity_credit": payload.get("parity_credit"),
+            "model_id": payload.get("model_id"),
+            "model_revision": payload.get("model_revision"),
+            "dtype": payload.get("dtype"),
+            "node": payload.get("node"),
+            "declared_score": payload.get("declared_score"),
+            "metrics_eligible": payload.get("metrics_eligible"),
+            "primary_asr": payload.get("primary_asr"),
+            "split": payload.get("split", "calibration"),
+            "vector": payload.get("vector"),
+            "l2_norm": payload.get("l2_norm"),
+            "controls": payload.get("controls"),
+            "checks": payload.get("checks"),
+        }
+    )
+    return {
+        "verified": True,
+        "verification_pathway": "provisional_bf16_locate",
+        "provisional": True,
+        "original_fp32_credit": False,
+        "parity_credit": None,
+        "weights_reloaded": False,
+        "runtime_verified_on_pretrained_weights": True,
+        "metrics_eligible": False,
+        "primary_asr": None,
+        "deployable_claim": False,
+        "not_a_scored_test": True,
+        "safetune_superior": False,
+        "static_checkpoint": False,
+        "circuit_superiority": False,
+    }
 
 
 def _peek(path: Path) -> dict[str, Any]:
@@ -327,6 +497,8 @@ def verify_any(payload: dict[str, Any]) -> dict[str, Any]:
         from .real_runtime import verify_tensor_fixture_payload
 
         return verify_tensor_fixture_payload(payload)
+    if payload.get("verification_pathway") == "provisional_bf16_locate":
+        return verify_provisional_bf16_freeze(payload)
     if payload.get("verification_pathway") == "measured_evidence":
         return verify_measured(payload)
     return verify_manifest(payload)
