@@ -233,6 +233,42 @@ sizes, unequal language denominators, cluster multiplicity, and both-language
 failure coverage. Smoke passed. These are synthetic checks, not measured safety,
 GPU parity, baseline scores or locked-test evidence.
 
+## 2026-11-08 IST: D10 optional fp32 phase prepared, Kaggle upload held
+
+Vedant relayed an editor traceback reporting available RAM 29.05 GiB and total
+31.35 GiB at the unchanged 32 GiB D5 conversion preflight. That exception is
+caught by the notebook and enables bf16; a printed traceback alone does not
+show the run stopped. Token presence is asserted in an earlier cell. These
+are source-order facts and a supplied traceback, not fresh run acceptance.
+
+D10 makes original fp32 parity opt-in (RUN_FP32_PARITY, default off). A low-RAM
+host writes not_run: insufficient_host_ram with measured available/total RAM;
+original parity stays incomplete, passed false. No allocation, silent downcast
+or pass is invented. An explicit skip enables the existing CPU bf16 path on
+T4. With fp32 disabled, the floor is omitted and the predeclared provisional
+short rule applies. The target metadata helper now records this run's tokenizer
+config and chat-template hashes before parity. The D8 cell consumes that
+identity instead of the historical v11 failure and remains status-only; real
+D8 calibration/dev scoring is the separate pinned harness after ingestion.
+
+The live editor run is still running according to Vedant. No Kaggle calls,
+pushes or kernel changes were made for this patch. Upload is held. The locked
+test and all numerical parity thresholds remain unchanged.
+
+Validation: 235 model-free eval/notebook tests and 7 subtests passed, plus smoke.
+The telemetry-exception execution regression passed in the focused notebook
+rerun. No weights or live inference were used for these checks.
+
+Hosted PR37 review identified an archive contract mismatch and a retry collision
+in the new identity output. Identity collection now uses a fresh temporary
+workspace per invocation and publishes flat identity/tokenizer-config files
+bound to the current notebook run ID. Failed collection removes stale published
+assets. The importer allowlists and validates metadata identity/hash bindings,
+fp32 skip evidence and the unscored D8 status; a skip conflicting with original
+execution is rejected. Synthetic retry-to-ZIP-ingestion coverage and refusal
+regressions passed in the 42-test notebook/importer run (plus 7 subtests).
+Kaggle upload remains held and no running kernel was accessed.
+
 ## 2026-11-08 IST: atomic locked-test guard preparation
 
 The locked CLI stays a non-scoring stub. Admission now enforces the Nov 11
@@ -254,3 +290,10 @@ no blocking findings and separately passed 53 focused synthetic guard tests.
 Successful synthetic admission isolates the freeze verifier; it does not
 validate a real frozen arm or authorize test execution. No real locked-test
 attempt, generation, scoring or prompt inspection occurred.
+
+PR37 follow-up: reproduced a stale fp32_not_run.json after a skip followed by
+an enabled fp32 rerun in the same artifact directory. Enabled admission now
+removes that prior marker before loading models. The synthetic skip-to-enabled
+execution and ZIP-ingestion regression passes; absent long parity remains
+incomplete. All 43 focused notebook/importer tests plus 7 subtests and smoke
+passed. No Kaggle access or real model execution was performed.

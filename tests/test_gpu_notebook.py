@@ -29,6 +29,7 @@ FUNC_NAMES = {
     "is_memory_failure",
     "host_ram_gib",
     "refuse_fp32_conversion_if_short",
+    "plan_fp32_phase",
     "is_t4_accelerator",
     "bf16_cpu_device_or_refuse",
     "select_fp16_guard_reference",
@@ -119,6 +120,144 @@ class TestGpuNotebook(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.ns = load_namespace()
+
+    def test_optional_fp32_plan_records_real_ram_without_credit(self):
+        plan = self.ns["plan_fp32_phase"]
+        for enabled in (False, True):
+            result = plan(enabled, 29.05, 31.35)
+            self.assertFalse(result["run"])
+            self.assertEqual(result["not_run"], "insufficient_host_ram")
+            self.assertEqual(result["ram_available_gib"], 29.05)
+            self.assertEqual(result["ram_total_gib"], 31.35)
+        self.assertEqual(plan(False, 40, 64)["not_run"], "disabled_by_config")
+        self.assertTrue(plan(True, 40, 64)["run"])
+        for value in (None, float("nan"), 0):
+            self.assertEqual(plan(True, value, 64)["not_run"], "host_ram_unavailable")
+
+    def test_short_skip_executes_without_any_model_factory(self):
+        import time
+        for enabled, available, total, reason in (
+            (False, 29.05, 31.35, "insufficient_host_ram"),
+            (True, 29.05, 31.35, "insufficient_host_ram"),
+            (False, 40, 64, "disabled_by_config"),
+            (False, 40, None, "host_ram_unavailable"),
+        ):
+            writes = {}
+            def total_probe():
+                if total is None:
+                    raise OSError("synthetic telemetry failure")
+                return total
+            ns = dict(self.ns, time=time, RUN_FP32_PARITY=enabled,
+                FORCE_PARITY_VARIANT=False, RUN_PARITY_VARIANT=False,
+                free_ram_gib=lambda: available, host_ram_gib=total_probe,
+                ARTIFACT_DIR=Path("synthetic-artifacts"),
+                write_json=lambda path, payload: writes.update({path.name: dict(payload)}))
+            # Imports would request real libraries; remove only top-level imports.
+            tree = ast.parse(cell_with('"kind": "original_parity_sequential_fp32"'))
+            tree.body = [node for node in tree.body if not isinstance(node, (ast.Import, ast.ImportFrom))]
+            exec(compile(tree, "synthetic_notebook_short", "exec"), ns)
+            self.assertEqual(ns["parity"]["not_run"], reason)
+            self.assertEqual(ns["parity"]["status"], "incomplete")
+            self.assertFalse(ns["parity"]["passed"])
+            self.assertFalse(ns["parity"]["ran_short"])
+            self.assertTrue(ns["RUN_PARITY_VARIANT"])
+            self.assertEqual(writes["fp32_not_run.json"]["status"], "not_run")
+            if total is None:
+                self.assertEqual(ns["parity"]["ram_total_error"], "OSError")
+
+    def test_enabled_fp32_rerun_removes_prior_skip_before_loading(self):
+        import tempfile
+        import time
+        import traceback
+        import zipfile
+        from scripts.ingest_gpu_artifacts import inspect_archive
+        tree = ast.parse(cell_with('"kind": "original_parity_sequential_fp32"'))
+        tree.body = [node for node in tree.body if not isinstance(node, (ast.Import, ast.ImportFrom))]
+        code = compile(tree, "synthetic_fp32_rerun", "exec")
+        with tempfile.TemporaryDirectory() as work:
+            out = Path(work)
+            def write(path, payload):
+                path.write_text(json.dumps(payload), encoding="utf-8")
+            ns = dict(self.ns, time=time, traceback=traceback,
+                RUN_FP32_PARITY=False, FORCE_PARITY_VARIANT=False,
+                free_ram_gib=lambda: 40.0, host_ram_gib=lambda: 64.0,
+                ARTIFACT_DIR=out, write_json=write,
+                peak_rss_gib=lambda: 0.0, release_named=lambda *args, **kwargs: None)
+            exec(code, ns)
+            skip = out / "fp32_not_run.json"
+            self.assertTrue(skip.exists())
+            calls = []
+            def fake_short(*args, **kwargs):
+                self.assertFalse(skip.exists(), "stale skip must be removed before model loading")
+                calls.append(True)
+                return {prompt: 0.0 for prompt in ns["PARITY_PROMPTS"]}, {"window_size": 4096}
+            ns.update(RUN_FP32_PARITY=True, orchestrate_short_fp32=fake_short)
+            exec(code, ns)
+            self.assertEqual(calls, [True])
+            self.assertTrue(ns["parity"]["ran_short"])
+            self.assertFalse(skip.exists())
+            archive = out / "synthetic.zip"
+            with zipfile.ZipFile(archive, "w") as zipped:
+                path = out / "parity_original_sequential.json"
+                zipped.writestr("hs_gpu_artifacts/" + path.name, path.read_bytes())
+            _, summary = inspect_archive(archive)
+            # Only short parity was simulated. Missing long never becomes pass.
+            self.assertEqual(summary["original_parity"]["status"], "incomplete")
+
+    def test_embedded_identity_helper_matches_reviewed_source(self):
+        tree = ast.parse(cell_with("IDENTITY_HELPER_SOURCE ="))
+        values = {node.targets[0].id: ast.literal_eval(node.value)
+                  for node in tree.body if isinstance(node, ast.Assign)
+                  and isinstance(node.targets[0], ast.Name)
+                  and node.targets[0].id in {"IDENTITY_HELPER_SOURCE", "IDENTITY_HELPER_SHA256"}}
+        source = (ROOT / "scripts/kaggle_tokenizer_metadata.py").read_text(encoding="utf-8")
+        self.assertEqual(values["IDENTITY_HELPER_SOURCE"], source)
+        self.assertEqual(values["IDENTITY_HELPER_SHA256"], hashlib.sha256(source.encode()).hexdigest())
+        self.assertIn('ARTIFACT_DIR / "identity.json"', cell_with("def d8_identity_blocker"))
+
+    def test_identity_collection_is_retry_safe_and_archive_ready(self):
+        import tempfile
+        from scripts.ingest_gpu_artifacts import inspect_archive
+        import zipfile
+        source = cell_with("def capture_notebook_identity")
+        node = next(n for n in ast.parse(source).body if isinstance(n, ast.FunctionDef)
+                    and n.name == "capture_notebook_identity")
+        ns = {"json": json}
+        exec(compile(ast.Module(body=[node], type_ignores=[]), "identity_test", "exec"), ns)
+        seen = []
+        asset = json.dumps({"chat_template": "synthetic template"}).encode()
+        def collect(path, **kwargs):
+            path.mkdir(parents=True, exist_ok=False)
+            seen.append(path)
+            (path / "tokenizer_config.json").write_bytes(asset)
+            return {"artifact_kind": "setup-smoke", "split": "example", "weights_loaded": False,
+                "generation_performed": False, "metrics_eligible": False, "primary_asr": None,
+                "status": "metadata_retrieved", "model_id": "CohereLabs/tiny-aya-global",
+                "model_revision": "af89d219b53ed9b13b8a4645f9c8028973510324",
+                "tokenizer_config_sha256": hashlib.sha256(asset).hexdigest(),
+                "chat_template_sha256": hashlib.sha256(b"synthetic template").hexdigest()}
+        with tempfile.TemporaryDirectory() as work:
+            out = Path(work) / "artifacts"
+            out.mkdir()
+            for run_id in ("first", "second", "second"):
+                result = ns["capture_notebook_identity"](collect, out, run_id, "c" * 40, "d" * 64)
+                self.assertEqual(result["notebook_run_id"], run_id)
+                self.assertEqual(json.loads((out / "identity.json").read_text())["notebook_run_id"], run_id)
+            self.assertEqual(len(set(seen)), 3)
+            archive = Path(work) / "fixture.zip"
+            with zipfile.ZipFile(archive, "w") as zipped:
+                for path in out.iterdir():
+                    zipped.writestr("hs_gpu_artifacts/" + path.name, path.read_bytes())
+            files, summary = inspect_archive(archive)
+            self.assertEqual(set(files), {"identity.json", "tokenizer_config.json"})
+            self.assertEqual(summary["target_identity"]["status"], "metadata_retrieved")
+            self.assertFalse(summary["metrics_eligible"])
+            def unavailable(path, **kwargs):
+                path.mkdir(parents=True, exist_ok=False)
+                return {"status": "unavailable"}
+            ns["capture_notebook_identity"](unavailable, out, "third", "c" * 40, "d" * 64)
+            self.assertFalse((out / "tokenizer_config.json").exists())
+            self.assertEqual(json.loads((out / "identity.json").read_text())["notebook_run_id"], "third")
 
     def test_release_named_removes_every_name_and_weakrefs_expire(self) -> None:
         release_named = self.ns["release_named"]
