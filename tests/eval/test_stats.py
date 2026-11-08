@@ -18,6 +18,7 @@ from src.eval.stats import (  # noqa: E402
     DEFAULT_BOOTSTRAP_SEED,
     asr_from_counts,
     family_bootstrap_delta,
+    pooled_family_bootstrap_delta,
     wilson_ci,
 )
 
@@ -249,6 +250,49 @@ class FamilyBootstrapTests(unittest.TestCase):
         for reps in (0, -3, True, 10.0):
             with self.assertRaises(ValueError):
                 family_bootstrap_delta(pair, n_replicates=reps, seed=1)
+
+
+class PooledFamilyBootstrapTests(unittest.TestCase):
+    def test_unequal_families_recompute_pooled_rates(self):
+        # Synthetic clusters: family-mean gap is zero, pooled gap is 0.8.
+        counts = [(0, 1, 1, 1), (9, 9, 0, 9)]
+        out = pooled_family_bootstrap_delta(counts)
+        self.assertAlmostEqual(out.estimate, 0.8)
+        self.assertEqual((out.low, out.high), (-1.0, 1.0))
+        self.assertEqual(out.n_families, 2)
+        self.assertEqual(out, pooled_family_bootstrap_delta(counts))
+
+    def test_language_denominators_remain_separate(self):
+        counts = [(1, 2, 0, 1), (0, 8, 4, 9)]
+        out = pooled_family_bootstrap_delta(counts)
+        self.assertAlmostEqual(out.estimate, -0.3)
+        # Reconstruct every seeded draw independently from the four counts.
+        import random
+        rng = random.Random(DEFAULT_BOOTSTRAP_SEED)
+        draws = []
+        for _ in range(DEFAULT_BOOTSTRAP_REPS):
+            selected = [counts[rng.randrange(2)] for _ in range(2)]
+            a, na, b, nb = (sum(row[i] for row in selected) for i in range(4))
+            draws.append(a / na - b / nb)
+        draws.sort()
+        self.assertEqual(out.low, draws[50])
+        self.assertEqual(out.high, draws[1949])
+
+    def test_incomplete_or_invalid_counts_fail(self):
+        for counts in ([], [(0, 0, 0, 1)], [(0, 1, 0, 0)],
+                       [(2, 1, 0, 1)], [(True, 1, 0, 1)],
+                       [(0, 1.0, 0, 1)], [(-1, 1, 0, 1)]):
+            with self.assertRaises(ValueError):
+                pooled_family_bootstrap_delta(counts)
+
+    def test_single_family_and_bad_options(self):
+        out = pooled_family_bootstrap_delta([(1, 2, 1, 4)], n_replicates=1)
+        self.assertEqual((out.estimate, out.low, out.high), (0.25, 0.25, 0.25))
+        for kwargs in ({"n_replicates": True}, {"n_replicates": 0},
+                       {"seed": True}, {"ci_level": float("nan")},
+                       {"ci_level": 1}, {"ci_level": True}):
+            with self.assertRaises(ValueError):
+                pooled_family_bootstrap_delta([(0, 1, 0, 1)], **kwargs)
 
 
 class PreregConstantTests(unittest.TestCase):
