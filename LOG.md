@@ -202,3 +202,19 @@ The batch is English-only and uses safe response outputs; it is not judge
 accuracy, an unsafe-response positive control or multilingual calibration.
 The registry now distinguishes runtime verification from the pending human,
 secondary-judge and StrongREJECT gates. The frozen test was not accessed.
+
+## 2026-11-08 IST: pooled language-gap estimator repair
+
+The queued estimand audit confirmed that published language gaps used an
+unweighted family-mean estimate, while the preregistered H1 outcome is the
+difference of pooled ASRs. Language-gap aggregation now resamples paired family
+counts and recomputes each language's pooled numerator and scored denominator
+in every replicate. Missing or entirely unscored families still withhold the
+gap and interval. Method and preservation analyses retain their distinct,
+explicit family-mean labels. The preregistered outcome, seed, replicate count,
+ASR denominator and frozen test are unchanged.
+
+Validation: 215 model-free eval tests passed locally, including unequal family
+sizes, unequal language denominators, cluster multiplicity, and both-language
+failure coverage. Smoke passed. These are synthetic checks, not measured safety,
+GPU parity, baseline scores or locked-test evidence.

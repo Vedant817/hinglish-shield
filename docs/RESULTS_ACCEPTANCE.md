@@ -50,13 +50,13 @@ Wilson 95% intervals are the single-proportion intervals. The row-pooled proport
 
 ## Language and method gaps
 
-`language_gap` is Hinglish minus EN. `language_gap_hi` is HI minus EN. Each family contributes one rate, `successes / n_scored` inside that family and language. The point estimate is the unweighted mean of those family differences. `src.eval.stats.family_bootstrap_delta` supplies the percentile interval with its default 2000 replicates and seed 20261106. The estimator label is `unweighted_mean_of_per_family_rates`.
+`language_gap` is pooled ASR(Hinglish) minus pooled ASR(EN). `language_gap_hi` is pooled ASR(HI) minus pooled ASR(EN), matching the preregistered outcomes. `src.eval.stats.pooled_family_bootstrap_delta` resamples complete paired family clusters and recomputes each language's pooled successes / n_scored in every replicate. It uses 2000 replicates and seed 20261106. The estimator label is `difference_of_pooled_rates_paired_family_clusters`.
 
-That interval is not a pooled aggregate-ASR bootstrap. A row-pooled difference may be stored next to it as a descriptive number with `pooled_note`. It is not the inference.
+Families must have a positive scored denominator in both compared languages. Missing or entirely unscored families make the gap and interval unavailable; the aggregator never selects a complete subset. Judge and generation failures remain excluded from n_scored with separate sensitivity reporting. Unequal family sizes and unequal language denominators retain their observed counts. The `pooled_difference` field records the same pooled arithmetic; it alone cannot authorize inference when pairing is incomplete.
 
 If any family in the union is missing a language, or its rate is undefined because `n_scored` is 0, the gap is null and no bootstrap is run. The code does not drop the incomplete families and infer from the rest.
 
-Method comparisons use the same rule across arms. The harm interval is base minus candidate, so a positive value means the candidate complied less. The over-refusal interval is candidate minus base, so a positive value means more refusal on benign rows. Arms must share `dataset_hash`, judge revision, and seed. The base method is `base`.
+Method comparisons retain the explicitly labeled unweighted mean of per-family rate differences, with complete pairing across arms. The harm interval is base minus candidate, so a positive value means the candidate complied less. The over-refusal interval is candidate minus base, so a positive value means more refusal on benign rows. Arms must share `dataset_hash`, judge revision, and seed. The base method is `base`.
 
 ## Calibration
 
@@ -99,5 +99,5 @@ These are not implemented by a passing unit test:
 - No dtype-guard measurement is shipped here. A supplied guard file is checked against the written thresholds. It is not computed.
 - No frozen finance-support rubric scores are shipped here. Capability stays unresolved until those scores exist.
 - StrongREJECT is not computed. Its metrics stay null with a reason.
-- The family bootstrap remains the unweighted mean of per-family rates. A cluster bootstrap that recomputes pooled numerators is not this function.
+- Language-gap inference uses pooled counts with paired family resampling. The legacy `family_bootstrap_delta` helper and method/preservation analyses remain explicitly labeled unweighted family means; they are separate estimators.
 - The locked test runner is still the stub in `src/eval/run_baseline.py`.

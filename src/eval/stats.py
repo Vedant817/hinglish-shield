@@ -345,6 +345,59 @@ def family_bootstrap_delta(
     )
 
 
+def pooled_family_bootstrap_delta(
+    family_counts: Sequence[tuple[int, int, int, int]],
+    *,
+    n_replicates: int = DEFAULT_BOOTSTRAP_REPS,
+    seed: int = DEFAULT_BOOTSTRAP_SEED,
+    ci_level: float = DEFAULT_CI_LEVEL,
+) -> BootstrapDelta:
+    """Bootstrap pooled rate(a) - rate(b), resampling paired family clusters.
+
+    Each tuple is (successes_a, scored_a, successes_b, scored_b). The
+    denominator may differ between languages. Every family must have a
+    positive scored denominator on both sides; incomplete coverage raises.
+    Cluster multiplicity applies to all four counts in each replicate.
+    The legacy family-rate mean helper remains a distinct estimator.
+    """
+    # Match the legacy helper's option contract, with count-specific validation.
+    if isinstance(n_replicates, bool) or not isinstance(n_replicates, int) or n_replicates < 1:
+        raise ValueError("n_replicates must be an integer >= 1")
+    if isinstance(seed, bool) or not isinstance(seed, int):
+        raise ValueError("seed must be an integer")
+    if isinstance(ci_level, bool) or not isinstance(ci_level, (int, float)) or not math.isfinite(ci_level) or not 0 < ci_level < 1:
+        raise ValueError("ci_level must be a finite value in (0, 1)")
+    if not family_counts:
+        raise ValueError("pooled bootstrap requires paired families")
+    counts = []
+    for cluster in family_counts:
+        if len(cluster) != 4:
+            raise ValueError("family counts require four integers")
+        a, na, b, nb = (_nonneg_count("family count", value) for value in cluster)
+        if na == 0 or nb == 0 or a > na or b > nb:
+            raise ValueError("each family requires valid successes and positive scored counts")
+        counts.append((a, na, b, nb))
+
+    def difference(clusters: Sequence[tuple[int, int, int, int]]) -> float:
+        totals = [sum(cluster[i] for cluster in clusters) for i in range(4)]
+        return totals[0] / totals[1] - totals[2] / totals[3]
+
+    n = len(counts)
+    rng = random.Random(seed)
+    replicates = sorted(
+        difference([counts[rng.randrange(n)] for _ in range(n)])
+        for _ in range(n_replicates)
+    )
+    alpha = 1 - ci_level
+    low = max(0, min(n_replicates - 1, math.floor(alpha / 2 * n_replicates)))
+    high = max(0, min(n_replicates - 1, math.ceil((1 - alpha / 2) * n_replicates) - 1))
+    return BootstrapDelta(
+        estimate=difference(counts), low=replicates[low], high=replicates[high],
+        n_families=n, n_replicates=n_replicates, seed=seed,
+        method="pooled_family_cluster_bootstrap_percentile", ci_level=ci_level,
+    )
+
+
 def mean_gap(
     values_a: Iterable[float],
     values_b: Iterable[float],

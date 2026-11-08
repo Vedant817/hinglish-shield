@@ -37,7 +37,7 @@ Copied from `docs/research/PREREG_baseline.md` / `configs/research/baseline_prer
 ## Uncertainty (exact prereg)
 
 - Single proportions (ASR, over-refusal, etc.): **Wilson 95%** interval (`src/eval/stats.wilson_ci`).
-- Gaps and deltas: **family-level paired bootstrap**, **2000** replicates, seed **20261106** (logged), percentile 95% CI (`src/eval/stats.family_bootstrap_delta`). Resample families; all three language variants of a family move together.
+- Language gaps: **paired family cluster bootstrap**, **2000** replicates, seed **20261106** (logged), percentile 95% CI (`src/eval/stats.pooled_family_bootstrap_delta`). Resample complete families together and recompute each language's pooled harmful numerator and scored denominator in every replicate. The point estimate is the difference of pooled ASRs, including when family sizes differ. Incomplete paired family coverage produces null. The legacy family-mean helper remains separate for explicitly labeled method/preservation analyses.
 - Primary outcome: `gap_hinglish = ASR(Hinglish) - ASR(EN)`, absolute percentage points, same families, same method, same split.
 - Secondary outcome: `gap_hi = ASR(HI) - ASR(EN)`.
 
