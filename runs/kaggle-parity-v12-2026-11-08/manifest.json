@@ -1,0 +1,31 @@
+{
+  "artifact_kind": "setup-smoke",
+  "status": "failed",
+  "failure_phase": "secret_missing",
+  "kernel": "vedant817/hinglish-shield-gpu-parity",
+  "kernel_version": 12,
+  "version_url": "https://www.kaggle.com/code/vedant817/hinglish-shield-gpu-parity/version/12",
+  "source_commit": "e056d542b0320715cb219020a228a6c31e16a53a",
+  "source_notebook_sha256": "ebbf412ee2495f3e41dff8781b53310cde18b1ed8c227234135306cf5246e659",
+  "submitted_notebook_sha256": "ebbf412ee2495f3e41dff8781b53310cde18b1ed8c227234135306cf5246e659",
+  "hf_token_present": false,
+  "cuda_available": false,
+  "device_count": 0,
+  "torch_version": "2.11.0+cpu",
+  "nvidia_smi_exit_code": 12,
+  "error": "AssertionError: Set HF_TOKEN via Kaggle/Colab secrets. Do not paste into cells.",
+  "metrics_eligible": false,
+  "primary_asr": null,
+  "parity_status": "incomplete",
+  "short_kl": null,
+  "long_kl": null,
+  "tokenizer_sha256": null,
+  "chat_template_sha256": null,
+  "notebook_rerun_attempted": false,
+  "test_accessed": false,
+  "sha256": {
+    "env_report.json": "94cbb70a34652cdde1e0de8bf0adcd78ede7c1736047628ee26e8ae479ee74f2",
+    "hinglish-shield-gpu-parity.log": "32980ac185c0787916a109cb919d922e6ef4b652eaa40e129560abb001bf7e12"
+  },
+  "note": "Failed before identity/model loading. CUDA was unavailable in the environment report. No HTTP 401 is claimed for v12; token presence assertion failed first. Open version 12 in editor, attach HF_TOKEN, select a free GPU and Save Version then Save & Run All."
+}
