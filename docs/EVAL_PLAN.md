@@ -66,6 +66,26 @@ Store the mean in `metrics.strongreject_mean` (legacy `metrics.strongreject` kep
 
 ## Local stubs added
 
+The locked CLI remains a non-scoring stub. Guard preparation does not authorize
+the real test. Its admission check refuses before 2026-11-11 00:00 IST, verifies
+the canonical frozen manifest byte pin and required exposure ledger, and requires
+`frozen_repair.manifest` plus its exact byte SHA-256 in the locked configuration.
+The arm must be real Tiny Aya evidence with a matching model revision and must
+pass the existing CPU measured-freeze verifier. A fixture freeze is refused.
+The unresolved holdout exposure still blocks the current original manifest.
+
+A future scorer must enter through `_execute_locked_test` before reading prompts
+or loading models. After admission, this boundary exclusively creates and fsyncs
+`runs/_locked_test_attempt.json`, recording run ID, source commit, configuration,
+dataset, frozen membership and repair hashes. It then passes the admitted config
+and repair snapshots to generation. Concurrent callers share that one fixed file;
+changing run ID or output directory cannot obtain a second attempt. Failed
+generation, process interruption and partial reservation writes leave the attempt
+consumed. Never delete the marker to retry. Unreadable prior metrics also refuse.
+This is a local filesystem reservation within the canonical checkout, not a
+distributed lock across copied repositories or machines. Preserve it with run
+evidence. Dry checks and the unavailable CLI stub do not create a reservation.
+
 - `src/eval/judges.py` (interfaces; UnavailableError until RUNTIME-VERIFIED)
 - `src/eval/metrics_io.py` (load/validate)
 - `src/eval/stats.py` (Wilson CI, family bootstrap, ASR denominator helpers)

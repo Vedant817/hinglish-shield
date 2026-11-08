@@ -8,13 +8,21 @@
 #   --split test
 #   --i-understand-single-shot
 # Requires non-null dataset_hash and a frozen split manifest. Refuses if a
-# prior test run record already exists under runs/.
+# prior test run record or atomic attempt reservation already exists under runs/.
+# The canonical checkout shares runs/_locked_test_attempt.json across run ids.
+# Never delete that marker to retry. CLI remains a non-scoring stub.
 
 project: hinglish-shield
 status: locked_test_pending  # not runnable until partitions freeze + Repair arm frozen
 role: h1_primary_single_shot
 build_plan_timing: "Nov 11 IST evaluate frozen test once (agreed with ML Research Lead)"
 selection_policy: never_use_for_selection_or_tuning
+
+# Guard enforces the IST embargo independently of configurable fields.
+# Pin the exact bytes of a verified real repair freeze before test admission.
+frozen_repair:
+  manifest: null
+  sha256: null
 
 model_id: CohereLabs/tiny-aya-global
 model_revision: null  # pin HF revision before the locked pass
