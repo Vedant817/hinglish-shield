@@ -424,6 +424,33 @@ def inspect_archive(archive: Path) -> tuple[dict[str, bytes], dict]:
     return files, summary
 
 
+def metrics_document(summary: dict) -> dict:
+    """One-command metrics view for a validated GPU artifact archive.
+
+    Descriptive judge counts only. Primary metrics stay null because human
+    calibration is pending; provisional locate is not fp32 parity credit.
+    """
+    return {
+        "schema_version": "gpu_metrics_v1",
+        "artifact_kind": "setup-smoke",
+        "status": "inspected",
+        "metrics_eligible": False,
+        "primary_asr": None,
+        "metric_label": D8_METRIC_LABEL,
+        "human_calibration": "pending",
+        "scores": "not_a_scored_test",
+        "split": "calibration+dev" if (summary.get("d8_descriptive") or summary.get("provisional_locate")) else "example",
+        "archive_sha256": summary.get("archive_sha256"),
+        "original_parity": summary.get("original_parity"),
+        "target_identity": summary.get("target_identity"),
+        "d8_descriptive": summary.get("d8_descriptive"),
+        "provisional_locate": summary.get("provisional_locate"),
+        "phase_status": summary.get("phase_status", {}),
+        "fp32_execution": summary.get("fp32_execution"),
+        "limitations": summary.get("limitations", []),
+    }
+
+
 def ingest(archive: Path, destination: Path) -> dict:
     files, summary = inspect_archive(archive)
     # Only validated bytes are copied. A durable completion marker is written last.
@@ -435,6 +462,9 @@ def ingest(archive: Path, destination: Path) -> dict:
     marker = destination / "ingestion.json.tmp"
     marker.write_text(json.dumps(summary, indent=2, allow_nan=False) + "\n", encoding="utf-8")
     marker.replace(destination / "ingestion.json")
+    metrics = destination / "metrics.json.tmp"
+    metrics.write_text(json.dumps(metrics_document(summary), indent=2, allow_nan=False) + "\n", encoding="utf-8")
+    metrics.replace(destination / "metrics.json")
     return summary
 
 
