@@ -17,6 +17,7 @@ from typing import Any, Mapping, Sequence
 
 import yaml
 
+from src.eval.dev_runner import DevRunnerError, assign_category
 from src.eval.stats import asr_from_counts, family_bootstrap_delta
 
 from .errors import RepairError
@@ -186,15 +187,60 @@ def _read_jsonl(path: Path) -> list[dict[str, Any]]:
     return rows
 
 
-def _require_producer_identity(producer: Mapping[str, Any]) -> None:
+def _require_producer_identity(producer: Mapping[str, Any], *, require_revision: bool = True) -> None:
     if _HEX64.fullmatch(str(producer.get("run_id") or "")) is None:
         raise RepairError("producer run id is missing", stage="selection")
     for field in ("model_id", "model_revision", "judge_model_id", "rubric"):
         value = producer.get(field)
         if not isinstance(value, str) or value.strip() == "":
             raise RepairError(f"producer {field} is missing", stage="selection")
-    if _HEX40.fullmatch(str(producer.get("judge_revision") or "")) is None:
+    revision = producer.get("judge_revision")
+    if revision in (None, ""):
+        if require_revision:
+            raise RepairError("producer judge revision is missing", stage="selection")
+        return
+    if not isinstance(revision, str) or _HEX40.fullmatch(revision) is None:
         raise RepairError("producer judge revision is missing", stage="selection")
+
+
+def _selection_label(row: Mapping[str, Any]) -> str | None:
+    """Map a sample onto the selection taxonomy.
+
+    WildGuard's own label is safe or unsafe. The selection label comes from
+    its harmful_response and response_refusal fields, the same mapping as
+    assign_category. A sample that already stores a selection label and has
+    no judge fields is kept. Safe or unsafe without those fields is not a
+    verdict.
+    """
+    raw = row.get("judge_label")
+    harmful = row.get("harmful_response")
+    refusal = row.get("response_refusal")
+    has_fields = harmful is not None or refusal is not None
+    if raw in {"safe", "unsafe"} and not has_fields:
+        if row.get("category") is not None:
+            raise RepairError("sample category does not match the judge fields", stage="selection")
+        return None
+    if has_fields or raw == "judge_failure":
+        truncated = row.get("truncated", False)
+        status = row.get("status", "ok")
+        if not isinstance(status, str):
+            raise RepairError("sample judge fields are invalid", stage="selection")
+        try:
+            derived = assign_category(
+                status=status,
+                truncated=truncated,
+                judge_label=raw if isinstance(raw, str) else None,
+                fields={"harmful_response": harmful, "response_refusal": refusal},
+            )
+        except DevRunnerError as exc:
+            raise RepairError("sample judge fields are invalid", stage="selection") from exc
+        category = row.get("category")
+        if category is not None and category != derived:
+            raise RepairError("sample category does not match the judge fields", stage="selection")
+        return derived
+    if isinstance(raw, str) and raw in JUDGE_LABELS:
+        return raw
+    return None
 
 
 def producer_from_ledger(
@@ -202,6 +248,7 @@ def producer_from_ledger(
     samples_path: Path,
     *,
     identity: Mapping[str, Any],
+    require_revision: bool = True,
 ) -> dict[str, Any]:
     """Response hashes from the generation ledger and verdicts from samples."""
     if not generations_path.is_file():
@@ -211,8 +258,10 @@ def producer_from_ledger(
         for row in _read_jsonl(samples_path):
             arm_id = row.get("arm_id")
             sample_id = row.get("sample_id")
-            label = row.get("judge_label")
-            if not isinstance(arm_id, str) or not isinstance(sample_id, str) or not isinstance(label, str):
+            if not isinstance(arm_id, str) or not isinstance(sample_id, str):
+                continue
+            label = _selection_label(row)
+            if not isinstance(label, str):
                 continue
             key = (arm_id, sample_id)
             if key in verdicts:
@@ -246,7 +295,7 @@ def producer_from_ledger(
         "rubric": identity.get("rubric"),
         "responses": responses,
     }
-    _require_producer_identity(producer)
+    _require_producer_identity(producer, require_revision=require_revision)
     return producer
 
 

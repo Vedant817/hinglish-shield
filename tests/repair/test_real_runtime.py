@@ -853,6 +853,192 @@ def _measured_shell(tmp_path: Path, judgments: dict, producer: dict | None) -> t
     return sweep_path, direction_path
 
 
+def test_wildguard_fields_bind_as_selection_labels(tmp_path: Path):
+    from src.repair.selection import decide_arm, primary_rubric, producer_from_ledger
+
+    def generation(arm: str, sample_id: str, hs_label: str, text: str) -> dict:
+        return {
+            "arm_id": arm,
+            "sample_id": sample_id,
+            "family_id": "f",
+            "hs_label": hs_label,
+            "new_token_ids": [1],
+            "response": text,
+            "status": "ok",
+            "truncated": False,
+        }
+
+    def sample(row: dict, harmful: str, refusal: str, category: str) -> dict:
+        label = "unsafe" if harmful == "yes" else "safe"
+        return {
+            **row,
+            "judge_label": label,
+            "harmful_response": harmful,
+            "response_refusal": refusal,
+            "category": category,
+        }
+
+    rows = [
+        generation("base_no_intervention", "s1", "harm", "one"),
+        generation("base_no_intervention", "s2", "harm", "two"),
+        generation("base_no_intervention", "b1", "benign", "benign"),
+        generation("candidate_alpha_1", "s1", "harm", "three"),
+        generation("candidate_alpha_1", "s2", "harm", "four"),
+        generation("candidate_alpha_1", "b1", "benign", "benign-arm"),
+    ]
+    labeled = [
+        sample(rows[0], "yes", "no", "harmful_compliant"),
+        sample(rows[1], "no", "yes", "refusal"),
+        sample(rows[2], "no", "yes", "refusal"),
+        sample(rows[3], "no", "yes", "refusal"),
+        sample(rows[4], "no", "yes", "refusal"),
+        sample(rows[5], "no", "yes", "refusal"),
+    ]
+    generations = tmp_path / "generations.jsonl"
+    samples = tmp_path / "samples.jsonl"
+    generations.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
+    samples.write_text("".join(json.dumps(row) + "\n" for row in labeled), encoding="utf-8")
+    identity = {
+        "model_id": "fixture/injected",
+        "model_revision": "not-loaded",
+        "judge_model_id": "allenai/wildguard",
+        "judge_revision": "cbba4823f3e8020e5a74a5e29bf85072def6f2ff",
+        "rubric": primary_rubric(),
+    }
+    producer = producer_from_ledger(generations, samples, identity=identity)
+    by_key = {(item["arm_id"], item["sample_id"]): item["judge_label"] for item in producer["responses"]}
+    assert by_key[("base_no_intervention", "s1")] == "harmful_compliant"
+    assert by_key[("base_no_intervention", "s2")] == "refusal"
+    index = [
+        {"sample_id": "s1", "family_id": "f", "hs_label": "harm"},
+        {"sample_id": "s2", "family_id": "f", "hs_label": "harm"},
+        {"sample_id": "b1", "family_id": "f", "hs_label": "benign"},
+    ]
+    judgments = []
+    for item in producer["responses"]:
+        judgments.append({
+            "arm_id": item["arm_id"],
+            "sample_id": item["sample_id"],
+            "family_id": "f",
+            "split": "dev",
+            "hs_label": "harm" if item["sample_id"] != "b1" else "benign",
+            "judge_label": item["judge_label"],
+            "capability_score": None if item["sample_id"] != "b1" else 10,
+            "response_sha256": item["response_sha256"],
+            "run_id": producer["run_id"],
+            "model_id": producer["model_id"],
+            "model_revision": producer["model_revision"],
+            "judge_model_id": producer["judge_model_id"],
+            "judge_revision": producer["judge_revision"],
+            "rubric": producer["rubric"],
+        })
+    decision = decide_arm(
+        index,
+        {"capability_unit": "task_points", "rows": judgments},
+        over_refusal_max_rise=0.05,
+        capability_max_drop_points=2.0,
+        bootstrap_reps=20,
+        bootstrap_seed=20261106,
+        min_families_for_accept=1,
+        producer=producer,
+    )
+    assert decision["pooled_asr_base"]["rate"] == 0.5
+    raw = [dict(item) for item in judgments]
+    raw[0]["judge_label"] = "unsafe"
+    unavailable = decide_arm(
+        index,
+        {"capability_unit": "task_points", "rows": raw},
+        over_refusal_max_rise=0.05,
+        capability_max_drop_points=2.0,
+        bootstrap_reps=20,
+        bootstrap_seed=20261106,
+        min_families_for_accept=1,
+        producer=producer,
+    )
+    assert unavailable["decision"] == "unavailable"
+    mismatched = [dict(row) for row in labeled]
+    mismatched[0]["category"] = "refusal"
+    samples.write_text("".join(json.dumps(row) + "\n" for row in mismatched), encoding="utf-8")
+    with pytest.raises(RepairError, match="sample category"):
+        producer_from_ledger(generations, samples, identity=identity)
+    open_identity = dict(identity)
+    open_identity["judge_revision"] = None
+    samples.write_text("".join(json.dumps(row) + "\n" for row in labeled), encoding="utf-8")
+    unjudged = producer_from_ledger(
+        generations,
+        samples,
+        identity=open_identity,
+        require_revision=False,
+    )
+    assert unjudged["judge_revision"] is None
+    with pytest.raises(RepairError, match="judge revision"):
+        producer_from_ledger(generations, samples, identity=open_identity)
+
+
+def test_unset_judge_revision_still_writes_an_unjudged_sweep(tmp_path: Path):
+    parity = tmp_path / "parity"
+    _good_parity(parity)
+    runtime = tmp_path / "runtime.yaml"
+    _runtime(runtime)
+    text = runtime.read_text(encoding="utf-8").replace(
+        "judge_revision: cbba4823f3e8020e5a74a5e29bf85072def6f2ff",
+        "judge_revision:",
+        1,
+    )
+    runtime.write_text(text, encoding="utf-8")
+    calibration = [_row("calibration", "harm"), _row("calibration", "benign")]
+    dev = [_row("dev", "harm"), _row("dev", "benign")]
+    cal_index = tmp_path / "cal.json"
+    dev_index = tmp_path / "dev.json"
+    _write_index(cal_index, calibration)
+    _write_index(dev_index, dev)
+    events: list[str] = []
+
+    def factory(_runtime, _source):
+        return LifecycleBundle(events)
+
+    direction_path = tmp_path / "direction.json"
+    locate_with_model(
+        protocol_path=PROTOCOL,
+        provenance_path=PROVENANCE,
+        runtime_config_path=runtime,
+        index_path=cal_index,
+        manifest_path=CANONICAL_FAMILY_MANIFEST,
+        prompts_path=tmp_path / "cal-prompts.jsonl",
+        out_path=direction_path,
+        parity_run=parity,
+        circuit_scores={"MLP 0": 1.0},
+        model_factory=factory,
+        prompt_loader=lambda _path, rows: _prompts(rows),
+        code_check=_clean,
+        source_check=_source_ok,
+    )
+    sweep_path = tmp_path / "sweep.json"
+    report = run_real_sweep(
+        protocol_path=PROTOCOL,
+        provenance_path=PROVENANCE,
+        runtime_config_path=runtime,
+        sweep_path=SWEEP,
+        direction_path=direction_path,
+        calibration_index_path=cal_index,
+        dev_index_path=dev_index,
+        dev_prompts_path=tmp_path / "dev-prompts.jsonl",
+        manifest_path=CANONICAL_FAMILY_MANIFEST,
+        out_path=sweep_path,
+        parity_run=parity,
+        circuit_scores={"MLP 0": 1.0},
+        model_factory=factory,
+        prompt_loader=lambda _path, rows: _prompts(rows),
+        code_check=_clean,
+        source_check=_source_ok,
+    )
+    assert sweep_path.is_file()
+    assert report["decision"]["decision"] == "unavailable"
+    assert report["freeze_allowed"] is False
+    assert report["producer"]["judge_revision"] is None
+    assert report["primary_asr"] is None
+
+
 def test_measured_freeze_rejects_judgments_that_are_not_on_the_ledger(tmp_path: Path):
     from src.repair.selection import primary_rubric, producer_from_ledger
 

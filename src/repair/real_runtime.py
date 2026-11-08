@@ -1272,6 +1272,7 @@ def run_real_sweep(
         judge_factory=judge_factory,
         out_dir=out_dir,
     )
+    judgments = _read_judgments(judgments_path) if judgments_path is not None else None
     producer = producer_from_ledger(
         generations_path,
         out_dir / "samples.jsonl",
@@ -1282,8 +1283,8 @@ def run_real_sweep(
             "judge_revision": runtime["judge_revision"],
             "rubric": primary_rubric(),
         },
+        require_revision=judgments is not None,
     )
-    judgments = _read_judgments(judgments_path) if judgments_path is not None else None
     decision = decide_arm(
         dev_rows,
         judgments,
@@ -1483,6 +1484,10 @@ def _judge_after_unload(
                     fields=metadata,
                 )
                 sample["judge_label"] = getattr(verdict, "label", None)
+                for field in ("harmful_response", "response_refusal"):
+                    value = metadata.get(field)
+                    if value in {"yes", "no"}:
+                        sample[field] = value
                 _append_jsonl(samples_path, sample)
     except BaseException as exc:
         fatal = exc
