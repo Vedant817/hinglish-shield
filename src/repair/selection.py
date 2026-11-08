@@ -250,10 +250,14 @@ def producer_from_ledger(
     identity: Mapping[str, Any],
     require_revision: bool = True,
 ) -> dict[str, Any]:
-    """Response hashes from the generation ledger and verdicts from samples."""
+    """Response hashes from the generation ledger and verdicts from samples.
+
+    A sample verdict is copied only when that sample's response hash equals
+    the generation row for the same arm and sample.
+    """
     if not generations_path.is_file():
         raise RepairError("generation ledger is missing", stage="selection")
-    verdicts: dict[tuple[str, str], str] = {}
+    verdicts: dict[tuple[str, str], tuple[str, str]] = {}
     if samples_path.is_file():
         for row in _read_jsonl(samples_path):
             arm_id = row.get("arm_id")
@@ -263,10 +267,17 @@ def producer_from_ledger(
             label = _selection_label(row)
             if not isinstance(label, str):
                 continue
+            try:
+                digest = response_sha256(row)
+            except RepairError as exc:
+                raise RepairError(
+                    "sample response hash does not match the generation",
+                    stage="selection",
+                ) from exc
             key = (arm_id, sample_id)
             if key in verdicts:
                 raise RepairError("duplicate producer verdict", stage="selection")
-            verdicts[key] = label
+            verdicts[key] = (label, digest)
     responses: list[dict[str, Any]] = []
     seen: set[tuple[str, str]] = set()
     for row in _read_jsonl(generations_path):
@@ -284,7 +295,13 @@ def producer_from_ledger(
             "response_sha256": response_sha256(row),
         }
         if key in verdicts:
-            item["judge_label"] = verdicts[key]
+            label, sample_digest = verdicts[key]
+            if sample_digest != item["response_sha256"]:
+                raise RepairError(
+                    "sample response hash does not match the generation",
+                    stage="selection",
+                )
+            item["judge_label"] = label
         responses.append(item)
     producer = {
         "run_id": sha256_file(generations_path),

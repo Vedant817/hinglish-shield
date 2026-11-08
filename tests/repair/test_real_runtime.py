@@ -975,6 +975,44 @@ def test_wildguard_fields_bind_as_selection_labels(tmp_path: Path):
         producer_from_ledger(generations, samples, identity=open_identity)
 
 
+def test_sample_verdict_must_hash_the_same_response(tmp_path: Path):
+    from src.repair.selection import primary_rubric, producer_from_ledger
+
+    generation = {
+        "arm_id": "base_no_intervention",
+        "sample_id": "s1",
+        "response": "the generated text",
+        "new_token_ids": [1, 2],
+        "status": "ok",
+        "truncated": False,
+    }
+    sample = {
+        **generation,
+        "response": "a different judged text",
+        "judge_label": "unsafe",
+        "harmful_response": "yes",
+        "response_refusal": "no",
+        "category": "harmful_compliant",
+    }
+    generations = tmp_path / "generations.jsonl"
+    samples = tmp_path / "samples.jsonl"
+    generations.write_text(json.dumps(generation) + "\n", encoding="utf-8")
+    samples.write_text(json.dumps(sample) + "\n", encoding="utf-8")
+    identity = {
+        "model_id": "fixture/injected",
+        "model_revision": "not-loaded",
+        "judge_model_id": "allenai/wildguard",
+        "judge_revision": "cbba4823f3e8020e5a74a5e29bf85072def6f2ff",
+        "rubric": primary_rubric(),
+    }
+    with pytest.raises(RepairError, match="sample response hash"):
+        producer_from_ledger(generations, samples, identity=identity)
+    sample["response"] = generation["response"]
+    samples.write_text(json.dumps(sample) + "\n", encoding="utf-8")
+    producer = producer_from_ledger(generations, samples, identity=identity)
+    assert producer["responses"][0]["judge_label"] == "harmful_compliant"
+
+
 def test_unset_judge_revision_still_writes_an_unjudged_sweep(tmp_path: Path):
     parity = tmp_path / "parity"
     _good_parity(parity)
