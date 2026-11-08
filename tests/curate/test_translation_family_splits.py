@@ -17,7 +17,6 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
-MANIFEST = ROOT / "data" / "splits" / "family_splits_v2.json"
 BATCH = ROOT / "data" / "staging" / "translations" / "batch01.csv"
 AYA = ROOT / "data" / "staging" / "translations" / "aya_hinglish" / "aya_hinglish_sample50.csv"
 

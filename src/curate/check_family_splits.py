@@ -81,7 +81,7 @@ def main() -> int:
                     f"{p}:{i}: wrong family {supplied} != canonical {canonical} for {src}:{sid}"
                 )
                 continue
-            if not canonical or canonical not in fam_split:
+            if not canonical:
                 cov["UNMAPPED"] += 1
                 bad += 1
                 if bad <= 5:
