@@ -74,14 +74,36 @@ def test_optional_fp32_skip_and_d8_status_import_without_score(tmp_path):
         inspect_archive(archive(tmp_path, files))
 
 
+def _v2_identity(asset, template):
+    return {
+        "schema_version": "target_identity_v2",
+        "artifact_kind": "setup-smoke", "split": "example",
+        "weights_loaded": False, "model_imported": False, "generation_performed": False,
+        "metrics_eligible": False, "primary_asr": None,
+        "status": "metadata_retrieved",
+        "model_id": "CohereLabs/tiny-aya-global",
+        "requested_revision": "af89d219b53ed9b13b8a4645f9c8028973510324",
+        "model_revision": "af89d219b53ed9b13b8a4645f9c8028973510324",
+        "revision_matches_pin": True,
+        "tokenizer_files": {
+            "tokenizer_config.json": {"sha256": hashlib.sha256(asset).hexdigest(), "size": len(asset)},
+            "special_tokens_map.json": {"sha256": "a" * 64, "size": 2},
+            "tokenizer.json": {"sha256": "b" * 64, "size": 2},
+        },
+        "tokenizer_config_sha256": hashlib.sha256(asset).hexdigest(),
+        "chat_template": template,
+        "chat_template_sha256": hashlib.sha256(template.encode("utf-8")).hexdigest(),
+        "hf_token_present": True,
+    }
+
+
 def test_identity_hash_mismatch_or_orphan_asset_refuses(tmp_path):
     files = {"tokenizer_config.json": b'{"chat_template":"fixture"}'}
     with pytest.raises(ValueError, match="requires identity"):
         inspect_archive(archive(tmp_path, files))
-    files["identity.json"] = json.dumps({"artifact_kind": "setup-smoke", "split": "example",
-        "weights_loaded": False, "generation_performed": False, "metrics_eligible": False,
-        "primary_asr": None, "status": "metadata_retrieved", "tokenizer_config_sha256": "a" * 64,
-        "chat_template_sha256": "b" * 64}).encode()
+    identity = _v2_identity(files["tokenizer_config.json"], "fixture")
+    identity["tokenizer_config_sha256"] = "a" * 64
+    files["identity.json"] = json.dumps(identity).encode()
     with pytest.raises(ValueError, match="hash binding"):
         inspect_archive(archive(tmp_path, files))
 
@@ -89,16 +111,7 @@ def test_identity_hash_mismatch_or_orphan_asset_refuses(tmp_path):
 def test_identity_template_hash_binds_the_complete_config_template(tmp_path):
     template = "synthetic template\n"
     asset = json.dumps({"chat_template": template}).encode()
-    identity = {
-        "artifact_kind": "setup-smoke", "split": "example",
-        "weights_loaded": False, "generation_performed": False,
-        "metrics_eligible": False, "primary_asr": None,
-        "status": "metadata_retrieved",
-        "model_id": "CohereLabs/tiny-aya-global",
-        "model_revision": "af89d219b53ed9b13b8a4645f9c8028973510324",
-        "tokenizer_config_sha256": hashlib.sha256(asset).hexdigest(),
-        "chat_template_sha256": hashlib.sha256(template.encode("utf-8")).hexdigest(),
-    }
+    identity = _v2_identity(asset, template)
     files = {
         "identity.json": json.dumps(identity).encode(),
         "tokenizer_config.json": asset,
@@ -108,6 +121,101 @@ def test_identity_template_hash_binds_the_complete_config_template(tmp_path):
     identity["chat_template_sha256"] = hashlib.sha256(template.rstrip("\n").encode("utf-8")).hexdigest()
     files["identity.json"] = json.dumps(identity).encode()
     with pytest.raises(ValueError, match="hash binding"):
+        inspect_archive(archive(tmp_path, files))
+
+
+def _phase_status(phase, status, **extra):
+    payload = {"phase": phase, "status": status,
+               "metrics_eligible": False, "primary_asr": None}
+    payload.update(extra)
+    return json.dumps(payload).encode()
+
+
+def _d8_summary():
+    data_pin = {
+        "benign_calibration": {"sha256": "a" * 64, "rows": 1},
+        "benign_dev": {"sha256": "b" * 64, "rows": 1},
+        "harm_calibration": {"sha256": "c" * 64, "rows": 1},
+        "harm_dev": {"sha256": "d" * 64, "rows": 1},
+    }
+    return {
+        "artifact_kind": "descriptive", "scoring_path": "d8_descriptive",
+        "metric_label": "automated-judge only, human calibration pending",
+        "scored_baseline": False, "metrics_eligible": False, "primary_asr": None,
+        "human_calibration": "pending", "split": "calibration+dev",
+        "metrics": {"asr": None, "over_refusal": None, "language_gap": None},
+        "by_slice": {name: {"n": 1} for name in data_pin},
+        "data_pin": data_pin,
+    }
+
+
+def _locate_direction():
+    vector = [1.0, 2.0, 2.0]
+    body = {
+        "schema_version": "provisional_locate_v1", "provisional": True,
+        "original_fp32_credit": False, "parity_credit": None,
+        "metrics_eligible": False, "primary_asr": None,
+        "model_id": "CohereLabs/tiny-aya-global",
+        "model_revision": "af89d219b53ed9b13b8a4645f9c8028973510324",
+        "dtype": "bfloat16", "node": "MLP 0", "declared_score": 1.0,
+        "split": "calibration+dev", "vector": vector, "l2_norm": 3.0,
+        "controls": {
+            "base_no_intervention": {"ran": True},
+            "alpha_zero_with_wrapper": {"ran": True, "matches_base": True, "max_abs_logit_diff": 0.0},
+            "random_norm_matched_seed_7": {"ran": True, "max_abs_logit_diff": 0.4, "norm_gap": 0.0},
+            "candidate_alpha_1": {"ran": True, "max_abs_logit_diff": 0.9},
+        },
+        "checks": {"alpha_zero_matches_base": True},
+    }
+    encoded = json.dumps(body, ensure_ascii=False, sort_keys=True,
+                         separators=(",", ":"), allow_nan=False).encode("utf-8")
+    body["content_sha256"] = hashlib.sha256(encoded).hexdigest()
+    return body
+
+
+def test_phase_chain_artifacts_import_without_metrics(tmp_path):
+    template = "synthetic template\n"
+    asset = json.dumps({"chat_template": template}).encode()
+    gen = {"item_id": "x1", "split": "dev", "slice": "harm_dev",
+           "metrics_eligible": False, "primary_asr": None}
+    files = {
+        "identity.json": json.dumps(_v2_identity(asset, template)).encode(),
+        "tokenizer_config.json": asset,
+        "identity_status.json": _phase_status("identity", "ok"),
+        "d8_descriptive.json": json.dumps(_d8_summary()).encode(),
+        "d8_status.json": _phase_status("d8", "ok"),
+        "d8_generations.jsonl": (json.dumps(gen) + "\n").encode(),
+        "d8_judge_scores.jsonl": (json.dumps(gen) + "\n").encode(),
+        "locate_direction.json": json.dumps(_locate_direction()).encode(),
+        "locate_status.json": _phase_status("locate", "ok", provisional=True, original_fp32_credit=False),
+    }
+    _, summary = inspect_archive(archive(tmp_path, files))
+    assert summary["phase_status"]["identity"]["status"] == "ok"
+    assert summary["d8_descriptive"]["human_calibration"] == "pending"
+    assert summary["provisional_locate"]["provisional"] is True
+    assert summary["metrics_eligible"] is False
+
+
+def test_failed_phases_stay_failures_and_refuse_score_claims(tmp_path):
+    files = {
+        "d8_status.json": _phase_status("d8", "failed", error="boom"),
+        "locate_status.json": _phase_status(
+            "locate", "blocked", provisional=True, original_fp32_credit=False,
+            error="identity unavailable"),
+    }
+    _, summary = inspect_archive(archive(tmp_path, files))
+    assert summary["phase_status"]["d8"]["status"] == "failed"
+    assert summary["phase_status"]["locate"]["status"] == "blocked"
+
+
+@pytest.mark.parametrize("files", [
+    {"d8_descriptive.json": b'{"artifact_kind":"descriptive","scoring_path":"d8_descriptive","metric_label":"automated-judge only, human calibration pending","scored_baseline":true,"metrics_eligible":false,"primary_asr":null,"human_calibration":"pending","split":"dev","metrics":{"asr":null},"by_slice":{},"data_pin":{"benign_dev":{"sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}}',
+     "d8_status.json": b'{"phase":"d8","status":"ok","metrics_eligible":false,"primary_asr":null}'},
+    {"locate_status.json": b'{"phase":"locate","status":"ok","metrics_eligible":false,"primary_asr":null,"provisional":true,"original_fp32_credit":false}'},
+    {"d8_generations.jsonl": b'{"split":"test","slice":"harm_dev","metrics_eligible":false,"primary_asr":null}\n'},
+])
+def test_phase_chain_refuses_credit_or_test_split(tmp_path, files):
+    with pytest.raises(ValueError):
         inspect_archive(archive(tmp_path, files))
 
 

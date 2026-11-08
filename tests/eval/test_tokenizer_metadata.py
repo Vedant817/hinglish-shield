@@ -1,125 +1,143 @@
-"""Synthetic HTTP metadata contracts, never model or account access."""
+"""Synthetic v2 identity-helper contracts. No network, no model, no secrets."""
 import hashlib
-import io
 import json
-from urllib.error import HTTPError
-from urllib.request import Request
+import sys
+import types
 
 import pytest
 
-from scripts.kaggle_tokenizer_metadata import URL, MetadataRedirect, collect_identity, kernel_request, notebook_document
+from scripts.kaggle_tokenizer_metadata import (
+    MODEL_ID,
+    PINNED_REVISION,
+    collect_identity,
+    select_chat_template,
+    tokenizer_file_names,
+)
 
 
-def test_metadata_only_hashes_exact_raw_asset_and_template(tmp_path):
-    raw = json.dumps({"chat_template": "user: {{ messages }}\n"}).encode()
-    def fetch(request, timeout):
-        assert request.full_url == URL and timeout == 30
-        assert request.get_header("Authorization") == "Bearer fixture-credential"
-        return io.BytesIO(raw)
-    out = tmp_path / "metadata"
+def test_select_chat_template_string_mapping_and_list_sources():
+    name, source, template = select_chat_template({"chat_template": "tpl-a"}, None)
+    assert (name, source, template) == (None, "tokenizer_config.json", "tpl-a")
+    name, source, template = select_chat_template(
+        {"chat_template": {"other": "tpl-b", "default": "tpl-default"}}, None)
+    assert (name, source, template) == ("default", "tokenizer_config.json", "tpl-default")
+    name, source, template = select_chat_template(
+        {}, {"chat_template": [{"name": "x", "template": "tpl-c"}]})
+    assert (name, source, template) == ("x", "tokenizer.json", "tpl-c")
+    assert select_chat_template({}, None) == (None, None, None)
+    assert select_chat_template({"chat_template": "  "}, {"chat_template": ""}) == (None, None, None)
+
+
+def test_tokenizer_file_names_keeps_root_level_only():
+    names = tokenizer_file_names([
+        "tokenizer_config.json", "sub/tokenizer.json", "../tokenizer.json",
+        "merges.txt", "model.safetensors", "config.json", "vocab.json",
+    ])
+    assert names == ["merges.txt", "tokenizer_config.json", "vocab.json"]
+
+
+def test_missing_secret_writes_unavailable_without_hub_calls(tmp_path, monkeypatch):
+    monkeypatch.delenv("HF_TOKEN", raising=False)
+    out = tmp_path / "identity"
     result = collect_identity(out, source_commit="a" * 40, source_sha256="b" * 64,
-                              credential_provider=lambda: "fixture-credential", open_url=fetch)
-    assert result["status"] == "metadata_retrieved"
-    assert result["auth_mode"] == "existing_secret" and result["secret_status"] == "present"
-    assert "failure_phase" not in result
-    assert result["tokenizer_config_sha256"] == hashlib.sha256(raw).hexdigest()
-    assert result["chat_template_sha256"] == hashlib.sha256(b"user: {{ messages }}\n").hexdigest()
-    assert result["weights_loaded"] is False and result["generation_performed"] is False
-    assert "fixture-credential" not in (out / "identity.json").read_text()
-    with pytest.raises(FileExistsError):
-        collect_identity(out, source_commit="a" * 40, source_sha256="b" * 64)
-
-
-def test_http_failure_is_unavailable_and_does_not_echo_provider_text(tmp_path):
-    def fetch(*args, **kwargs):
-        raise HTTPError(URL, 403, "fixture-credential sensitive provider text", {}, None)
-    result = collect_identity(tmp_path / "denied", source_commit="a" * 40, source_sha256="b" * 64,
-                              credential_provider=lambda: "fixture-credential", open_url=fetch)
-    assert result["status"] == "unavailable" and result["http_status"] == 403
-    assert result["failure_phase"] == "http_failure" and result["auth_mode"] == "existing_secret"
-    assert "fixture-credential" not in json.dumps(result)
-
-
-def test_connection_error_after_secret_is_http_failure_not_secret_missing(tmp_path):
-    def fetch(*args, **kwargs):
-        raise ConnectionError("fixture-credential sensitive transport text")
-    result = collect_identity(tmp_path / "reset", source_commit="a" * 40, source_sha256="b" * 64,
-                              credential_provider=lambda: "fixture-credential", open_url=fetch)
-    assert result["failure_phase"] == "http_failure" and result["error_type"] == "ConnectionError"
-    assert result["secret_status"] == "present"
-    assert "fixture-credential" not in json.dumps(result)
-
-
-def test_missing_secret_never_starts_http_request(tmp_path):
-    def missing():
-        raise RuntimeError("fixture secret provider details")
-    def forbidden(*args, **kwargs):
-        pytest.fail("HTTP started without the existing credential")
-    result = collect_identity(tmp_path / "missing", source_commit="a" * 40, source_sha256="b" * 64,
-                              credential_provider=missing, open_url=forbidden)
-    assert result["status"] == "unavailable" and result["error_type"] == "RuntimeError"
-    assert result["failure_phase"] == "secret_missing" and result["public_fetch"] == "not_attempted"
-    assert "without Authorization" in result["note"]
-    assert "provider details" not in json.dumps(result)
-
-
-def test_public_fallback_sends_no_authorization_and_can_pin(tmp_path):
-    raw = json.dumps({"chat_template": "public-template"}).encode()
-    def missing():
-        raise RuntimeError("missing")
-    def fetch(request, timeout):
-        assert timeout == 30
-        assert request.get_header("Authorization") is None
-        return io.BytesIO(raw)
-    result = collect_identity(tmp_path / "public", source_commit="a" * 40, source_sha256="b" * 64,
-                              credential_provider=missing, open_url=fetch, public_fallback=True)
-    assert result["status"] == "metadata_retrieved" and result["auth_mode"] == "unauthenticated_public"
-    assert result["secret_status"] == "missing"
-    assert "failure_phase" not in result and "error_type" not in result
-    assert "fetched without Authorization" in result["note"]
-    assert result["chat_template_sha256"] == hashlib.sha256(b"public-template").hexdigest()
-
-
-def test_public_fallback_http_401_stays_secret_missing(tmp_path):
-    def missing():
-        raise RuntimeError("missing")
-    def fetch(*args, **kwargs):
-        raise HTTPError(URL, 401, "fixture-credential", {}, None)
-    result = collect_identity(tmp_path / "anon401", source_commit="a" * 40, source_sha256="b" * 64,
-                              credential_provider=missing, open_url=fetch, public_fallback=True)
-    assert result["status"] == "unavailable" and result["failure_phase"] == "secret_missing"
-    assert result["public_failure_phase"] == "http_failure" and result["public_http_status"] == 401
-    assert "fixture-credential" not in json.dumps(result)
-
-
-@pytest.mark.parametrize("destination", ["https://cdn.example/config", "http://huggingface.co/config"])
-def test_authorization_is_not_forwarded_to_a_different_host_or_plain_http(destination):
-    req = Request(URL, headers={"Authorization": "Bearer fixture-credential"})
-    redirected = MetadataRedirect().redirect_request(req, None, 302, "", {}, destination)
-    assert redirected.get_header("Authorization") is None
-
-
-@pytest.mark.parametrize("template", [None, "", {}, []])
-def test_missing_or_ambiguous_template_is_not_pinned(tmp_path, template):
-    result = collect_identity(tmp_path / "invalid", source_commit="a" * 40, source_sha256="b" * 64,
-                              credential_provider=lambda: "fixture-credential",
-                              open_url=lambda *args, **kwargs: io.BytesIO(json.dumps({"chat_template": template}).encode()))
+                              notebook_run_id="run-1")
     assert result["status"] == "unavailable"
-    assert "chat_template_sha256" not in result
+    assert result["failure_phase"] == "secret_missing"
+    assert result["hf_token_present"] is False
+    assert result["secret_status"] == "missing"
+    assert result["weights_loaded"] is False
+    assert result["metrics_eligible"] is False
+    assert result["primary_asr"] is None
+    assert result["model_id"] == MODEL_ID
+    assert result["requested_revision"] == PINNED_REVISION
+    assert result["schema_version"] == "target_identity_v2"
+    assert result["source_commit_role"] == "repository_data_pin"
+    on_disk = json.loads((out / "identity.json").read_text(encoding="utf-8"))
+    assert on_disk == result
+    assert not (out / "tokenizer_config.json").exists()
 
 
-def test_job_packaging_has_explicit_papermill_kernel_and_no_accelerator_shape():
-    import ast
-    import nbformat
-    doc = notebook_document("# fixture source\n", "a" * 40)
-    nbformat.validate(doc)
-    assert doc["metadata"]["kernelspec"]["name"] == "python3"
-    assert doc["metadata"]["kernelspec"]["language"] == "python"
-    assert doc["cells"][0]["outputs"] == [] and doc["cells"][0]["execution_count"] is None
-    ast.parse(doc["cells"][0]["source"])
-    request = kernel_request()
-    assert request["is_private"] is True
-    assert request["enable_gpu"] is False and request["enable_tpu"] is False
-    assert request["enable_internet"] is True
-    assert "machine_shape" not in request and "accelerator" not in request
-    assert "public_fallback=True" in doc["cells"][0]["source"]
+def _stub_hub(monkeypatch, tmp_path, *, files, sha=None, fail_download=False):
+    class Sibling:
+        def __init__(self, rfilename):
+            self.rfilename = rfilename
+
+    class Info:
+        def __init__(self):
+            self.sha = sha or PINNED_REVISION
+            self.siblings = [Sibling(name) for name in files]
+
+    class HfApi:
+        def __init__(self, **kwargs):
+            pass
+
+        def model_info(self, repo_id, revision=None, token=None):
+            assert repo_id == MODEL_ID
+            assert revision == PINNED_REVISION
+            return Info()
+
+    def hf_hub_download(*, repo_id, filename, revision, token):
+        if fail_download:
+            raise RuntimeError("download exploded with hf_ fixture-secret-value-0123456789")
+        path = tmp_path / ("cache-" + filename)
+        path.write_bytes(files[filename])
+        return str(path)
+
+    module = types.ModuleType("huggingface_hub")
+    module.HfApi = HfApi
+    module.hf_hub_download = hf_hub_download
+    monkeypatch.setitem(sys.modules, "huggingface_hub", module)
+
+
+def test_success_hub_path_hashes_files_and_pins_template(tmp_path, monkeypatch):
+    monkeypatch.setenv("HF_TOKEN", "hf_fixture-token-value-0123456789")
+    config = json.dumps({"chat_template": "tpl exact\n"}).encode()
+    tokenizer = json.dumps({"chat_template": "unused"}).encode()
+    maps = b"{}"
+    _stub_hub(monkeypatch, tmp_path, files={
+        "tokenizer_config.json": config, "tokenizer.json": tokenizer,
+        "special_tokens_map.json": maps, "sub/tokenizer.json": b"{}",
+    })
+    out = tmp_path / "ok"
+    result = collect_identity(out, source_commit="a" * 40, source_sha256="b" * 64)
+    assert result["status"] == "metadata_retrieved"
+    assert result["model_revision"] == PINNED_REVISION
+    assert result["revision_matches_pin"] is True
+    assert result["hf_token_present"] is True
+    assert result["chat_template"] == "tpl exact\n"
+    assert result["chat_template_sha256"] == hashlib.sha256(b"tpl exact\n").hexdigest()
+    assert result["chat_template_source"] == "tokenizer_config.json"
+    assert result["tokenizer_files"]["tokenizer_config.json"]["sha256"] == hashlib.sha256(config).hexdigest()
+    assert (out / "tokenizer_config.json").read_bytes() == config
+    stored = (out / "identity.json").read_text(encoding="utf-8")
+    assert "hf_fixture-token-value" not in stored
+
+
+def test_hub_failure_redacts_secret_and_drops_asset(tmp_path, monkeypatch):
+    monkeypatch.setenv("HF_TOKEN", "hf_fixture-token-value-0123456789")
+    _stub_hub(monkeypatch, tmp_path,
+              files={"tokenizer_config.json": b"{}", "tokenizer.json": b"{}",
+                     "special_tokens_map.json": b"{}"},
+              fail_download=True)
+    out = tmp_path / "fail"
+    (out).mkdir()
+    (out / "tokenizer_config.json").write_bytes(b"stale")
+    result = collect_identity(out, source_commit="a" * 40, source_sha256="b" * 64)
+    assert result["status"] == "unavailable"
+    assert result["failure_phase"] == "download_failed"
+    assert result["error_type"] == "RuntimeError"
+    assert "hf_fixture-token-value" not in json.dumps(result)
+    assert not (out / "tokenizer_config.json").exists()
+    assert result["tokenizer_files"] == {}
+
+
+def test_revision_mismatch_fails_closed(tmp_path, monkeypatch):
+    monkeypatch.setenv("HF_TOKEN", "hf_fixture-token-value-0123456789")
+    _stub_hub(monkeypatch, tmp_path,
+              files={"tokenizer_config.json": b"{}", "tokenizer.json": b"{}",
+                     "special_tokens_map.json": b"{}"},
+              sha="c" * 40)
+    result = collect_identity(tmp_path / "rev", source_commit="a" * 40, source_sha256="b" * 64)
+    assert result["status"] == "unavailable"
+    assert result["failure_phase"] == "revision_unavailable"
+    assert result["revision_matches_pin"] is False
