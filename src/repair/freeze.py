@@ -132,6 +132,31 @@ def write_freeze_manifest(sweep_path: Path, direction_path: Path, out_path: Path
     return manifest
 
 
+def _bound_producer(sweep_path: Path, sweep: Mapping[str, Any], judgments: Any) -> dict[str, Any] | None:
+    """Recompute the producer from the sibling generation ledger."""
+    if not isinstance(judgments, dict):
+        return None
+    from .selection import primary_rubric, producer_from_ledger
+
+    disk = producer_from_ledger(
+        sweep_path.parent / "generations.jsonl",
+        sweep_path.parent / "samples.jsonl",
+        identity={
+            "model_id": sweep.get("model_id"),
+            "model_revision": sweep.get("model_revision"),
+            "judge_model_id": sweep.get("judge_model_id"),
+            "judge_revision": sweep.get("judge_revision"),
+            "rubric": primary_rubric(),
+        },
+    )
+    if sweep.get("producer") != disk:
+        raise RepairError(
+            "freeze refused: producer evidence does not match the generation ledger",
+            stage="freeze",
+        )
+    return disk
+
+
 def _measured_intervention(sweep: Mapping[str, Any]) -> str:
     generation = sweep.get("generation")
     if generation == "per_step_hook_forward":
@@ -175,6 +200,7 @@ def build_measured_freeze(sweep_path: Path, direction_path: Path) -> dict[str, A
     sweep_config = load_sweep_config(Path(__file__).resolve().parents[2] / "configs" / "repair" / "sweep.yaml")
     if sweep.get("sweep_sha256") != sweep_config["sha256"]:
         raise RepairError("freeze refused: sweep config hash does not match the committed sweep", stage="freeze")
+    producer = _bound_producer(sweep_path, sweep, judgments)
     recomputed = decide_arm(
         members,
         judgments if isinstance(judgments, dict) else None,
@@ -183,6 +209,7 @@ def build_measured_freeze(sweep_path: Path, direction_path: Path) -> dict[str, A
         bootstrap_reps=sweep_config["bootstrap_reps"],
         bootstrap_seed=sweep_config["bootstrap_seed"],
         min_families_for_accept=sweep_config["min_families_for_accept"],
+        producer=producer,
     )
     stored = sweep.get("decision")
     if not isinstance(stored, dict) or stored.get("decision") != recomputed.get("decision"):
@@ -226,6 +253,7 @@ def build_measured_freeze(sweep_path: Path, direction_path: Path) -> dict[str, A
         "l2_norm": l2_norm(vector),
         "layer_index": direction.get("layer_index"),
         "judgments": judgments,
+        "producer": producer,
         "dev_members": members,
         "disclaimer": direction.get("disclaimer"),
     }
@@ -255,14 +283,19 @@ def verify_measured(payload: dict[str, Any]) -> dict[str, Any]:
     if payload.get("weights_reloaded") is not False:
         raise RepairError("freeze manifest claims a weight reload that this pathway does not do", stage="freeze")
     sweep_config = load_sweep_config(Path(__file__).resolve().parents[2] / "configs" / "repair" / "sweep.yaml")
+    judgments = payload.get("judgments")
+    producer = payload.get("producer") if isinstance(judgments, dict) else None
+    if isinstance(judgments, dict) and not isinstance(producer, dict):
+        raise RepairError("freeze manifest is missing producer evidence", stage="freeze")
     recomputed = decide_arm(
         payload["dev_members"],
-        payload.get("judgments"),
+        judgments if isinstance(judgments, dict) else None,
         over_refusal_max_rise=sweep_config["over_refusal_max_rise"],
         capability_max_drop_points=sweep_config["capability_max_drop_points"],
         bootstrap_reps=sweep_config["bootstrap_reps"],
         bootstrap_seed=sweep_config["bootstrap_seed"],
         min_families_for_accept=sweep_config["min_families_for_accept"],
+        producer=producer if isinstance(producer, dict) else None,
     )
     if payload.get("decision") != recomputed.get("decision"):
         raise RepairError("fresh process decision does not match the evidence", stage="freeze")

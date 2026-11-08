@@ -819,6 +819,323 @@ def test_library_freeze_refuses_a_fixture_label(tmp_path: Path):
     assert caught.value.stage == "freeze"
 
 
+def _measured_shell(tmp_path: Path, judgments: dict, producer: dict | None) -> tuple[Path, Path]:
+    from src.repair.protocol import load_sweep_config
+
+    sweep_config = load_sweep_config(ROOT / "configs" / "repair" / "sweep.yaml")
+    direction = {"vector": [1.0, 0.0], "layer_index": 0, "not_tiny_aya": True}
+    direction["content_sha256"] = content_sha256(direction)
+    payload = {
+        "generation": "per_step_hook_forward",
+        "direction_sha256": direction["content_sha256"],
+        "primary_asr": None,
+        "metrics_eligible": False,
+        "proven_refusal_mechanism": False,
+        "dev_members": [
+            {"sample_id": "s1", "family_id": "f", "hs_label": "harm", "split": "dev"},
+            {"sample_id": "b1", "family_id": "f", "hs_label": "benign", "split": "dev"},
+        ],
+        "judgments": judgments,
+        "producer": producer,
+        "sweep_sha256": sweep_config["sha256"],
+        "decision": {"decision": "accept", "freeze": True},
+        "artifact_kind": "fixture",
+        "model_id": "fixture/injected",
+        "model_revision": "not-loaded",
+        "judge_model_id": "allenai/wildguard",
+        "judge_revision": "cbba4823f3e8020e5a74a5e29bf85072def6f2ff",
+    }
+    payload["content_sha256"] = content_sha256(payload)
+    sweep_path = tmp_path / "sweep.json"
+    direction_path = tmp_path / "direction.json"
+    sweep_path.write_text(json.dumps(payload), encoding="utf-8")
+    direction_path.write_text(json.dumps(direction), encoding="utf-8")
+    return sweep_path, direction_path
+
+
+def test_wildguard_fields_bind_as_selection_labels(tmp_path: Path):
+    from src.repair.selection import decide_arm, primary_rubric, producer_from_ledger
+
+    def generation(arm: str, sample_id: str, hs_label: str, text: str) -> dict:
+        return {
+            "arm_id": arm,
+            "sample_id": sample_id,
+            "family_id": "f",
+            "hs_label": hs_label,
+            "new_token_ids": [1],
+            "response": text,
+            "status": "ok",
+            "truncated": False,
+        }
+
+    def sample(row: dict, harmful: str, refusal: str, category: str) -> dict:
+        label = "unsafe" if harmful == "yes" else "safe"
+        return {
+            **row,
+            "judge_label": label,
+            "harmful_response": harmful,
+            "response_refusal": refusal,
+            "category": category,
+        }
+
+    rows = [
+        generation("base_no_intervention", "s1", "harm", "one"),
+        generation("base_no_intervention", "s2", "harm", "two"),
+        generation("base_no_intervention", "b1", "benign", "benign"),
+        generation("candidate_alpha_1", "s1", "harm", "three"),
+        generation("candidate_alpha_1", "s2", "harm", "four"),
+        generation("candidate_alpha_1", "b1", "benign", "benign-arm"),
+    ]
+    labeled = [
+        sample(rows[0], "yes", "no", "harmful_compliant"),
+        sample(rows[1], "no", "yes", "refusal"),
+        sample(rows[2], "no", "yes", "refusal"),
+        sample(rows[3], "no", "yes", "refusal"),
+        sample(rows[4], "no", "yes", "refusal"),
+        sample(rows[5], "no", "yes", "refusal"),
+    ]
+    generations = tmp_path / "generations.jsonl"
+    samples = tmp_path / "samples.jsonl"
+    generations.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
+    samples.write_text("".join(json.dumps(row) + "\n" for row in labeled), encoding="utf-8")
+    identity = {
+        "model_id": "fixture/injected",
+        "model_revision": "not-loaded",
+        "judge_model_id": "allenai/wildguard",
+        "judge_revision": "cbba4823f3e8020e5a74a5e29bf85072def6f2ff",
+        "rubric": primary_rubric(),
+    }
+    producer = producer_from_ledger(generations, samples, identity=identity)
+    by_key = {(item["arm_id"], item["sample_id"]): item["judge_label"] for item in producer["responses"]}
+    assert by_key[("base_no_intervention", "s1")] == "harmful_compliant"
+    assert by_key[("base_no_intervention", "s2")] == "refusal"
+    index = [
+        {"sample_id": "s1", "family_id": "f", "hs_label": "harm"},
+        {"sample_id": "s2", "family_id": "f", "hs_label": "harm"},
+        {"sample_id": "b1", "family_id": "f", "hs_label": "benign"},
+    ]
+    judgments = []
+    for item in producer["responses"]:
+        judgments.append({
+            "arm_id": item["arm_id"],
+            "sample_id": item["sample_id"],
+            "family_id": "f",
+            "split": "dev",
+            "hs_label": "harm" if item["sample_id"] != "b1" else "benign",
+            "judge_label": item["judge_label"],
+            "capability_score": None if item["sample_id"] != "b1" else 10,
+            "response_sha256": item["response_sha256"],
+            "run_id": producer["run_id"],
+            "model_id": producer["model_id"],
+            "model_revision": producer["model_revision"],
+            "judge_model_id": producer["judge_model_id"],
+            "judge_revision": producer["judge_revision"],
+            "rubric": producer["rubric"],
+        })
+    decision = decide_arm(
+        index,
+        {"capability_unit": "task_points", "rows": judgments},
+        over_refusal_max_rise=0.05,
+        capability_max_drop_points=2.0,
+        bootstrap_reps=20,
+        bootstrap_seed=20261106,
+        min_families_for_accept=1,
+        producer=producer,
+    )
+    assert decision["pooled_asr_base"]["rate"] == 0.5
+    raw = [dict(item) for item in judgments]
+    raw[0]["judge_label"] = "unsafe"
+    unavailable = decide_arm(
+        index,
+        {"capability_unit": "task_points", "rows": raw},
+        over_refusal_max_rise=0.05,
+        capability_max_drop_points=2.0,
+        bootstrap_reps=20,
+        bootstrap_seed=20261106,
+        min_families_for_accept=1,
+        producer=producer,
+    )
+    assert unavailable["decision"] == "unavailable"
+    mismatched = [dict(row) for row in labeled]
+    mismatched[0]["category"] = "refusal"
+    samples.write_text("".join(json.dumps(row) + "\n" for row in mismatched), encoding="utf-8")
+    with pytest.raises(RepairError, match="sample category"):
+        producer_from_ledger(generations, samples, identity=identity)
+    open_identity = dict(identity)
+    open_identity["judge_revision"] = None
+    samples.write_text("".join(json.dumps(row) + "\n" for row in labeled), encoding="utf-8")
+    unjudged = producer_from_ledger(
+        generations,
+        samples,
+        identity=open_identity,
+        require_revision=False,
+    )
+    assert unjudged["judge_revision"] is None
+    with pytest.raises(RepairError, match="judge revision"):
+        producer_from_ledger(generations, samples, identity=open_identity)
+
+
+def test_sample_verdict_must_hash_the_same_response(tmp_path: Path):
+    from src.repair.selection import primary_rubric, producer_from_ledger
+
+    generation = {
+        "arm_id": "base_no_intervention",
+        "sample_id": "s1",
+        "response": "the generated text",
+        "new_token_ids": [1, 2],
+        "status": "ok",
+        "truncated": False,
+    }
+    sample = {
+        **generation,
+        "response": "a different judged text",
+        "judge_label": "unsafe",
+        "harmful_response": "yes",
+        "response_refusal": "no",
+        "category": "harmful_compliant",
+    }
+    generations = tmp_path / "generations.jsonl"
+    samples = tmp_path / "samples.jsonl"
+    generations.write_text(json.dumps(generation) + "\n", encoding="utf-8")
+    samples.write_text(json.dumps(sample) + "\n", encoding="utf-8")
+    identity = {
+        "model_id": "fixture/injected",
+        "model_revision": "not-loaded",
+        "judge_model_id": "allenai/wildguard",
+        "judge_revision": "cbba4823f3e8020e5a74a5e29bf85072def6f2ff",
+        "rubric": primary_rubric(),
+    }
+    with pytest.raises(RepairError, match="sample response hash"):
+        producer_from_ledger(generations, samples, identity=identity)
+    sample["response"] = generation["response"]
+    samples.write_text(json.dumps(sample) + "\n", encoding="utf-8")
+    producer = producer_from_ledger(generations, samples, identity=identity)
+    assert producer["responses"][0]["judge_label"] == "harmful_compliant"
+
+
+def test_unset_judge_revision_still_writes_an_unjudged_sweep(tmp_path: Path):
+    parity = tmp_path / "parity"
+    _good_parity(parity)
+    runtime = tmp_path / "runtime.yaml"
+    _runtime(runtime)
+    text = runtime.read_text(encoding="utf-8").replace(
+        "judge_revision: cbba4823f3e8020e5a74a5e29bf85072def6f2ff",
+        "judge_revision:",
+        1,
+    )
+    runtime.write_text(text, encoding="utf-8")
+    calibration = [_row("calibration", "harm"), _row("calibration", "benign")]
+    dev = [_row("dev", "harm"), _row("dev", "benign")]
+    cal_index = tmp_path / "cal.json"
+    dev_index = tmp_path / "dev.json"
+    _write_index(cal_index, calibration)
+    _write_index(dev_index, dev)
+    events: list[str] = []
+
+    def factory(_runtime, _source):
+        return LifecycleBundle(events)
+
+    direction_path = tmp_path / "direction.json"
+    locate_with_model(
+        protocol_path=PROTOCOL,
+        provenance_path=PROVENANCE,
+        runtime_config_path=runtime,
+        index_path=cal_index,
+        manifest_path=CANONICAL_FAMILY_MANIFEST,
+        prompts_path=tmp_path / "cal-prompts.jsonl",
+        out_path=direction_path,
+        parity_run=parity,
+        circuit_scores={"MLP 0": 1.0},
+        model_factory=factory,
+        prompt_loader=lambda _path, rows: _prompts(rows),
+        code_check=_clean,
+        source_check=_source_ok,
+    )
+    sweep_path = tmp_path / "sweep.json"
+    report = run_real_sweep(
+        protocol_path=PROTOCOL,
+        provenance_path=PROVENANCE,
+        runtime_config_path=runtime,
+        sweep_path=SWEEP,
+        direction_path=direction_path,
+        calibration_index_path=cal_index,
+        dev_index_path=dev_index,
+        dev_prompts_path=tmp_path / "dev-prompts.jsonl",
+        manifest_path=CANONICAL_FAMILY_MANIFEST,
+        out_path=sweep_path,
+        parity_run=parity,
+        circuit_scores={"MLP 0": 1.0},
+        model_factory=factory,
+        prompt_loader=lambda _path, rows: _prompts(rows),
+        code_check=_clean,
+        source_check=_source_ok,
+    )
+    assert sweep_path.is_file()
+    assert report["decision"]["decision"] == "unavailable"
+    assert report["freeze_allowed"] is False
+    assert report["producer"]["judge_revision"] is None
+    assert report["primary_asr"] is None
+
+
+def test_measured_freeze_rejects_judgments_that_are_not_on_the_ledger(tmp_path: Path):
+    from src.repair.selection import primary_rubric, producer_from_ledger
+
+    sweep_path, direction_path = _measured_shell(tmp_path, {"capability_unit": "task_points", "rows": []}, None)
+    with pytest.raises(RepairError, match="generation ledger is missing"):
+        build_measured_freeze(sweep_path, direction_path)
+
+    records = []
+    for arm in ("base_no_intervention", "candidate_alpha_1"):
+        for sample_id, hs_label, text in (("s1", "harm", "harm text"), ("b1", "benign", "benign text")):
+            records.append({
+                "arm_id": arm,
+                "sample_id": sample_id,
+                "family_id": "f",
+                "hs_label": hs_label,
+                "new_token_ids": [1],
+                "response": text,
+                "status": "ok",
+            })
+    generations = tmp_path / "generations.jsonl"
+    samples = tmp_path / "samples.jsonl"
+    generations.write_text("".join(json.dumps(row) + "\n" for row in records), encoding="utf-8")
+    labeled = [{**row, "judge_label": "refusal"} for row in records]
+    samples.write_text("".join(json.dumps(row) + "\n" for row in labeled), encoding="utf-8")
+    identity = {
+        "model_id": "fixture/injected",
+        "model_revision": "not-loaded",
+        "judge_model_id": "allenai/wildguard",
+        "judge_revision": "cbba4823f3e8020e5a74a5e29bf85072def6f2ff",
+        "rubric": primary_rubric(),
+    }
+    producer = producer_from_ledger(generations, samples, identity=identity)
+    rows = []
+    for item in producer["responses"]:
+        rows.append({
+            "arm_id": item["arm_id"],
+            "sample_id": item["sample_id"],
+            "family_id": "f",
+            "split": "dev",
+            "hs_label": "harm" if item["sample_id"] == "s1" else "benign",
+            "judge_label": item["judge_label"],
+            "capability_score": None if item["sample_id"] == "s1" else 10,
+            "response_sha256": "0" * 64 if item["sample_id"] == "s1" else item["response_sha256"],
+            "run_id": producer["run_id"],
+            "model_id": producer["model_id"],
+            "model_revision": producer["model_revision"],
+            "judge_model_id": producer["judge_model_id"],
+            "judge_revision": producer["judge_revision"],
+            "rubric": producer["rubric"],
+        })
+    sweep_path, direction_path = _measured_shell(
+        tmp_path,
+        {"capability_unit": "task_points", "rows": rows},
+        producer,
+    )
+    with pytest.raises(RepairError, match="response hash"):
+        build_measured_freeze(sweep_path, direction_path)
+
+
 def test_accept_requires_the_family_floor_and_recomputed_evidence(tmp_path: Path):
     forged = {
         "decision": "accept",
