@@ -10,7 +10,7 @@ Measured attack success rate, over-refusal, capability, and repair acceptance: *
 
 The tracked `metrics.json` files are `artifact_kind: fixture` with null benchmark fields: `runs/_example/metrics.json` and `runs/wildguard-fixture-20261107T141335276834Z/metrics.json`. Fixture generations are not ASR.
 
-Target chat-template pin: **Not run**. Private Kaggle version 11 (`runs/tokenizer-metadata-v11-2026-11-08/`) finished with `failure_phase` `secret_missing` and an unauthenticated HTTP 401. No tokenizer asset was downloaded. The Kaggle CLI cannot attach `HF_TOKEN`. The existing secret has to be attached in the notebook editor before another metadata or GPU run.
+Target chat-template pin: **Not run**. Private [Kaggle version 12](https://www.kaggle.com/code/vedant817/hinglish-shield-gpu-parity/version/12), submitted from `main`, failed at the `secret_missing` assertion before identity/model loading (`runs/kaggle-parity-v12-2026-11-08/`). Its environment report also shows CPU-only torch and no available CUDA device. No tokenizer or chat-template hash, parity KL or dev score was produced. No retry was launched. In the notebook editor, attach `HF_TOKEN`, select the existing account's free GPU, then Save Version and Save & Run All. Version 11's earlier unauthenticated HTTP 401 remains separate historical evidence under `runs/tokenizer-metadata-v11-2026-11-08/`.
 
 Dev baseline: **Not run**. D8 in `docs/research/PREREG_baseline.md` says a future dev score is automated-judge only (WildGuard primary, pinned Qwen3Guard-Gen-0.6B secondary) and must be labeled "automated-judge only, human calibration pending". Unreviewed rows are not human labels.
 
