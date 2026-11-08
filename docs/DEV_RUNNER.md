@@ -10,11 +10,13 @@ The locked test path is unchanged. `src/eval/run_baseline.py` is still a stub. T
 python -m src.eval.dev_runner --split dev --config frozen.dev.json --index dev.index.json --prompts dev.prompts.jsonl --family-manifest family.manifest.json --out runs/<run-id>
 ```
 
-`--split` must be `dev`. Any other split exits 2 before inputs are used as a run. `--i-understand-single-shot` is rejected.
+On the default path, `--split` must be `dev`. Any other split exits 2 before inputs are used as a run. `--i-understand-single-shot` is rejected.
+
+The explicit D8 path is `--scoring-path d8_descriptive`. `--split` may then be `calibration` or `dev`. `test` is still refused, and the single-shot flag is still refused. That path keeps `review_status` `unreviewed` or `reviewed` as written. It does not invent a Vedant verdict or a human response label. It requires both pinned judges: WildGuard primary and `Qwen/Qwen3Guard-Gen-0.6B` revision `fada3b2f655b89601929198343c94cd2f64d93cc`. A ledger from that path is labeled "automated-judge only, human calibration pending". The runner still does not write `metrics.json`. Aggregation may write a descriptive `metrics.json` with that label. `metrics_eligible` stays false, and the publication table does not call it a release run. Kappa between the two judges is diagnostic, not accuracy. A missing target chat-template pin, including `secret_missing` or HTTP 401, is a blocker record with null metrics. It is not a scored baseline.
 
 Exit 0 means the ledger status is `complete`. It does not mean a score exists. Exit 2 is a protocol refusal. Exit 3 is a runtime failure after the run directory was reserved. A second invocation with the same `--out` is refused. Use a new run id for a retry. Never delete a failed directory to reuse its id. The runner does not resume, overwrite, or delete evidence.
 
-The default path constructs `HuggingFaceGreedyGenerator` and then `WildGuardPrimaryJudge` from `src/eval/judges.py`. Torch and transformers are imported inside the generator constructor, not when this module is imported. Import does not download weights.
+The default path constructs `HuggingFaceGreedyGenerator` and then `WildGuardPrimaryJudge` from `src/eval/judges.py`. The D8 path constructs that primary judge and `LLMSecondaryJudge` from `configs/eval/prospective_secondary.json` after the target is unloaded. Torch and transformers are imported inside the generator constructor, not when this module is imported. Import does not download weights.
 
 ## Inputs
 
@@ -36,9 +38,9 @@ All four files are required. Hashes are lowercase SHA-256 hex of the bytes named
 - Other decoding keys are refused rather than silently ignored.
 - `index_sha256`, `family_manifest_sha256`, `prompts_sha256`, `dataset_hash`
 
-`dev.index.json` is a JSON array. It must not contain prompt text. Each object has exactly these fields: `sample_id`, `item_id`, `family_id`, `source_dataset`, `source_id`, `lang`, `hs_label`, `split`, `prompt_hash`, `review_status`. Every `split` is `dev`. Every `review_status` is `reviewed`. `lang` is `en`, `hi`, or `hinglish`. `hs_label` is `harm` or `benign`. `prompt_hash` is SHA-256 of the prompt UTF-8 text. Ids are unique.
+`dev.index.json` is a JSON array. It must not contain prompt text. Each object has exactly these fields: `sample_id`, `item_id`, `family_id`, `source_dataset`, `source_id`, `lang`, `hs_label`, `split`, `prompt_hash`, `review_status`. On the default path, every `split` is `dev` and every `review_status` is `reviewed`. On the D8 path, every `split` is the requested `calibration` or `dev` split, and `review_status` is copied through as `reviewed` or `unreviewed`. `lang` is `en`, `hi`, or `hinglish`. `hs_label` is `harm` or `benign`. `prompt_hash` is SHA-256 of the prompt UTF-8 text. Ids are unique.
 
-`family.manifest.json` has `review_status` `reviewed`, `frozen` true, and `families`. Each referenced family has `split` `dev` and exactly one member whose `item_id`, `source_dataset`, `source_id`, `lang`, and `hs_label` match the index row. A test or calibration row in the index, or a family whose split is not `dev`, fails the run. That caller file is not split authority.
+On the default path, `family.manifest.json` has `review_status` `reviewed`, `frozen` true, and `families`. Each referenced family has `split` `dev` and exactly one member whose `item_id`, `source_dataset`, `source_id`, `lang`, and `hs_label` match the index row. A test or calibration row in the index, or a family whose split is not `dev`, fails the run. On the D8 path the caller manifest may say `reviewed` or `unreviewed`, and each family split must match the requested calibration or dev split. `test` still fails. That caller file is not split authority.
 
 On a real run, before prompt files are opened and before adapters are constructed, each source, member, and family is checked against `data/splits/family_splits_v2.json`. The accepted SHA-256 is `334e7151edfd9fe958afcded67417b9315d2d26b693b51f91b998c5d9638b531`. The runner records that hash. A hash supplied in the config cannot replace it. The check reads manifest metadata only and does not open prompt files. Canonical `hs_label` is authoritative when it is `harm` or `benign`. `mixed` is a family aggregate, so the member label is the item label. A reviewed manifest that places a test or calibration source into a dev family is rejected.
 
@@ -48,9 +50,9 @@ Fixture runs do not read that frozen file unless a test injects synthetic canoni
 
 Validation order:
 
-1. Reject any split other than `dev`.
+1. Reject any split other than `dev`, unless `--scoring-path d8_descriptive` requested `calibration` or `dev`. `test` is refused on both paths.
 2. Load and pin-check the config, including integer seed `42`, integer `max_new_tokens` `256`, and method `base`.
-3. Load the index, check its file hash, and reject missing, duplicate, unreviewed, non-dev, or unsupported language or label rows.
+3. Load the index, check its file hash, and reject missing, duplicate, or unsupported language or label rows. The default path also rejects unreviewed and non-dev rows. The D8 path keeps `unreviewed` unchanged.
 4. Load the caller family manifest, check its file hash, and reject membership or source mismatches.
 5. On a real run, reject an unsupported model id, then check canonical rows against the pinned canonical manifest. A fixture run does this only when the synthetic helper is injected. Rows whose `source_dataset` is `reviewed_variant` are not canonical members. They require `--reviewed-lineage`, `--review-sheet`, and the four reviewed hashes in the config: `reviewed_lineage_sha256`, `reviewed_evidence_sha256`, `review_sheet_sha256`, and `canonical_source_ids_sha256`. The runner recomputes the accepted variants from the review sheet and checks lineage, family, split, label, and prompt hashes before it opens the prompt file. A fixture that injects derived rows still needs the synthetic canonical helper. That helper cannot authorize `artifact_kind` `run`.
 6. Only then open the prompt file. Check its file hash, ids, per-prompt hashes, and `dataset_hash`.

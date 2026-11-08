@@ -16,7 +16,7 @@
     "method": { "type": ["string", "null"], "description": "Defense or baseline method label, e.g. base, steering, lora." },
     "calibration_language": { "type": ["string", "null"] },
     "eval_language": { "type": ["string", "null"], "description": "Primary language for this row when reporting per-language ASR." },
-    "split": { "type": "string", "enum": ["dev", "test", "example", "fixture"] },
+    "split": { "type": "string", "enum": ["calibration", "dev", "test", "example", "fixture"] },
     "attack": { "type": ["string", "null"], "description": "Attack family or suite id, or null for benign/capability splits." },
     "query_budget": { "type": ["integer", "null"], "minimum": 0 },
     "seed": { "type": ["integer", "null"] },
@@ -208,6 +208,7 @@
           },
           "split": {
             "enum": [
+              "calibration",
               "dev",
               "test"
             ]

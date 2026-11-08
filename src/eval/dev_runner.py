@@ -27,7 +27,7 @@ from src.curate.reviewed_variants import (
     load_authority,
     verify_ledger_lineage,
 )
-from .judges import WildGuardPrimaryJudge
+from .judges import LLMSecondaryJudge, WildGuardPrimaryJudge
 
 ROOT = Path(__file__).resolve().parents[2]
 _HEX = "0123456789abcdef"
@@ -57,6 +57,13 @@ CANONICAL_FAMILY_MANIFEST = ROOT / "data" / "splits" / "family_splits_v2.json"
 CANONICAL_FAMILY_MANIFEST_SHA256 = (
     "334e7151edfd9fe958afcded67417b9315d2d26b693b51f91b998c5d9638b531"
 )
+D8_SCORING_PATH = "d8_descriptive"
+D8_METRIC_LABEL = "automated-judge only, human calibration pending"
+D8_SPLITS = frozenset({"calibration", "dev"})
+D8_REVIEW_STATUSES = frozenset({"reviewed", "unreviewed"})
+SECONDARY_MODEL_ID = "Qwen/Qwen3Guard-Gen-0.6B"
+SECONDARY_REVISION = "fada3b2f655b89601929198343c94cd2f64d93cc"
+SECONDARY_PROTOCOL = ROOT / "configs" / "eval" / "prospective_secondary.json"
 REVIEW_PIN_FIELDS = (
     "canonical_source_ids_sha256",
     "review_sheet_sha256",
@@ -181,7 +188,7 @@ def refuse_metrics(manifest: Mapping[str, Any], samples: Sequence[Mapping[str, A
     )
 
 
-def artifact_label(*, injected: bool) -> dict[str, Any]:
+def artifact_label(*, injected: bool, split: str = "dev") -> dict[str, Any]:
     if injected:
         return {
             "artifact_kind": "fixture",
@@ -190,7 +197,7 @@ def artifact_label(*, injected: bool) -> dict[str, Any]:
         }
     return {
         "artifact_kind": "run",
-        "split": "dev",
+        "split": split,
         "metrics_eligible": False,
     }
 
@@ -363,7 +370,12 @@ def code_provenance(root: Path) -> dict[str, Any]:
             "runner_source_matches_commit": committed == source}
 
 
-def _validate_index_row(row: Mapping[str, Any]) -> dict[str, str]:
+def _validate_index_row(
+    row: Mapping[str, Any],
+    *,
+    allowed_splits: frozenset[str] = frozenset({"dev"}),
+    allowed_review: frozenset[str] = frozenset({"reviewed"}),
+) -> dict[str, str]:
     if not isinstance(row, dict):
         raise DevRunnerError("missing index row")
     if "prompt" in row or "response" in row or "completion" in row:
@@ -375,9 +387,9 @@ def _validate_index_row(row: Mapping[str, Any]) -> dict[str, str]:
     if missing:
         raise DevRunnerError("missing index field")
     cleaned = {field: _require_token(row[field], field) for field in INDEX_FIELDS}
-    if cleaned["split"] != "dev":
+    if cleaned["split"] not in allowed_splits:
         raise DevRunnerError(f"non-dev index row refused: split {cleaned['split']}")
-    if cleaned["review_status"] != "reviewed":
+    if cleaned["review_status"] not in allowed_review:
         raise DevRunnerError("unreviewed index row")
     if cleaned["lang"] not in ITEM_LANGS:
         raise DevRunnerError("unsupported language")
@@ -387,10 +399,18 @@ def _validate_index_row(row: Mapping[str, Any]) -> dict[str, str]:
     return cleaned
 
 
-def validate_index(payload: Any) -> list[dict[str, str]]:
+def validate_index(
+    payload: Any,
+    *,
+    allowed_splits: frozenset[str] = frozenset({"dev"}),
+    allowed_review: frozenset[str] = frozenset({"reviewed"}),
+) -> list[dict[str, str]]:
     if not isinstance(payload, list) or not payload:
         raise DevRunnerError("missing index rows")
-    rows = [_validate_index_row(row) for row in payload]
+    rows = [
+        _validate_index_row(row, allowed_splits=allowed_splits, allowed_review=allowed_review)
+        for row in payload
+    ]
     seen_samples: set[str] = set()
     seen_items: set[str] = set()
     for row in rows:
@@ -417,10 +437,18 @@ def _member_key(member: Mapping[str, Any]) -> tuple[str, str, str, str, str]:
     )
 
 
-def validate_membership(index_rows: Sequence[Mapping[str, str]], manifest: Mapping[str, Any]) -> None:
+def validate_membership(
+    index_rows: Sequence[Mapping[str, str]],
+    manifest: Mapping[str, Any],
+    *,
+    allowed_splits: frozenset[str] = frozenset({"dev"}),
+    allow_unreviewed_manifest: bool = False,
+) -> None:
     if not isinstance(manifest, dict):
         raise DevRunnerError("missing family manifest")
-    if manifest.get("review_status") != "reviewed":
+    review_status = manifest.get("review_status")
+    allowed_manifest_review = D8_REVIEW_STATUSES if allow_unreviewed_manifest else frozenset({"reviewed"})
+    if review_status not in allowed_manifest_review:
         raise DevRunnerError("unreviewed family manifest")
     if manifest.get("frozen") is not True:
         raise DevRunnerError("unpinned family manifest")
@@ -432,7 +460,7 @@ def validate_membership(index_rows: Sequence[Mapping[str, str]], manifest: Mappi
         if not isinstance(family, dict):
             raise DevRunnerError("missing family membership")
         family_split = family.get("split")
-        if family_split != "dev":
+        if family_split != row["split"] or family_split not in allowed_splits:
             shown = family_split if isinstance(family_split, str) else "missing"
             raise DevRunnerError(f"non-dev family membership refused: split {shown}")
         family_label = family.get("hs_label")
@@ -524,11 +552,13 @@ def load_canonical_authority(path: Path, *, require_pinned_hash: bool) -> dict[s
     return {"by_source": by_source, "sha256": digest}
 
 
-def assert_canonical_dev_membership(
+def assert_canonical_membership(
     index_rows: Sequence[Mapping[str, str]],
     authority: Mapping[str, Any],
+    *,
+    allowed_splits: frozenset[str],
 ) -> None:
-    """Reject caller manifests that relabel canonical test or calibration members as dev."""
+    """Reject a caller row whose canonical family split is outside the requested set."""
     by_source = authority["by_source"]
     for row in index_rows:
         found = by_source.get((row["source_dataset"], row["source_id"]))
@@ -536,12 +566,22 @@ def assert_canonical_dev_membership(
             raise DevRunnerError("canonical membership mismatch")
         if found["family_id"] != row["family_id"] or found["item_id"] != row["item_id"]:
             raise DevRunnerError("canonical membership mismatch")
-        if found["split"] != "dev":
+        if found["split"] != row["split"] or found["split"] not in allowed_splits:
+            if found.get("split") == "test" or row["split"] == "test":
+                raise DevRunnerError("canonical split refuses test membership")
             raise DevRunnerError("canonical split refuses non-dev membership")
         if found["lang"] != row["lang"] or found["hs_label"] != row["hs_label"]:
             raise DevRunnerError("canonical label mismatch")
         if found["family_hs_label"] in ITEM_HS_LABELS and found["family_hs_label"] != row["hs_label"]:
             raise DevRunnerError("canonical label mismatch")
+
+
+def assert_canonical_dev_membership(
+    index_rows: Sequence[Mapping[str, str]],
+    authority: Mapping[str, Any],
+) -> None:
+    """Reject caller manifests that relabel canonical test or calibration members as dev."""
+    assert_canonical_membership(index_rows, authority, allowed_splits=frozenset({"dev"}))
 
 
 def assert_supported_model_contract(config: Mapping[str, Any]) -> None:
@@ -554,6 +594,10 @@ def load_index_and_manifest(
     index_path: Path,
     manifest_path: Path,
     config: Mapping[str, str],
+    *,
+    allowed_splits: frozenset[str] = frozenset({"dev"}),
+    allowed_review: frozenset[str] = frozenset({"reviewed"}),
+    allow_unreviewed_manifest: bool = False,
 ) -> list[dict[str, str]]:
     """Validate metadata and membership. Does not open the prompt file."""
     index_raw = _read_bytes(index_path, "index")
@@ -563,7 +607,11 @@ def load_index_and_manifest(
         index_payload = json.loads(index_raw.decode("utf-8"))
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise DevRunnerError("missing index") from None
-    rows = validate_index(index_payload)
+    rows = validate_index(
+        index_payload,
+        allowed_splits=allowed_splits,
+        allowed_review=allowed_review,
+    )
     manifest_raw = _read_bytes(manifest_path, "family manifest")
     if sha256_bytes(manifest_raw) != config["family_manifest_sha256"]:
         raise DevRunnerError("family manifest hash mismatch")
@@ -571,7 +619,12 @@ def load_index_and_manifest(
         manifest_payload = json.loads(manifest_raw.decode("utf-8"))
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
         raise DevRunnerError("missing family manifest") from None
-    validate_membership(rows, manifest_payload)
+    validate_membership(
+        rows,
+        manifest_payload,
+        allowed_splits=allowed_splits,
+        allow_unreviewed_manifest=allow_unreviewed_manifest,
+    )
     return rows
 
 
@@ -772,6 +825,67 @@ def default_judge_factory(config: Mapping[str, Any]) -> WildGuardPrimaryJudge:
     )
 
 
+class D8JudgePair:
+    """Primary WildGuard and pinned Qwen3Guard. One missing judge is not a score."""
+
+    def __init__(self, primary: Any, secondary: Any) -> None:
+        if primary is None or secondary is None:
+            raise DevRunnerError("D8 descriptive path requires both judges")
+        self.primary = primary
+        self.secondary = secondary
+
+    def unload(self) -> None:
+        first: BaseException | None = None
+        for judge in (self.primary, self.secondary):
+            unload = getattr(judge, "unload", None)
+            if not callable(unload):
+                if first is None:
+                    first = DevRunnerError("judge unload missing", stage="runtime")
+                continue
+            try:
+                unload()
+            except BaseException as exc:
+                if first is None:
+                    first = exc
+        if first is not None:
+            raise first
+
+
+def default_d8_judge_factory(config: Mapping[str, Any]) -> D8JudgePair:
+    """Build both pinned judges. Construction does not score and does not write metrics."""
+    primary = default_judge_factory(config)
+    if not SECONDARY_PROTOCOL.is_file():
+        raise DevRunnerError("D8 descriptive path requires both judges")
+    secondary = LLMSecondaryJudge.from_protocol(SECONDARY_PROTOCOL)
+    pins = getattr(getattr(secondary, "adapter", None), "pins", None)
+    if not isinstance(pins, Mapping):
+        raise DevRunnerError("D8 descriptive path requires both judges")
+    if pins.get("model_id") != SECONDARY_MODEL_ID or pins.get("model_revision") != SECONDARY_REVISION:
+        raise DevRunnerError("D8 secondary revision is not the pinned Qwen3Guard revision")
+    return D8JudgePair(primary, secondary)
+
+
+def _secondary_record(verdict: Any) -> dict[str, Any]:
+    """Copy secondary judge tokens. This is not a human response label."""
+    metadata = getattr(verdict, "metadata", None)
+    fields = metadata if isinstance(metadata, Mapping) else {}
+    label = getattr(verdict, "label", None)
+    severity = fields.get("severity")
+    reason = fields.get("reason")
+    error_type = fields.get("error_type")
+    raw = fields.get("raw")
+    refusal = fields.get("refusal")
+    return {
+        "error_type": error_type if isinstance(error_type, str) else None,
+        "label": label if isinstance(label, str) else None,
+        "raw": raw if isinstance(raw, str) else None,
+        "reason": reason if isinstance(reason, str) else None,
+        "refusal": refusal if isinstance(refusal, bool) else None,
+        "severity": severity if isinstance(severity, str) else None,
+        "value": None if verdict is None else _json_value(getattr(verdict, "value", None)),
+    }
+
+
 def _check_generation_record(record: Mapping[str, Any]) -> None:
     if record["status"] != "ok":
         return
@@ -804,8 +918,9 @@ def _generation_record(
         "input_token_count": None,
         "item_id": index_row["item_id"],
         "lang": index_row["lang"],
-        "membership_split": "dev",
+        "membership_split": index_row["split"],
         "new_token_count": None,
+        "review_status": index_row["review_status"],
         "prompt_hash": index_row["prompt_hash"],
         "response": None,
         "sample_id": index_row["sample_id"],
@@ -851,6 +966,7 @@ def _base_manifest(
     n_intended: int,
     created_at: str,
     canonical_sha: str | None,
+    membership_split: str,
 ) -> dict[str, Any]:
     return {
         "artifact_kind": label["artifact_kind"],
@@ -868,7 +984,7 @@ def _base_manifest(
             "Derived variants keep a distinct reviewed_variant id and require verified lineage before prompts are opened.",
             "Retries use a new run id. This command does not delete evidence.",
         ],
-        "membership_split": "dev",
+        "membership_split": membership_split,
         "metrics_eligible": False,
         "metrics_eligible_reason": (
             "withheld until reviewed category aggregation and preservation scoring"
@@ -984,6 +1100,8 @@ def run_dev_ledger(
     canonical_manifest_path: Path | None = None,
     reviewed_lineage_path: Path | None = None,
     review_sheet_path: Path | None = None,
+    scoring_path: str | None = None,
+    secondary_judge_factory: Callable[[Mapping[str, Any]], Any] | None = None,
 ) -> dict[str, Any]:
     """Run one dev ledger. Refuses an existing output directory.
 
@@ -991,15 +1109,32 @@ def run_dev_ledger(
     The real path reads only the pinned family_splits_v2 file.
     Derived rows require ``reviewed_lineage_path`` and ``review_sheet_path``.
     Those checks finish before the prompt file is opened.
+
+    ``scoring_path`` ``d8_descriptive`` is the only path that accepts calibration
+    or dev rows that are still unreviewed. It keeps that status and requires
+    both judges. It does not score the locked test.
     """
-    if split != "dev":
+    descriptive = scoring_path == D8_SCORING_PATH
+    if scoring_path not in (None, D8_SCORING_PATH):
+        raise DevRunnerError("unknown scoring path")
+    if not descriptive and split != "dev":
         raise DevRunnerError("split must be dev")
+    if descriptive and split not in D8_SPLITS:
+        raise DevRunnerError("D8 descriptive path refuses this split")
     if (generator_factory is None) != (judge_factory is None):
         raise DevRunnerError("fixture execution must inject both factories")
     injected = generator_factory is not None
+    if not descriptive and secondary_judge_factory is not None:
+        raise DevRunnerError("secondary judge is only available on the D8 descriptive path")
+    if descriptive and injected and secondary_judge_factory is None:
+        raise DevRunnerError("D8 descriptive path requires both judges")
+    if descriptive and not injected and secondary_judge_factory is not None:
+        raise DevRunnerError("real D8 path uses the pinned secondary judge")
     if canonical_manifest_path is not None and not injected:
         raise DevRunnerError("synthetic canonical authority cannot authorize a run")
-    label = artifact_label(injected=injected)
+    allowed_splits = frozenset({split})
+    allowed_review = D8_REVIEW_STATUSES if descriptive else frozenset({"reviewed"})
+    label = artifact_label(injected=injected, split=split)
     config_raw = _read_bytes(config_path, "config")
     try:
         config_payload = json.loads(config_raw.decode("utf-8"))
@@ -1010,7 +1145,14 @@ def run_dev_ledger(
     full_commit = _git_head(root or ROOT)
     if not injected and full_commit is None:
         raise DevRunnerError("unpinned full_commit")
-    index_rows = load_index_and_manifest(index_path, family_manifest_path, config)
+    index_rows = load_index_and_manifest(
+        index_path,
+        family_manifest_path,
+        config,
+        allowed_splits=allowed_splits,
+        allowed_review=allowed_review,
+        allow_unreviewed_manifest=descriptive,
+    )
     derived_rows = [row for row in index_rows if row["source_dataset"] == REVIEWED_VARIANT_SOURCE]
     canonical_rows = [row for row in index_rows if row["source_dataset"] != REVIEWED_VARIANT_SOURCE]
     pins_present = all(config.get(key) for key in REVIEW_PIN_FIELDS)
@@ -1030,7 +1172,7 @@ def run_dev_ledger(
         else:
             authority = _reviewed_authority(canonical_manifest_path, require_pinned_hash=False)
         if canonical_rows:
-            assert_canonical_dev_membership(canonical_rows, authority)
+            assert_canonical_membership(canonical_rows, authority, allowed_splits=allowed_splits)
         canonical_sha = str(authority["sha256"])
         lineage_bytes = _read_bytes(reviewed_lineage_path, "reviewed lineage")
         sheet_bytes = _read_bytes(review_sheet_path, "review sheet")
@@ -1049,13 +1191,13 @@ def run_dev_ledger(
         authority = load_canonical_authority(
             CANONICAL_FAMILY_MANIFEST, require_pinned_hash=True
         )
-        assert_canonical_dev_membership(index_rows, authority)
+        assert_canonical_membership(index_rows, authority, allowed_splits=allowed_splits)
         canonical_sha = str(authority["sha256"])
     elif canonical_manifest_path is not None:
         authority = load_canonical_authority(
             canonical_manifest_path, require_pinned_hash=False
         )
-        assert_canonical_dev_membership(index_rows, authority)
+        assert_canonical_membership(index_rows, authority, allowed_splits=allowed_splits)
         canonical_sha = str(authority["sha256"])
     code = code_provenance(root or ROOT)
     if not injected and (code["runner_source_matches_commit"] is not True or code["git_dirty"] is not False):
@@ -1077,7 +1219,20 @@ def run_dev_ledger(
         n_intended=len(index_rows),
         created_at=created_at,
         canonical_sha=canonical_sha,
+        membership_split=split,
     )
+    if descriptive:
+        manifest["scoring_path"] = D8_SCORING_PATH
+        manifest["metric_label"] = D8_METRIC_LABEL
+        manifest["human_calibration"] = "pending"
+        manifest["review_status_policy"] = "preserved"
+        manifest["provenance"]["secondary_model_id"] = SECONDARY_MODEL_ID
+        manifest["provenance"]["secondary_revision"] = SECONDARY_REVISION
+        manifest["limitations"].append(
+            "D8 descriptive path. Reports are automated-judge only, human calibration pending. "
+            "Unreviewed rows stay unreviewed. Kappa between the two judges is diagnostic, not accuracy."
+        )
+        manifest["null_reasons"]["human_labels"] = "unreviewed rows are not human labels"
     manifest["provenance"].update(code)
     _mark(manifest, "validated", out_dir)
     by_prompt = {row["sample_id"]: row for row in prompts}
@@ -1173,16 +1328,27 @@ def run_dev_ledger(
     judge_release_error: BaseException | None = None
     try:
         if judge_rows:
-            judge_builder = judge_factory or default_judge_factory
-            judge = judge_builder(config)
+            if descriptive:
+                if injected:
+                    judge = D8JudgePair(judge_factory(config), secondary_judge_factory(config))
+                else:
+                    judge = default_d8_judge_factory(config)
+                primary_judge = judge.primary
+                secondary_judge = judge.secondary
+            else:
+                judge = (judge_factory or default_judge_factory)(config)
+                primary_judge = judge
+                secondary_judge = None
             _mark(manifest, "judging", out_dir)
         for record in records:
             sample = dict(record)
             sample["category"] = None
             sample["judge"] = None
+            if descriptive:
+                sample["secondary_judge"] = None
             if record["status"] == "ok":
                 try:
-                    verdict = judge.judge_one(
+                    verdict = primary_judge.judge_one(
                         by_prompt[record["sample_id"]]["prompt"],
                         record["response"],
                         prompt_id=record["sample_id"],
@@ -1217,6 +1383,32 @@ def run_dev_ledger(
                     judge_label=sample["judge"]["label"],
                     fields=fields,
                 )
+                if descriptive:
+                    try:
+                        secondary_verdict = secondary_judge.judge_one(
+                            by_prompt[record["sample_id"]]["prompt"],
+                            record["response"],
+                            prompt_id=record["sample_id"],
+                        )
+                    except Exception as exc:
+                        sample["secondary_judge"] = {
+                            "error_type": type(exc).__name__,
+                            "label": "judge_failure",
+                            "raw": None,
+                            "reason": "judge_call_failed",
+                            "refusal": None,
+                            "severity": None,
+                            "value": None,
+                        }
+                    else:
+                        if getattr(secondary_verdict, "prompt_id", None) != record["sample_id"]:
+                            sample["status"] = "output_mismatch"
+                            sample["error_type"] = "OutputMismatch"
+                            sample["category"] = None
+                            samples.append(sample)
+                            _append_jsonl(samples_path, sample)
+                            raise DevRunnerError("output mismatch: secondary judge id", stage="runtime")
+                        sample["secondary_judge"] = _secondary_record(secondary_verdict)
             samples.append(sample)
             _append_jsonl(samples_path, sample)
     except BaseException as exc:
@@ -1293,11 +1485,17 @@ def run_dev_ledger(
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description=(
-            "Dev-only inference ledger. Requires --split dev. "
-            "Does not score and does not implement the locked test path."
+            "Dev inference ledger. The default path requires --split dev and reviewed rows. "
+            "The explicit D8 path accepts calibration or dev and keeps unreviewed rows unreviewed. "
+            "Does not implement the locked test path."
         )
     )
-    parser.add_argument("--split", required=True, help="Must be dev.")
+    parser.add_argument("--split", required=True, help="dev, or calibration on the D8 path.")
+    parser.add_argument(
+        "--scoring-path",
+        choices=(D8_SCORING_PATH,),
+        help="Set d8_descriptive to require both judges on calibration or dev.",
+    )
     parser.add_argument("--config", required=True, type=Path)
     parser.add_argument("--index", required=True, type=Path)
     parser.add_argument("--prompts", required=True, type=Path)
@@ -1311,8 +1509,9 @@ def main(argv: list[str] | None = None) -> int:
         print("REFUSING DEV LEDGER: split must be dev. This command has no test path.", file=sys.stderr)
         return 2
     args = parser.parse_args(argv)
-    if args.split != "dev":
-        print("REFUSING DEV LEDGER: split must be dev.", file=sys.stderr)
+    descriptive = args.scoring_path == D8_SCORING_PATH
+    if args.split == "test" or (not descriptive and args.split != "dev") or (descriptive and args.split not in D8_SPLITS):
+        print("REFUSING DEV LEDGER: split must be dev, or calibration on the D8 descriptive path.", file=sys.stderr)
         return 2
     try:
         manifest = run_dev_ledger(
@@ -1324,6 +1523,7 @@ def main(argv: list[str] | None = None) -> int:
             split=args.split,
             reviewed_lineage_path=args.reviewed_lineage,
             review_sheet_path=args.review_sheet,
+            scoring_path=args.scoring_path,
         )
     except DevRunnerError as exc:
         print(f"REFUSING DEV LEDGER: {exc}", file=sys.stderr)
