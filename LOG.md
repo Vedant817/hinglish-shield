@@ -258,3 +258,13 @@ test and all numerical parity thresholds remain unchanged.
 Validation: 235 model-free eval/notebook tests and 7 subtests passed, plus smoke.
 The telemetry-exception execution regression passed in the focused notebook
 rerun. No weights or live inference were used for these checks.
+
+Hosted PR37 review identified an archive contract mismatch and a retry collision
+in the new identity output. Identity collection now uses a fresh temporary
+workspace per invocation and publishes flat identity/tokenizer-config files
+bound to the current notebook run ID. Failed collection removes stale published
+assets. The importer allowlists and validates metadata identity/hash bindings,
+fp32 skip evidence and the unscored D8 status; a skip conflicting with original
+execution is rejected. Synthetic retry-to-ZIP-ingestion coverage and refusal
+regressions passed in the 42-test notebook/importer run (plus 7 subtests).
+Kaggle upload remains held and no running kernel was accessed.

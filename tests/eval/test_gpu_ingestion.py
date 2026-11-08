@@ -57,6 +57,35 @@ def test_claimed_pass_without_long_artifact_is_incomplete(tmp_path):
     assert summary["original_parity"]["recorded_claim_consistent"] is False
 
 
+def test_optional_fp32_skip_and_d8_status_import_without_score(tmp_path):
+    skip = {"artifact_kind": "setup-smoke", "split": "example", "status": "not_run",
+        "passed": False, "run": False, "not_run": "insufficient_host_ram",
+        "ram_available_gib": 29.05, "ram_total_gib": 31.35}
+    d8 = {"artifact_kind": "blocker", "scored_baseline": False, "metrics_eligible": False,
+        "primary_asr": None, "metrics": {"asr": None}}
+    files = {"fp32_not_run.json": json.dumps(skip).encode(),
+        "d8_descriptive_status.json": json.dumps(d8).encode()}
+    result = ingest(archive(tmp_path, files), tmp_path / "imported")
+    assert result["original_parity"]["status"] == "incomplete"
+    assert result["fp32_execution"]["ram_total_gib"] == 31.35
+    assert result["metrics_eligible"] is False
+    files.update(payloads())
+    with pytest.raises(ValueError, match="contradicts"):
+        inspect_archive(archive(tmp_path, files))
+
+
+def test_identity_hash_mismatch_or_orphan_asset_refuses(tmp_path):
+    files = {"tokenizer_config.json": b'{"chat_template":"fixture"}'}
+    with pytest.raises(ValueError, match="requires identity"):
+        inspect_archive(archive(tmp_path, files))
+    files["identity.json"] = json.dumps({"artifact_kind": "setup-smoke", "split": "example",
+        "weights_loaded": False, "generation_performed": False, "metrics_eligible": False,
+        "primary_asr": None, "status": "metadata_retrieved", "tokenizer_config_sha256": "a" * 64,
+        "chat_template_sha256": "b" * 64}).encode()
+    with pytest.raises(ValueError, match="hash binding"):
+        inspect_archive(archive(tmp_path, files))
+
+
 def test_import_recomputes_threshold_instead_of_trusting_passed(tmp_path):
     files = payloads()
     report = json.loads(files["parity_original_sequential.json"])

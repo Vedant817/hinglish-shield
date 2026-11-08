@@ -21,7 +21,9 @@ ALLOWED = {"env_report.json", "versions.json", "parity_original_sequential.json"
            "parity_pytest.log", "fp16_guard.json", "predictions.jsonl", "metrics_stub.json",
            "baseline_manifest.json", "dependency_check.json", "dependency_check_global.json",
            "commands.json", "failure.log", "install.log", "imports.log", "manifest.json",
-           "pins.json", "preflight_source.py", "source_notebook.ipynb"}
+           "pins.json", "preflight_source.py", "source_notebook.ipynb",
+           "identity.json", "tokenizer_config.json", "fp32_not_run.json",
+           "d8_descriptive_status.json"}
 DEPENDENCY_FILES = {"commands.json", "dependency_check.json", "dependency_check_global.json",
                     "failure.log", "install.log", "imports.log", "manifest.json", "pins.json",
                     "preflight_source.py", "source_notebook.ipynb", "versions.json"}
@@ -145,6 +147,45 @@ def inspect_archive(archive: Path) -> tuple[dict[str, bytes], dict]:
                     row = strict_json(line)
                     if row.get("artifact_kind") != "fixture" or row.get("split") != "example":
                         raise ValueError("GPU notebook predictions must remain fixtures")
+        if name == "fp32_not_run.json":
+            obj = strict_json(data)
+            if (not isinstance(obj, dict) or obj.get("artifact_kind") != "setup-smoke"
+                    or obj.get("split") != "example" or obj.get("status") != "not_run"
+                    or obj.get("passed") is not False or obj.get("run") is not False
+                    or obj.get("not_run") not in {"insufficient_host_ram", "disabled_by_config", "host_ram_unavailable"}):
+                raise ValueError("FP32 skip cannot grant original parity credit")
+            original = strict_json(files.get("parity_original_sequential.json", b"{}"))
+            if original.get("ran") is True or original.get("ran_short") is True or original.get("long_ran") is True or original.get("passed") is True:
+                raise ValueError("FP32 skip contradicts recorded execution")
+        if name == "d8_descriptive_status.json":
+            obj = strict_json(data)
+            if (not isinstance(obj, dict) or obj.get("artifact_kind") != "blocker"
+                    or obj.get("scored_baseline") is not False or obj.get("metrics_eligible") is not False
+                    or obj.get("primary_asr") is not None or not isinstance(obj.get("metrics"), dict)
+                    or any(value is not None for value in obj["metrics"].values())):
+                raise ValueError("D8 notebook status cannot claim a scored baseline")
+    identity = None
+    if "identity.json" in files:
+        identity = strict_json(files["identity.json"])
+        if (not isinstance(identity, dict) or identity.get("artifact_kind") != "setup-smoke"
+                or identity.get("split") != "example" or identity.get("weights_loaded") is not False
+                or identity.get("generation_performed") is not False or identity.get("metrics_eligible") is not False
+                or identity.get("primary_asr") is not None):
+            raise ValueError("Tokenizer identity must remain metadata-only evidence")
+        if identity.get("status") == "metadata_retrieved":
+            asset = files.get("tokenizer_config.json")
+            config = strict_json(asset) if asset else None
+            template = config.get("chat_template") if isinstance(config, dict) else None
+            if (not isinstance(template, str) or not template
+                    or hashlib.sha256(asset).hexdigest() != identity.get("tokenizer_config_sha256")
+                    or hashlib.sha256(template.encode("utf-8")).hexdigest() != identity.get("chat_template_sha256")
+                    or identity.get("model_id") != "CohereLabs/tiny-aya-global"
+                    or identity.get("model_revision") != "af89d219b53ed9b13b8a4645f9c8028973510324"):
+                raise ValueError("Tokenizer identity asset or hash binding mismatch")
+        elif "tokenizer_config.json" in files:
+            raise ValueError("Tokenizer asset without successful identity")
+    elif "tokenizer_config.json" in files:
+        raise ValueError("Tokenizer asset requires identity")
     standalone_dependency = {"preflight_source.py", "source_notebook.ipynb", "commands.json",
                              "install.log", "imports.log", "failure.log", "pins.json"}
     if set(files) & standalone_dependency and "manifest.json" not in files:
@@ -168,6 +209,8 @@ def inspect_archive(archive: Path) -> tuple[dict[str, bytes], dict]:
                "archive_sha256": hashlib.sha256(archive.read_bytes()).hexdigest(),
                "files_sha256": {name: hashlib.sha256(data).hexdigest() for name, data in files.items()},
                "original_parity": parity_summary(files),
+               "target_identity": identity,
+               "fp32_execution": strict_json(files["fp32_not_run.json"]) if "fp32_not_run.json" in files else None,
                "limitations": ["ZIP inspection does not authenticate the producing machine",
                                "bf16 variant is separate from original fp32 parity",
                                "Fixture generation is not ASR or a scored baseline"]}

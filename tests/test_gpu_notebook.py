@@ -174,7 +174,51 @@ class TestGpuNotebook(unittest.TestCase):
         source = (ROOT / "scripts/kaggle_tokenizer_metadata.py").read_text(encoding="utf-8")
         self.assertEqual(values["IDENTITY_HELPER_SOURCE"], source)
         self.assertEqual(values["IDENTITY_HELPER_SHA256"], hashlib.sha256(source.encode()).hexdigest())
-        self.assertIn('ARTIFACT_DIR / "target_identity" / "identity.json"', cell_with("def d8_identity_blocker"))
+        self.assertIn('ARTIFACT_DIR / "identity.json"', cell_with("def d8_identity_blocker"))
+
+    def test_identity_collection_is_retry_safe_and_archive_ready(self):
+        import tempfile
+        from scripts.ingest_gpu_artifacts import inspect_archive
+        import zipfile
+        source = cell_with("def capture_notebook_identity")
+        node = next(n for n in ast.parse(source).body if isinstance(n, ast.FunctionDef)
+                    and n.name == "capture_notebook_identity")
+        ns = {"json": json}
+        exec(compile(ast.Module(body=[node], type_ignores=[]), "identity_test", "exec"), ns)
+        seen = []
+        asset = json.dumps({"chat_template": "synthetic template"}).encode()
+        def collect(path, **kwargs):
+            path.mkdir(parents=True, exist_ok=False)
+            seen.append(path)
+            (path / "tokenizer_config.json").write_bytes(asset)
+            return {"artifact_kind": "setup-smoke", "split": "example", "weights_loaded": False,
+                "generation_performed": False, "metrics_eligible": False, "primary_asr": None,
+                "status": "metadata_retrieved", "model_id": "CohereLabs/tiny-aya-global",
+                "model_revision": "af89d219b53ed9b13b8a4645f9c8028973510324",
+                "tokenizer_config_sha256": hashlib.sha256(asset).hexdigest(),
+                "chat_template_sha256": hashlib.sha256(b"synthetic template").hexdigest()}
+        with tempfile.TemporaryDirectory() as work:
+            out = Path(work) / "artifacts"
+            out.mkdir()
+            for run_id in ("first", "second", "second"):
+                result = ns["capture_notebook_identity"](collect, out, run_id, "c" * 40, "d" * 64)
+                self.assertEqual(result["notebook_run_id"], run_id)
+                self.assertEqual(json.loads((out / "identity.json").read_text())["notebook_run_id"], run_id)
+            self.assertEqual(len(set(seen)), 3)
+            archive = Path(work) / "fixture.zip"
+            with zipfile.ZipFile(archive, "w") as zipped:
+                for path in out.iterdir():
+                    zipped.writestr("hs_gpu_artifacts/" + path.name, path.read_bytes())
+            files, summary = inspect_archive(archive)
+            self.assertEqual(set(files), {"identity.json", "tokenizer_config.json"})
+            self.assertEqual(summary["target_identity"]["status"], "metadata_retrieved")
+            self.assertFalse(summary["metrics_eligible"])
+            def unavailable(path, **kwargs):
+                path.mkdir(parents=True, exist_ok=False)
+                return {"status": "unavailable"}
+            ns["capture_notebook_identity"](unavailable, out, "third", "c" * 40, "d" * 64)
+            self.assertFalse((out / "tokenizer_config.json").exists())
+            self.assertEqual(json.loads((out / "identity.json").read_text())["notebook_run_id"], "third")
 
     def test_release_named_removes_every_name_and_weakrefs_expire(self) -> None:
         release_named = self.ns["release_named"]
