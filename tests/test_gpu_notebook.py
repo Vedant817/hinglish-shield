@@ -165,6 +165,45 @@ class TestGpuNotebook(unittest.TestCase):
             if total is None:
                 self.assertEqual(ns["parity"]["ram_total_error"], "OSError")
 
+    def test_enabled_fp32_rerun_removes_prior_skip_before_loading(self):
+        import tempfile
+        import time
+        import traceback
+        import zipfile
+        from scripts.ingest_gpu_artifacts import inspect_archive
+        tree = ast.parse(cell_with('"kind": "original_parity_sequential_fp32"'))
+        tree.body = [node for node in tree.body if not isinstance(node, (ast.Import, ast.ImportFrom))]
+        code = compile(tree, "synthetic_fp32_rerun", "exec")
+        with tempfile.TemporaryDirectory() as work:
+            out = Path(work)
+            def write(path, payload):
+                path.write_text(json.dumps(payload), encoding="utf-8")
+            ns = dict(self.ns, time=time, traceback=traceback,
+                RUN_FP32_PARITY=False, FORCE_PARITY_VARIANT=False,
+                free_ram_gib=lambda: 40.0, host_ram_gib=lambda: 64.0,
+                ARTIFACT_DIR=out, write_json=write,
+                peak_rss_gib=lambda: 0.0, release_named=lambda *args, **kwargs: None)
+            exec(code, ns)
+            skip = out / "fp32_not_run.json"
+            self.assertTrue(skip.exists())
+            calls = []
+            def fake_short(*args, **kwargs):
+                self.assertFalse(skip.exists(), "stale skip must be removed before model loading")
+                calls.append(True)
+                return {prompt: 0.0 for prompt in ns["PARITY_PROMPTS"]}, {"window_size": 4096}
+            ns.update(RUN_FP32_PARITY=True, orchestrate_short_fp32=fake_short)
+            exec(code, ns)
+            self.assertEqual(calls, [True])
+            self.assertTrue(ns["parity"]["ran_short"])
+            self.assertFalse(skip.exists())
+            archive = out / "synthetic.zip"
+            with zipfile.ZipFile(archive, "w") as zipped:
+                path = out / "parity_original_sequential.json"
+                zipped.writestr("hs_gpu_artifacts/" + path.name, path.read_bytes())
+            _, summary = inspect_archive(archive)
+            # Only short parity was simulated. Missing long never becomes pass.
+            self.assertEqual(summary["original_parity"]["status"], "incomplete")
+
     def test_embedded_identity_helper_matches_reviewed_source(self):
         tree = ast.parse(cell_with("IDENTITY_HELPER_SOURCE ="))
         values = {node.targets[0].id: ast.literal_eval(node.value)

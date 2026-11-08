@@ -290,3 +290,10 @@ no blocking findings and separately passed 53 focused synthetic guard tests.
 Successful synthetic admission isolates the freeze verifier; it does not
 validate a real frozen arm or authorize test execution. No real locked-test
 attempt, generation, scoring or prompt inspection occurred.
+
+PR37 follow-up: reproduced a stale fp32_not_run.json after a skip followed by
+an enabled fp32 rerun in the same artifact directory. Enabled admission now
+removes that prior marker before loading models. The synthetic skip-to-enabled
+execution and ZIP-ingestion regression passes; absent long parity remains
+incomplete. All 43 focused notebook/importer tests plus 7 subtests and smoke
+passed. No Kaggle access or real model execution was performed.
