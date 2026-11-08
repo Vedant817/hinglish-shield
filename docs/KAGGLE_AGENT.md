@@ -13,6 +13,20 @@ Use this when an agent (with a browser and/or a shell on Vedant's machine) runs 
 
 ## Before you start
 
+Prospective D10 update: original HF/TL fp32 parity is off by default. Set
+`RUN_FP32_PARITY=1` only to opt in on a host with at least 32 GiB available
+and total RAM. A smaller host records `not_run: insufficient_host_ram` with
+both measured values and continues to the existing provisional CPU bf16
+path on T4. Original parity remains incomplete, with no pass credit. The
+default also omits the fp32 floor. This run's tokenizer metadata and template
+hashes are collected after the secret/dependency checks, before parity.
+The D8 cell is status-only; run the separately pinned calibration/dev harness
+after ingestion. Keep curated paths unset in this fixture notebook.
+
+Do not upload a new version while Vedant's editor job is running. Use the
+main notebook link, since version links may be inaccessible to him:
+https://www.kaggle.com/code/vedant817/hinglish-shield-gpu-parity
+
 - Kaggle account must be Vedant's existing one and GPU-eligible (Settings shows phone verification). If it is not verified, stop and ask Vedant; verification is his step.
 - The Hugging Face account behind HF_TOKEN must have accepted the CohereLabs/tiny-aya-global and tiny-aya-base terms (done on Nov 6).
 - Never print, log, commit, or paste HF_TOKEN or the Kaggle API key into a cell, file, PR, or chat.

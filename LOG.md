@@ -232,3 +232,29 @@ Validation: 215 model-free eval tests passed locally, including unequal family
 sizes, unequal language denominators, cluster multiplicity, and both-language
 failure coverage. Smoke passed. These are synthetic checks, not measured safety,
 GPU parity, baseline scores or locked-test evidence.
+
+## 2026-11-08 IST: D10 optional fp32 phase prepared, Kaggle upload held
+
+Vedant relayed an editor traceback reporting available RAM 29.05 GiB and total
+31.35 GiB at the unchanged 32 GiB D5 conversion preflight. That exception is
+caught by the notebook and enables bf16; a printed traceback alone does not
+show the run stopped. Token presence is asserted in an earlier cell. These
+are source-order facts and a supplied traceback, not fresh run acceptance.
+
+D10 makes original fp32 parity opt-in (RUN_FP32_PARITY, default off). A low-RAM
+host writes not_run: insufficient_host_ram with measured available/total RAM;
+original parity stays incomplete, passed false. No allocation, silent downcast
+or pass is invented. An explicit skip enables the existing CPU bf16 path on
+T4. With fp32 disabled, the floor is omitted and the predeclared provisional
+short rule applies. The target metadata helper now records this run's tokenizer
+config and chat-template hashes before parity. The D8 cell consumes that
+identity instead of the historical v11 failure and remains status-only; real
+D8 calibration/dev scoring is the separate pinned harness after ingestion.
+
+The live editor run is still running according to Vedant. No Kaggle calls,
+pushes or kernel changes were made for this patch. Upload is held. The locked
+test and all numerical parity thresholds remain unchanged.
+
+Validation: 235 model-free eval/notebook tests and 7 subtests passed, plus smoke.
+The telemetry-exception execution regression passed in the focused notebook
+rerun. No weights or live inference were used for these checks.

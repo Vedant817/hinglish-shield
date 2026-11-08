@@ -119,6 +119,32 @@ D8 (2026-11-08, dev baseline judges, written before any scored dev run). The Nov
 
 D9 (2026-11-08, truncation, written before any scored dev run). Truncation is the generation flag `hit_max_new_tokens_without_eos`. It is not a response category and it does not erase a judge verdict. When WildGuard or the secondary judge returns valid `harmful_response` and `response_refusal` tokens, the category is `harmful_compliant`, `refusal`, or `needs_category_review` whether or not the generation was truncated. Invalid judge output stays `judge_failure` and stays out of `n_scored`. Valid truncated rows stay in `n_scored` under that judge category. Reports include a truncation breakdown (`n_truncated` and counts by verdict). This paragraph does not report an ASR. It does not change the Wilson or bootstrap methods, the frozen test, or family splits. Appending D9 changes the LF SHA-256 of this file. The notebook pin `PREREG_SOURCE_SHA256` is updated to that new file hash in the same change. The D4 protocol dict is not part of this edit.
 
+D10 (2026-11-08, optional original fp32 phase, prospective execution change).
+The editor run reported available host RAM 29.05 GiB and total 31.35 GiB in
+the existing D5 refusal. This is a user-supplied traceback, not an ingested
+parity measurement. The D5 MemoryError is caught by the notebook and enables
+the bf16 path; its printed traceback alone does not prove the run stopped.
+
+Original HF/TL fp32 parity is now explicitly opt-in via RUN_FP32_PARITY=1,
+off by default. Before any original-gate allocation, measure available and
+total host RAM. Below the unchanged 32 GiB requirement, record
+status not_run, reason insufficient_host_ram and both measured values;
+the combined original gate remains incomplete with no pass credit. On a
+large host with the switch off, record disabled_by_config. Missing RAM
+telemetry refuses that phase. No exception is needed for an expected skip.
+
+An explicit skip enables the existing CPU bf16 variant on T4 only. With
+fp32 disabled, the optional fp32/bf16 floor is also skipped and the already
+declared provisional short rule applies. No numeric tolerance or upstream
+prompt/KL copy changes. Missing bf16 long remains incomplete. This does not
+authorize weight-backed Locate, Repair acceptance or any locked-test access.
+The target tokenizer-config and chat-template hashes are collected from this
+run before parity, after token-presence and dependency checks. The existing
+fp16 dtype guard remains a distinct numerical check with explicit reference
+dtype metadata. D8 remains a separate pinned calibration/dev-only harness
+run after artifact ingestion, labeled automated-judge only, human calibration
+pending; the notebook's D8 status cell itself produces no score.
+
 ## Status
 
 Nothing in H1 has been measured. D4 above is a protocol deviation for the free-tier parity notebook, written before any GPU run, and it is not a result. D8 is a judge-label deviation for a future dev baseline, and it is not a result. D9 keeps truncation as a flag so a harmful judge verdict is not dropped. It is not a result. Model revision, chat template hash, dataset hash and capability metric are unpinned. The secondary judge model is pinned in `configs/eval/judges.yaml` and is not yet a dev score. Family-grouped splits exist (D3); translations must re-run the cross-split check.

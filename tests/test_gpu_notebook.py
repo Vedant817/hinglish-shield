@@ -29,6 +29,7 @@ FUNC_NAMES = {
     "is_memory_failure",
     "host_ram_gib",
     "refuse_fp32_conversion_if_short",
+    "plan_fp32_phase",
     "is_t4_accelerator",
     "bf16_cpu_device_or_refuse",
     "select_fp16_guard_reference",
@@ -119,6 +120,61 @@ class TestGpuNotebook(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
         cls.ns = load_namespace()
+
+    def test_optional_fp32_plan_records_real_ram_without_credit(self):
+        plan = self.ns["plan_fp32_phase"]
+        for enabled in (False, True):
+            result = plan(enabled, 29.05, 31.35)
+            self.assertFalse(result["run"])
+            self.assertEqual(result["not_run"], "insufficient_host_ram")
+            self.assertEqual(result["ram_available_gib"], 29.05)
+            self.assertEqual(result["ram_total_gib"], 31.35)
+        self.assertEqual(plan(False, 40, 64)["not_run"], "disabled_by_config")
+        self.assertTrue(plan(True, 40, 64)["run"])
+        for value in (None, float("nan"), 0):
+            self.assertEqual(plan(True, value, 64)["not_run"], "host_ram_unavailable")
+
+    def test_short_skip_executes_without_any_model_factory(self):
+        import time
+        for enabled, available, total, reason in (
+            (False, 29.05, 31.35, "insufficient_host_ram"),
+            (True, 29.05, 31.35, "insufficient_host_ram"),
+            (False, 40, 64, "disabled_by_config"),
+            (False, 40, None, "host_ram_unavailable"),
+        ):
+            writes = {}
+            def total_probe():
+                if total is None:
+                    raise OSError("synthetic telemetry failure")
+                return total
+            ns = dict(self.ns, time=time, RUN_FP32_PARITY=enabled,
+                FORCE_PARITY_VARIANT=False, RUN_PARITY_VARIANT=False,
+                free_ram_gib=lambda: available, host_ram_gib=total_probe,
+                ARTIFACT_DIR=Path("synthetic-artifacts"),
+                write_json=lambda path, payload: writes.update({path.name: dict(payload)}))
+            # Imports would request real libraries; remove only top-level imports.
+            tree = ast.parse(cell_with('"kind": "original_parity_sequential_fp32"'))
+            tree.body = [node for node in tree.body if not isinstance(node, (ast.Import, ast.ImportFrom))]
+            exec(compile(tree, "synthetic_notebook_short", "exec"), ns)
+            self.assertEqual(ns["parity"]["not_run"], reason)
+            self.assertEqual(ns["parity"]["status"], "incomplete")
+            self.assertFalse(ns["parity"]["passed"])
+            self.assertFalse(ns["parity"]["ran_short"])
+            self.assertTrue(ns["RUN_PARITY_VARIANT"])
+            self.assertEqual(writes["fp32_not_run.json"]["status"], "not_run")
+            if total is None:
+                self.assertEqual(ns["parity"]["ram_total_error"], "OSError")
+
+    def test_embedded_identity_helper_matches_reviewed_source(self):
+        tree = ast.parse(cell_with("IDENTITY_HELPER_SOURCE ="))
+        values = {node.targets[0].id: ast.literal_eval(node.value)
+                  for node in tree.body if isinstance(node, ast.Assign)
+                  and isinstance(node.targets[0], ast.Name)
+                  and node.targets[0].id in {"IDENTITY_HELPER_SOURCE", "IDENTITY_HELPER_SHA256"}}
+        source = (ROOT / "scripts/kaggle_tokenizer_metadata.py").read_text(encoding="utf-8")
+        self.assertEqual(values["IDENTITY_HELPER_SOURCE"], source)
+        self.assertEqual(values["IDENTITY_HELPER_SHA256"], hashlib.sha256(source.encode()).hexdigest())
+        self.assertIn('ARTIFACT_DIR / "target_identity" / "identity.json"', cell_with("def d8_identity_blocker"))
 
     def test_release_named_removes_every_name_and_weakrefs_expire(self) -> None:
         release_named = self.ns["release_named"]
