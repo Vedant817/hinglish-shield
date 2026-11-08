@@ -1,0 +1,23 @@
+{
+  "artifact_kind": "setup-smoke",
+  "split": "example",
+  "status": "unavailable",
+  "model_id": "CohereLabs/tiny-aya-global",
+  "model_revision": "af89d219b53ed9b13b8a4645f9c8028973510324",
+  "source_url": "https://huggingface.co/CohereLabs/tiny-aya-global/raw/af89d219b53ed9b13b8a4645f9c8028973510324/tokenizer_config.json",
+  "source_commit": "a4f97c0e497decdf97040a4545add327f0e62430",
+  "script_sha256": "b7048c9afd6e7b410252ade14ccc7c1a3a7ec2e921a989db5d6fd70c8fc3346e",
+  "weights_loaded": false,
+  "generation_performed": false,
+  "metrics_eligible": false,
+  "primary_asr": null,
+  "auth_mode": "none",
+  "error_type": "ConnectionError",
+  "failure_phase": "secret_missing",
+  "secret_status": "missing",
+  "note": "Existing HF_TOKEN secret was unavailable. Tiny Aya tokenizer metadata may be fetched without Authorization if the repository is public. This attempt did not send a credential.",
+  "public_fetch": "attempted",
+  "public_error_type": "HTTPError",
+  "public_http_status": 401,
+  "public_failure_phase": "http_failure"
+}
