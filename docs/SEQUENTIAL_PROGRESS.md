@@ -12,7 +12,7 @@ Cadence: start a step when its prerequisites pass; no calendar wait except the a
 | Dev baseline | D8 logged before any scored dev run: automated judges only, human calibration pending. No metrics.json and no ASR | Run on calibration/dev only after the target template hash and an attached existing credential exist | v11 secret_missing and unauthenticated HTTP 401; unreviewed rows are not human labels |
 | Locate/Repair | Original fp32 short-plus-4196 incomplete; v8 combined bf16 provisional only; alternate protocol draft inactive | Separately reviewed numerical/provenance gates before real Locate | No bypass or acceptance flag change |
 | Locked test | Preparation/checklist only; no test invocation | Freeze eligible repair, approved population and all evaluation/atomic accounting gates | No run before Nov11 IST or until every gate passes |
-| Submission | Local labeled article/pitch/README drafts, results Not run | Keep numbers bound to eligible run artifacts | No publication/submission approval |
+| Submission | README, article, and pitch say Not run. They record the v11 secret_missing / HTTP 401 pin blocker and D8. No run-kind ASR is copied in | Keep numbers bound to eligible run artifacts | No publication/submission approval; HF_TOKEN editor attach still required before a scored run |
 
 Parent preparation work is local. Neither candidate artifact acceptance, fixture classification, model-free tests nor merged PRs establish multilingual accuracy, measured ASR or production safety. No mixed/test prompt content was used for development or test scoring.
 

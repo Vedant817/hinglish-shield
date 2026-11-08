@@ -4,6 +4,18 @@ Multilingual and code-mixed (Hindi, Hinglish, English) safety audit and repair p
 
 Lexsi AI Safety and Alignment Hackathon, Track 2 (AI Red Teaming, Safety and Alignment). Submission due Nov 14, 2026 AoE.
 
+## Status
+
+Measured attack success rate, over-refusal, capability, and repair acceptance: **Not run**.
+
+The tracked `metrics.json` files are `artifact_kind: fixture` with null benchmark fields: `runs/_example/metrics.json` and `runs/wildguard-fixture-20261107T141335276834Z/metrics.json`. Fixture generations are not ASR.
+
+Target chat-template pin: **Not run**. Private Kaggle version 11 (`runs/tokenizer-metadata-v11-2026-11-08/`) finished with `failure_phase` `secret_missing` and an unauthenticated HTTP 401. No tokenizer asset was downloaded. The Kaggle CLI cannot attach `HF_TOKEN`. The existing secret has to be attached in the notebook editor before another metadata or GPU run.
+
+Dev baseline: **Not run**. D8 in `docs/research/PREREG_baseline.md` says a future dev score is automated-judge only (WildGuard primary, pinned Qwen3Guard-Gen-0.6B secondary) and must be labeled "automated-judge only, human calibration pending". Unreviewed rows are not human labels.
+
+Original fp32 parity: **Not run**. The CPU bf16 files under `runs/kaggle-parity-v8-2026-11-07/` are a provisional variant, not original parity credit and not ASR. The repair arm is not frozen. The locked test stays unrun before Nov 11 IST.
+
 ## Pipeline (ADR summary)
 
 Seeds (Aya red-team HI, HarmBench, XSTest, OR-Bench) -> translate/transliterate -> CuratorKIT -> AuditKIT baseline -> CircuitKIT / refusal directions -> SafeTune steering then optional LoRA -> AuditKIT after eval -> HF Hub + Space.
