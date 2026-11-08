@@ -44,9 +44,16 @@ def test_import_has_hashes_is_exclusive_and_never_metrics_eligible(tmp_path):
     assert summary["original_parity"]["status"] == "pass"
     assert summary["metrics_eligible"] is False
     assert summary["archive_sha256"] == hashlib.sha256(zip_path.read_bytes()).hexdigest()
-    assert not (destination / "metrics.json").exists()
     with pytest.raises(FileExistsError):
         ingest(zip_path, destination)
+    metrics = json.loads((destination / "metrics.json").read_text(encoding="utf-8"))
+    assert metrics["metrics_eligible"] is False
+    assert metrics["primary_asr"] is None
+    assert metrics["scores"] == "not_a_scored_test"
+    assert metrics["split"] == "example"
+    assert metrics["d8_descriptive"] is None
+    assert metrics["provisional_locate"] is None
+    assert metrics["original_parity"]["status"] == "pass"
 
 
 def test_claimed_pass_without_long_artifact_is_incomplete(tmp_path):
@@ -194,6 +201,14 @@ def test_phase_chain_artifacts_import_without_metrics(tmp_path):
     assert summary["d8_descriptive"]["human_calibration"] == "pending"
     assert summary["provisional_locate"]["provisional"] is True
     assert summary["metrics_eligible"] is False
+    destination = tmp_path / "imported"
+    ingest(archive(tmp_path, files), destination)
+    metrics = json.loads((destination / "metrics.json").read_text(encoding="utf-8"))
+    assert metrics["split"] == "calibration+dev"
+    assert metrics["metric_label"] == "automated-judge only, human calibration pending"
+    assert metrics["d8_descriptive"]["scored_baseline"] is False
+    assert metrics["provisional_locate"]["original_fp32_credit"] is False
+    assert metrics["target_identity"]["status"] == "metadata_retrieved"
 
 
 def test_failed_phases_stay_failures_and_refuse_score_claims(tmp_path):

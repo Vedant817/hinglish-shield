@@ -140,4 +140,9 @@ a new preflight against the new committed notebook and preserve the older run.
 python scripts/ingest_gpu_artifacts.py ~/Downloads/hs_gpu_artifacts_<run_id>.zip --run-id gpu-<run_id>
 ```
 
+The same command writes `metrics.json` into the run directory: the descriptive
+judge summary (or null), provisional locate (or null), phase statuses, and
+null primary metrics. It is the one-command view to read when a fresh editor
+zip arrives.
+
 Append a short IST note to `LOG.md`. Do not invent metric numbers from fixtures or from this setup-smoke guard.
