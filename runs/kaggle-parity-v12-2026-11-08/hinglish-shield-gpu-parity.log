@@ -1,0 +1,107 @@
+[{"stream_name":"stderr","time":7.035043908,"data":"/usr/local/lib/python3.13/dist-packages/nbformat/validator.py:434: DuplicateCellId: Non-unique cell id '2d05b0dd' detected. Corrected to '128f8483'.\n"}
+,{"stream_name":"stderr","time":7.035139835,"data":"  _validate(nbdict, ref, version, version_minor, relax_add_props)\n"}
+,{"stream_name":"stderr","time":8.063779569,"data":"0.00s - Debugger warning: It seems that frozen modules are being used, which may\n"}
+,{"stream_name":"stderr","time":8.063815027,"data":"0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off\n"}
+,{"stream_name":"stderr","time":8.063823503,"data":"0.00s - to python to disable frozen modules.\n"}
+,{"stream_name":"stderr","time":8.063826311,"data":"0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.\n"}
+,{"stream_name":"stderr","time":8.692205548,"data":"0.00s - Debugger warning: It seems that frozen modules are being used, which may\n"}
+,{"stream_name":"stderr","time":8.692243787,"data":"0.00s - make the debugger miss breakpoints. Please pass -Xfrozen_modules=off\n"}
+,{"stream_name":"stderr","time":8.692248469,"data":"0.00s - to python to disable frozen modules.\n"}
+,{"stream_name":"stderr","time":8.692251959,"data":"0.00s - Note: Debugging will proceed. Set PYDEVD_DISABLE_FILE_VALIDATION=1 to disable this validation.\n"}
+,{"stream_name":"stdout","time":9.911112543,"data":"RUN_ID 20261108-233041-179455cd\n"}
+,{"stream_name":"stdout","time":9.911140851,"data":"ARTIFACT_DIR /kaggle/working/hs_gpu_artifacts\n"}
+,{"stream_name":"stdout","time":9.911148838,"data":"PREREG_D4 {\"id\": \"D4\", \"source\": \"docs/research/PREREG_baseline.md\", \"source_sha256\": \"01c210268aa567aa021c2fe08044b75f13f1bf1c761122937062d6972e61a3d2\", \"source_sha256_runtime\": null, \"source_sha256_runtime_path\": null, \"source_sha256_match\": null, \"protocol_sha256\": \"6bf1b4fb6651d14133380a2985bdf0d81b5d7b3d73b2e19b1b14f8c4b9281e20\", \"protocol\": {\"id\": \"D4\", \"written_before_gpu_run\": true, \"default_gate\": \"sequential_fp32_cpu\", \"kl_tol\": 0.0001, \"one_forward_resident\": \"about 13 GiB\", \"conversion_peak\": \"about 25 GiB plus allocator overhead\", \"d5_host_kill_preflight_gib\": 32.0, \"d5_note\": \"added after the Kaggle host restart; not a measured KL\", \"d6_bf16_tl_load\": \"HookedTransformer.from_pretrained_no_processing\", \"d6_fold_ln\": false, \"d6_hf_donor_during_convert\": false, \"d6_note\": \"version 6 host kill during bf16 from_pretrained with a live donor; not a measured KL\", \"long_hf_forward_after_tl_release\": true, \"variant_auto\": \"memory_failure_only\", \"variant_hardware\": \"cpu_bf16_only_on_t4\", \"variant_short_with_floor\": \"per prompt KL \u003c= 2 * floor and top1 \u003e= 0.99\", \"variant_short_provisional\": \"mean KL \u003c 1e-2 and top1 \u003e= 0.98\", \"variant_long_with_floor\": \"long KL \u003c= 2 * long floor\", \"variant_long_provisional\": \"predeclared long KL \u003c 1e-2; fp32 1e-4 does not apply; short floor is not reused\", \"variant_long_provisional_max\": 0.01, \"missing_long\": \"incomplete\", \"fp16_guard\": \"hooks required; all 20 finite; mean KL \u003c= 1e-2; top1 \u003e= 0.98; greedy32 \u003e= 17\", \"outputs\": \"guard setup-smoke and generations fixture; split example; curated JSONL refused; 64 tokens fixture only\"}, \"KL_TOL\": 0.0001, \"FP16_MEAN_KL_MAX\": 0.01, \"FP16_TOP1_MIN\": 0.98, \"FP16_GREEDY32_MIN_MATCHES\": 17, \"VARIANT_TOP1_MIN\": 0.99, \"VARIANT_PROVISIONAL_MEAN_KL\": 0.01, \"VARIANT_PROVISIONAL_TOP1\": 0.98, \"VARIANT_LONG_PROVISIONAL_KL_MAX\": 0.01}\n"}
+,{"stream_name":"stdout","time":9.911173674,"data":"PARITY_COPY e71d5e17fe6e2abfde47ec9a7fbaf31649601b78 3ab3ad15fba852e34e08b8c485e2e3c41adc8702aa80a0bbf62215d5001fabab 7bef5687a6fd0194baa50c0156c8d9a6c1e827abc87f154feb7eca527079a812 03975892c0e2d9d70159ebbad34c883557c90eb800e4d786a115362cd60de9d1\n"}
+,{"stream_name":"stdout","time":9.911190519,"data":"D4_PROTOCOL_SHA256 6bf1b4fb6651d14133380a2985bdf0d81b5d7b3d73b2e19b1b14f8c4b9281e20\n"}
+,{"stream_name":"stdout","time":13.044160727,"data":"{\n"}
+,{"stream_name":"stdout","time":13.044194769,"data":"  \"run_id\": \"20261108-233041-179455cd\",\n"}
+,{"stream_name":"stdout","time":13.044200545,"data":"  \"timestamp_ist\": \"2026-11-08T23:30:41.591271+05:30\",\n"}
+,{"stream_name":"stdout","time":13.044204685,"data":"  \"python\": \"3.13.18 (main, Oct 26 2026, 15:28:15) [GCC 13.3.0]\",\n"}
+,{"stream_name":"stdout","time":13.044208988,"data":"  \"platform_guess\": \"kaggle\",\n"}
+,{"stream_name":"stdout","time":13.044212517,"data":"  \"prereg_d4\": {\n"}
+,{"stream_name":"stdout","time":13.044215907,"data":"    \"id\": \"D4\",\n"}
+,{"stream_name":"stdout","time":13.044219252,"data":"    \"source\": \"docs/research/PREREG_baseline.md\",\n"}
+,{"stream_name":"stdout","time":13.04422292,"data":"    \"source_sha256\": \"01c210268aa567aa021c2fe08044b75f13f1bf1c761122937062d6972e61a3d2\",\n"}
+,{"stream_name":"stdout","time":13.044226667,"data":"    \"source_sha256_runtime\": null,\n"}
+,{"stream_name":"stdout","time":13.044231473,"data":"    \"source_sha256_runtime_path\": null,\n"}
+,{"stream_name":"stdout","time":13.044238661,"data":"    \"source_sha256_match\": null,\n"}
+,{"stream_name":"stdout","time":13.044242499,"data":"    \"protocol_sha256\": \"6bf1b4fb6651d14133380a2985bdf0d81b5d7b3d73b2e19b1b14f8c4b9281e20\",\n"}
+,{"stream_name":"stdout","time":13.044245105,"data":"    \"protocol\": {\n"}
+,{"stream_name":"stdout","time":13.044247359,"data":"      \"id\": \"D4\",\n"}
+,{"stream_name":"stdout","time":13.044249697,"data":"      \"written_before_gpu_run\": true,\n"}
+,{"stream_name":"stdout","time":13.044252887,"data":"      \"default_gate\": \"sequential_fp32_cpu\",\n"}
+,{"stream_name":"stdout","time":13.044256601,"data":"      \"kl_tol\": 0.0001,\n"}
+,{"stream_name":"stdout","time":13.044259459,"data":"      \"one_forward_resident\": \"about 13 GiB\",\n"}
+,{"stream_name":"stdout","time":13.044261982,"data":"      \"conversion_peak\": \"about 25 GiB plus allocator overhead\",\n"}
+,{"stream_name":"stdout","time":13.044264463,"data":"      \"d5_host_kill_preflight_gib\": 32.0,\n"}
+,{"stream_name":"stdout","time":13.044266833,"data":"      \"d5_note\": \"added after the Kaggle host restart; not a measured KL\",\n"}
+,{"stream_name":"stdout","time":13.044269208,"data":"      \"d6_bf16_tl_load\": \"HookedTransformer.from_pretrained_no_processing\",\n"}
+,{"stream_name":"stdout","time":13.04427162,"data":"      \"d6_fold_ln\": false,\n"}
+,{"stream_name":"stdout","time":13.044273882,"data":"      \"d6_hf_donor_during_convert\": false,\n"}
+,{"stream_name":"stdout","time":13.044276161,"data":"      \"d6_note\": \"version 6 host kill during bf16 from_pretrained with a live donor; not a measured KL\",\n"}
+,{"stream_name":"stdout","time":13.044278595,"data":"      \"long_hf_forward_after_tl_release\": true,\n"}
+,{"stream_name":"stdout","time":13.044280945,"data":"      \"variant_auto\": \"memory_failure_only\",\n"}
+,{"stream_name":"stdout","time":13.044283212,"data":"      \"variant_hardware\": \"cpu_bf16_only_on_t4\",\n"}
+,{"stream_name":"stdout","time":13.044285531,"data":"      \"variant_short_with_floor\": \"per prompt KL \u003c= 2 * floor and top1 \u003e= 0.99\",\n"}
+,{"stream_name":"stdout","time":13.044288288,"data":"      \"variant_short_provisional\": \"mean KL \u003c 1e-2 and top1 \u003e= 0.98\",\n"}
+,{"stream_name":"stdout","time":13.044290829,"data":"      \"variant_long_with_floor\": \"long KL \u003c= 2 * long floor\",\n"}
+,{"stream_name":"stdout","time":13.044293403,"data":"      \"variant_long_provisional\": \"predeclared long KL \u003c 1e-2; fp32 1e-4 does not apply; short floor is not reused\",\n"}
+,{"stream_name":"stdout","time":13.04430565,"data":"      \"variant_long_provisional_max\": 0.01,\n"}
+,{"stream_name":"stdout","time":13.044308072,"data":"      \"missing_long\": \"incomplete\",\n"}
+,{"stream_name":"stdout","time":13.044310482,"data":"      \"fp16_guard\": \"hooks required; all 20 finite; mean KL \u003c= 1e-2; top1 \u003e= 0.98; greedy32 \u003e= 17\",\n"}
+,{"stream_name":"stdout","time":13.04431301,"data":"      \"outputs\": \"guard setup-smoke and generations fixture; split example; curated JSONL refused; 64 tokens fixture only\"\n"}
+,{"stream_name":"stdout","time":13.044315452,"data":"    },\n"}
+,{"stream_name":"stdout","time":13.044317611,"data":"    \"KL_TOL\": 0.0001,\n"}
+,{"stream_name":"stdout","time":13.044319966,"data":"    \"FP16_MEAN_KL_MAX\": 0.01,\n"}
+,{"stream_name":"stdout","time":13.044322259,"data":"    \"FP16_TOP1_MIN\": 0.98,\n"}
+,{"stream_name":"stdout","time":13.044326344,"data":"    \"FP16_GREEDY32_MIN_MATCHES\": 17,\n"}
+,{"stream_name":"stdout","time":13.044328699,"data":"    \"VARIANT_TOP1_MIN\": 0.99,\n"}
+,{"stream_name":"stdout","time":13.044331007,"data":"    \"VARIANT_PROVISIONAL_MEAN_KL\": 0.01,\n"}
+,{"stream_name":"stdout","time":13.044333236,"data":"    \"VARIANT_PROVISIONAL_TOP1\": 0.98,\n"}
+,{"stream_name":"stdout","time":13.04433544,"data":"    \"VARIANT_LONG_PROVISIONAL_KL_MAX\": 0.01\n"}
+,{"stream_name":"stdout","time":13.044337684,"data":"  },\n"}
+,{"stream_name":"stdout","time":13.044339879,"data":"  \"artifact_kind\": \"setup-smoke\",\n"}
+,{"stream_name":"stdout","time":13.044342184,"data":"  \"split\": \"example\",\n"}
+,{"stream_name":"stdout","time":13.044344477,"data":"  \"ram_total_gib\": 31.347,\n"}
+,{"stream_name":"stdout","time":13.044346701,"data":"  \"ram_available_gib\": 30.145,\n"}
+,{"stream_name":"stdout","time":13.044348974,"data":"  \"torch\": {\n"}
+,{"stream_name":"stdout","time":13.044351157,"data":"    \"version\": \"2.11.0+cpu\",\n"}
+,{"stream_name":"stdout","time":13.04435343,"data":"    \"cuda_available\": false,\n"}
+,{"stream_name":"stdout","time":13.044355688,"data":"    \"device_count\": 0,\n"}
+,{"stream_name":"stdout","time":13.044357898,"data":"    \"device_name\": null,\n"}
+,{"stream_name":"stdout","time":13.044360097,"data":"    \"t4\": false\n"}
+,{"stream_name":"stdout","time":13.044362287,"data":"  }\n"}
+,{"stream_name":"stdout","time":13.044364421,"data":"}\n"}
+,{"stream_name":"stdout","time":13.044366515,"data":"--- nvidia-smi (truncated) ---\n"}
+,{"stream_name":"stdout","time":13.044368759,"data":"ERR: Command '['nvidia-smi']' returned non-zero exit status 12.\n"}
+,{"stream_name":"stdout","time":23.509209962,"data":"HF_TOKEN loaded: False\n"}
+,{"stream_name":"stderr","time":24.14051753,"data":"Traceback (most recent call last):\n"}
+,{"stream_name":"stderr","time":24.141053873,"data":"  File \"\u003cstring\u003e\", line 1, in \u003cmodule\u003e\n"}
+,{"stream_name":"stderr","time":24.141068073,"data":"    import sys;import papermill as pm;pm.execute_notebook(\"__notebook__.ipynb\",\"__notebook__.ipynb\",progress_bar=False,log_output=True,stdout_file=sys.stdout,stderr_file=sys.stderr,allow_errors=False,timeout=43200)\n"}
+,{"stream_name":"stderr","time":24.141089776,"data":"                                      ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":24.141099303,"data":"  File \"/usr/local/lib/python3.13/dist-packages/papermill/execute.py\", line 131, in execute_notebook\n"}
+,{"stream_name":"stderr","time":24.141114463,"data":"    raise_for_execution_errors(nb, output_path)\n"}
+,{"stream_name":"stderr","time":24.141118216,"data":"    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^\n"}
+,{"stream_name":"stderr","time":24.14112139,"data":"  File \"/usr/local/lib/python3.13/dist-packages/papermill/execute.py\", line 251, in raise_for_execution_errors\n"}
+,{"stream_name":"stderr","time":24.141124718,"data":"    raise error\n"}
+,{"stream_name":"stderr","time":24.141127951,"data":"papermill.exceptions.PapermillExecutionError: \n"}
+,{"stream_name":"stderr","time":24.141131053,"data":"---------------------------------------------------------------------------\n"}
+,{"stream_name":"stderr","time":24.141134449,"data":"Exception encountered at \"In [3]\":\n"}
+,{"stream_name":"stderr","time":24.141137649,"data":"---------------------------------------------------------------------------\n"}
+,{"stream_name":"stderr","time":24.141140908,"data":"AssertionError                            Traceback (most recent call last)\n"}
+,{"stream_name":"stderr","time":24.141144364,"data":"/tmp/ipykernel_22/2195814439.py in \u003ccell line: 0\u003e()\n"}
+,{"stream_name":"stderr","time":24.141147689,"data":"     24 HAS_HF_TOKEN = load_hf_token()\n"}
+,{"stream_name":"stderr","time":24.141150705,"data":"     25 print(\"HF_TOKEN loaded:\", HAS_HF_TOKEN)\n"}
+,{"stream_name":"stderr","time":24.141153798,"data":"---\u003e 26 assert HAS_HF_TOKEN, \"Set HF_TOKEN via Kaggle/Colab secrets. Do not paste into cells.\"\n"}
+,{"stream_name":"stderr","time":24.141157073,"data":"\n"}
+,{"stream_name":"stderr","time":24.141159999,"data":"AssertionError: Set HF_TOKEN via Kaggle/Colab secrets. Do not paste into cells.\n"}
+,{"stream_name":"stderr","time":24.141163328,"data":"\n"}
+,{"stream_name":"stderr","time":26.319439766,"data":"/usr/local/lib/python3.13/dist-packages/mistune.py:435: SyntaxWarning: invalid escape sequence '\\|'\n"}
+,{"stream_name":"stderr","time":26.319470243,"data":"  cells[i][c] = re.sub('\\\\\\\\\\|', '|', cell)\n"}
+,{"stream_name":"stderr","time":26.484705095,"data":"/usr/local/lib/python3.13/dist-packages/nbconvert/filters/filter_links.py:36: SyntaxWarning: invalid escape sequence '\\_'\n"}
+,{"stream_name":"stderr","time":26.484732844,"data":"  text = re.sub(r'_', '\\_', text) # Escape underscores in display text\n"}
+,{"stream_name":"stderr","time":27.225892229,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to notebook\n"}
+,{"stream_name":"stderr","time":27.317156789,"data":"[NbConvertApp] Writing 123792 bytes to __notebook__.ipynb\n"}
+,{"stream_name":"stderr","time":29.74987997,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to html\n"}
+,{"stream_name":"stderr","time":30.558050045,"data":"[NbConvertApp] Writing 646135 bytes to __results__.html\n"}
+]

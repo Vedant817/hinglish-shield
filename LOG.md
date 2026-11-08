@@ -203,6 +203,20 @@ accuracy, an unsafe-response positive control or multilingual calibration.
 The registry now distinguishes runtime verification from the pending human,
 secondary-judge and StrongREJECT gates. The frozen test was not accessed.
 
+## 2026-11-08 IST: Kaggle v12 stopped at secret presence
+
+The one authorized private CLI run of the notebook from main failed in input
+cell 3 at the HF_TOKEN presence assertion, before identity/model loading.
+Its environment report recorded torch 2.11.0+cpu, CUDA unavailable and zero
+CUDA devices; nvidia-smi exited 12. This is not an HTTP 401 observation for v12.
+No tokenizer/chat-template hash, short/long KL, baseline or scored metrics were
+produced. No retry was launched. Raw output hashes and main/submitted notebook
+hash equality are recorded under runs/kaggle-parity-v12-2026-11-08/.
+
+Vedant should open the private version URL in that manifest, attach the secret
+in the editor, select free GPU and Save Version then Save & Run All. The frozen
+test was not accessed. Further runtime work stops at this failure as requested.
+
 ## 2026-11-08 IST: pooled language-gap estimator repair
 
 The queued estimand audit confirmed that published language gaps used an
