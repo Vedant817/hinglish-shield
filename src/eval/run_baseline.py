@@ -19,11 +19,13 @@ from __future__ import annotations
 import argparse
 import json
 import hashlib
+import os
 import re
 import subprocess
 import sys
 from pathlib import Path
-from typing import Any
+from datetime import datetime, timedelta, timezone
+from typing import Any, Callable
 
 ROOT = Path(__file__).resolve().parents[2]
 if __package__ in {None, ""}:
@@ -31,6 +33,47 @@ if __package__ in {None, ""}:
     sys.path.insert(0, str(ROOT))
 
 from src.curate.family_splits import canon
+
+IST = timezone(timedelta(hours=5, minutes=30))
+TEST_EMBARGO_END = datetime(2026, 11, 11, tzinfo=IST)
+ATTEMPT_FILENAME = "_locked_test_attempt.json"
+FROZEN_MANIFEST = Path("data/splits/family_splits_v2.json")
+FROZEN_MANIFEST_SHA256 = "334e7151edfd9fe958afcded67417b9315d2d26b693b51f91b998c5d9638b531"
+
+
+def _utc_now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def _frozen_repair(cfg: dict[str, Any]) -> tuple[dict[str, Any], str]:
+    """Verify a pinned real repair artifact using CPU evidence only."""
+    from src.repair.freeze import verify_measured
+    from src.repair.errors import RepairError
+
+    pin = cfg.get("frozen_repair")
+    if not isinstance(pin, dict) or not isinstance(pin.get("manifest"), str) or not pin["manifest"]:
+        raise ValueError("test requires frozen_repair.manifest")
+    digest = pin.get("sha256")
+    if not isinstance(digest, str) or re.fullmatch(r"[0-9a-f]{64}", digest) is None:
+        raise ValueError("test requires frozen_repair.sha256")
+    try:
+        raw = (ROOT / pin["manifest"]).read_bytes()
+        if hashlib.sha256(raw).hexdigest() != digest:
+            raise ValueError("frozen repair byte hash mismatch")
+        arm = json.loads(raw)
+        if not isinstance(arm, dict):
+            raise ValueError("frozen repair must be an object")
+        producer = arm.get("producer")
+        if (cfg.get("model_id") != "CohereLabs/tiny-aya-global"
+                or arm.get("artifact_kind") != "run" or arm.get("not_tiny_aya") is not False
+                or arm.get("model_id") != cfg.get("model_id")
+                or not isinstance(producer, dict)
+                or producer.get("model_revision") != cfg.get("model_revision")):
+            raise ValueError("frozen repair is not a matching real-model arm")
+        verify_measured(arm)
+    except (OSError, UnicodeError, ValueError, KeyError, TypeError, RepairError) as exc:
+        raise ValueError("frozen repair verification failed: " + str(exc)) from exc
+    return arm, digest
 
 try:
     import yaml
@@ -41,7 +84,7 @@ except ImportError:  # pragma: no cover - smoke installs PyYAML
 def _load_yaml(path: Path) -> dict[str, Any]:
     if yaml is None:
         raise RuntimeError("PyYAML required; run make install or use the project venv")
-    data = yaml.safe_load(path.read_text())
+    data = yaml.safe_load(path.read_text(encoding="utf-8"))
     if not isinstance(data, dict):
         raise ValueError(f"config root must be a mapping: {path}")
     return data
@@ -74,16 +117,17 @@ def _git_full_commit() -> str | None:
 
 
 def _prior_test_run_ids(runs_dir: Path) -> list[str]:
-    """Find existing non-fixture metrics.json rows with split == test."""
+    """Find test rows or unreadable history; either blocks a fresh attempt."""
     found: list[str] = []
     if not runs_dir.is_dir():
         return found
-    for metrics_path in sorted(runs_dir.glob("*/metrics.json")):
-        if metrics_path.parent.name.startswith("_"):
-            continue
+    for metrics_path in sorted(runs_dir.rglob("metrics.json")):
         try:
-            data = json.loads(metrics_path.read_text())
-        except (OSError, json.JSONDecodeError):
+            data = json.loads(metrics_path.read_text(encoding="utf-8"))
+            if not isinstance(data, dict):
+                raise ValueError("metrics must be an object")
+        except (OSError, UnicodeError, ValueError):
+            found.append(str(metrics_path.relative_to(ROOT)) + " (unreadable history)")
             continue
         if data.get("artifact_kind") == "fixture":
             continue
@@ -109,6 +153,10 @@ def _validate_test_single_shot(
     )
 
     if split == "test" or is_test_config:
+        if _utc_now() < TEST_EMBARGO_END:
+            problems.append("test embargo: no attempt before 2026-11-11 00:00:00 IST")
+        if os.path.lexists(ROOT / "runs" / ATTEMPT_FILENAME):
+            problems.append("locked test attempt already reserved; refusing another attempt")
         if split != "test":
             problems.append(
                 "test_locked path requires --split test "
@@ -133,6 +181,8 @@ def _validate_test_single_shot(
             )
         else:
             manifest_path = ROOT / str(manifest)
+            if manifest_path.resolve() != (ROOT / FROZEN_MANIFEST).resolve():
+                problems.append("test requires the canonical frozen family manifest")
             if not manifest_path.exists():
                 problems.append(
                     f"test split manifest missing: {manifest}"
@@ -140,6 +190,8 @@ def _validate_test_single_shot(
             else:
                 try:
                     raw = manifest_path.read_bytes()
+                    if hashlib.sha256(raw).hexdigest() != FROZEN_MANIFEST_SHA256:
+                        problems.append("test frozen family manifest differs from the committed pin")
                     membership = json.loads(raw)
                     sidecar = Path(str(manifest_path) + ".sha256")
                     if (membership.get("frozen") is not True or not membership.get("families")
@@ -171,6 +223,10 @@ def _validate_test_single_shot(
                     problems.append("test membership or exposure ledger is unreadable or invalid")
         if not re.fullmatch(r"[0-9a-f]{40}", str(cfg.get("model_revision") or "")):
             problems.append("test split requires a pinned full model_revision")
+        try:
+            _frozen_repair(cfg)
+        except ValueError as exc:
+            problems.append(str(exc))
         prior = _prior_test_run_ids(ROOT / "runs")
         if prior:
             problems.append(
@@ -190,6 +246,69 @@ def _validate_test_single_shot(
             "Use configs/eval/test_locked.yaml for the Nov 11 locked test pass."
         )
     return problems
+
+
+def _execute_locked_test(
+    config_path: Path,
+    *,
+    run_id: str,
+    i_understand: bool,
+    generate: Callable[[dict[str, Any], dict[str, Any], dict[str, Any]], Any],
+) -> Any:
+    """Only execution boundary for a future locked scorer, not the stub CLI.
+
+    No prompt reads/model calls may precede this boundary. The callback gets
+    the admitted config and frozen arm snapshots. A crash, callback failure,
+    or incomplete reservation write consumes the attempt; never delete it to
+    retry. One fixed path in this checkout protects against concurrent starts.
+    """
+    config_bytes = config_path.read_bytes()
+    cfg = yaml.safe_load(config_bytes.decode("utf-8")) if yaml is not None else None
+    if not isinstance(cfg, dict):
+        raise ValueError("locked config must be a mapping")
+    if cfg.get("splits") != ["test"] or cfg.get("method_arms") != ["base", "refuse_everything", "frozen_repair"]:
+        raise ValueError("locked execution requires test split and all three frozen arms")
+    problems = _validate_test_single_shot(
+        cfg, split="test", i_understand=i_understand, config_path=config_path,
+    )
+    if problems:
+        raise ValueError("; ".join(problems))
+    if not isinstance(run_id, str) or re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_.-]{0,127}", run_id) is None:
+        raise ValueError("locked attempt requires a valid run_id")
+    full_commit = _git_full_commit()
+    if not isinstance(full_commit, str) or re.fullmatch(r"[0-9a-f]{40}", full_commit) is None:
+        raise ValueError("locked attempt requires a full source commit")
+    arm, arm_hash = _frozen_repair(cfg)
+    manifest_bytes = (ROOT / cfg["datasets"]["split_manifest"]).read_bytes()
+    if hashlib.sha256(manifest_bytes).hexdigest() != FROZEN_MANIFEST_SHA256:
+        raise ValueError("frozen family manifest changed during admission")
+    record = {
+        "status": "reserved", "run_id": run_id, "split": "test",
+        "reserved_at": _utc_now().isoformat(), "full_commit": full_commit,
+        "config_sha256": hashlib.sha256(config_bytes).hexdigest(),
+        "dataset_hash": cfg["datasets"]["dataset_hash"],
+        "split_manifest_sha256": hashlib.sha256(manifest_bytes).hexdigest(),
+        "frozen_repair_sha256": arm_hash, "model_revision": cfg["model_revision"],
+        "method_arms": cfg["method_arms"], "seed": cfg.get("seed"),
+    }
+    path = ROOT / "runs" / ATTEMPT_FILENAME
+    path.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        # Exclusive creation is the arbitration, not a read-then-write check.
+        with path.open("x", encoding="utf-8", newline="\n") as handle:
+            json.dump(record, handle, indent=2, sort_keys=True)
+            handle.write("\n")
+            handle.flush()
+            os.fsync(handle.fileno())
+        if os.name != "nt":
+            descriptor = os.open(path.parent, os.O_RDONLY)
+            try:
+                os.fsync(descriptor)
+            finally:
+                os.close(descriptor)
+    except OSError as exc:
+        raise ValueError("locked attempt reservation failed; generation refused") from exc
+    return generate(cfg, arm, record)
 
 
 def main(argv: list[str] | None = None) -> int:
