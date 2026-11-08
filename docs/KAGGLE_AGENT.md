@@ -20,12 +20,15 @@ both measured values and continues to the existing provisional CPU bf16
 path on T4. Original parity remains incomplete, with no pass credit. The
 default also omits the fp32 floor. This run's tokenizer metadata and template
 hashes are collected after the secret/dependency checks, before parity.
-The D8 cell is status-only; run the separately pinned calibration/dev harness
-after ingestion. Keep curated paths unset in this fixture notebook.
+The D8 cell runs the descriptive baseline in the notebook on the pinned
+calibration/dev slices (771 rows), labeled `automated-judge only, human
+calibration pending`. The Locate cell then runs provisional bf16
+CircuitKIT steering. Both write their own phase statuses and checkpoint
+the zip after each phase. Keep curated paths unset in this fixture notebook.
 
 Do not upload a new version while Vedant's editor job is running. Use the
 main notebook link, since version links may be inaccessible to him:
-https://www.kaggle.com/code/vedant817/hinglish-shield-gpu-parity
+https://www.kaggle.com/code/vedant817/hinglish-shield-gpu-parity-and-baseline
 
 - Kaggle account must be Vedant's existing one and GPU-eligible (Settings shows phone verification). If it is not verified, stop and ask Vedant; verification is his step.
 - The Hugging Face account behind HF_TOKEN must have accepted the CohereLabs/tiny-aya-global and tiny-aya-base terms (done on Nov 6).
@@ -53,8 +56,8 @@ Verify flags with `kaggle kernels --help` against the installed version; docs at
 4. `kaggle kernels init -p /tmp/hs-kaggle` and edit `kernel-metadata.json`:
    ```json
    {
-     "id": "<kaggle-username>/hinglish-shield-gpu-parity",
-     "title": "hinglish-shield-gpu-parity",
+     "id": "<kaggle-username>/hinglish-shield-gpu-parity-and-baseline",
+     "title": "hinglish-shield-gpu-parity-and-baseline",
      "code_file": "gpu_parity_and_baseline.ipynb",
      "language": "python",
      "kernel_type": "notebook",
@@ -69,8 +72,8 @@ Verify flags with `kaggle kernels --help` against the installed version; docs at
    Keep `is_private: true` (publishing anything public needs Vedant's OK).
 5. First save without execution: `kaggle kernels push -p /tmp/hs-kaggle --no-run`. CLI 2.2.5 supports this flag. Keep the notebook private.
 6. Secrets cannot be set from the CLI. Open the notebook on kaggle.com, attach `HF_TOKEN` (Path A step 4), verify existing-account phone verification and free GPU availability, and select GPU T4 x2. Then use Save & Run All. For a later CLI run after these checks, `kaggle kernels push -p /tmp/hs-kaggle --accelerator NvidiaTeslaT4` requests GPU T4 x2. Confirm the secret remains attached. Do not launch merely to discover a missing secret.
-7. Poll: `kaggle kernels status <kaggle-username>/hinglish-shield-gpu-parity` (wait for complete or error; do not poll faster than every few minutes).
-8. Fetch outputs: `kaggle kernels output <kaggle-username>/hinglish-shield-gpu-parity -p /tmp/hs-kaggle/out`
+7. Poll: `kaggle kernels status <kaggle-username>/hinglish-shield-gpu-parity-and-baseline` (wait for complete or error; do not poll faster than every few minutes).
+8. Fetch outputs: `kaggle kernels output <kaggle-username>/hinglish-shield-gpu-parity-and-baseline -p /tmp/hs-kaggle/out`
 
 ## Filing the results in the repo
 
