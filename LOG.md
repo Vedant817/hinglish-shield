@@ -297,3 +297,48 @@ removes that prior marker before loading models. The synthetic skip-to-enabled
 execution and ZIP-ingestion regression passes; absent long parity remains
 incomplete. All 43 focused notebook/importer tests plus 7 subtests and smoke
 passed. No Kaggle access or real model execution was performed.
+
+## 2026-11-09 IST: Kaggle editor parity archive ingested with provenance limits
+
+Vedant supplied `hs_gpu_artifacts_20261108-234246-dd685561.zip` from the Kaggle
+notebook editor. The validated importer copied it to
+`runs/gpu-20261108-234246-dd685561/`. The archive is CRC-clean, is 12,877 bytes,
+has SHA-256 `665033266285704bd5ae6daf47189d445f6c60a9af218f279e671f3feaca2903`,
+and every entry scanned with zero secret-like matches. Its environment report
+declares run `20261108-234246-dd685561`, started at
+`2026-11-08T23:42:47.008020+05:30`, with two Tesla T4 devices, CUDA available,
+torch `2.11.0+cu130`, and 29.921/31.347 GiB available/total RAM.
+
+This is not a saved Kaggle version. `kaggle kernels status` still reports
+`KernelWorkerStatus.ERROR`, and `kaggle kernels output` returns the stale v12
+CPU-only log (`HF_TOKEN loaded: False`). The archive has no run log,
+`identity.json`, `tokenizer_config.json`, or source notebook, so the executed
+notebook version, cell order and token presence are not attested. No token
+presence boolean is recorded in the archive and none is claimed. The D8 status
+projects `failure_phase: secret_missing` and public HTTP 401, but its underlying
+identity artifact is absent; that 401 remains historical v11 evidence, not a
+newly reproduced pin failure. No tokenizer or chat-template hash was written.
+
+Phase results, copied from the artifacts and not recomputed as a score:
+
+- fp16 guard passed: mean KL `8.59616297930188e-06`, top-1 agreement `1.0`,
+  greedy-32 matches `20/20`, all 20 finite, hooks attached, max abs logit diff
+  `0.027584552764892578`, peak RSS 20.12 GiB.
+- Predeclared bf16 variant passed provisionally: short mean KL
+  `0.0004105035332031548`, top-1 `1.0`; 4196-token long KL
+  `4.146346327615902e-06`; `long_ran: true`; peak RSS 20.12 GiB. This is not
+  original fp32 credit.
+- Original fp32 short-plus-4196 remains `incomplete`: `ran: false`,
+  `short_kl: {}`, `long_kl: null`, `passed: false`, recorded RAM 29.05/31.347
+  GiB available/total, `MemoryError` because conversion needs 32 GiB.
+- D8 is an unscored blocker: `scored_baseline: false`, `metrics_eligible: false`,
+  all metrics null, still labeled "automated-judge only, human calibration
+  pending". No pooled ASR, Wilson interval, family bootstrap or judge kappa was
+  computed; no calibration/dev scored inputs exist.
+- Fixture generation produced 7 rows (3 EN, 2 HI, 2 Hinglish) at 64 tokens.
+  These are `artifact_kind: fixture`, `split: example`, and are not ASR.
+- The scoped dependency check passed; the global preinstalled-environment
+  `pip check` failed and its failure is preserved.
+
+The locked test was not accessed. Original fp32 credit and the target template
+pin remain hard blockers for Locate/Repair and D8.

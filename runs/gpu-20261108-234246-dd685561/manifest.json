@@ -1,0 +1,186 @@
+{
+  "artifact_kind": "setup-smoke",
+  "status": "ingested_with_provenance_gaps",
+  "metrics_eligible": false,
+  "primary_asr": null,
+  "run_id": "20261108-234246-dd685561",
+  "timestamp_ist": "2026-11-08T23:42:47.008020+05:30",
+  "kernel": "vedant817/hinglish-shield-gpu-parity",
+  "run_origin": "kaggle_notebook_editor_session",
+  "kernel_version": null,
+  "version_url": null,
+  "kaggle_cli_worker_status": "KernelWorkerStatus.ERROR",
+  "kaggle_cli_output": "stale v12 output; downloaded env_report.json is CPU-only torch 2.11.0+cpu and the log says HF_TOKEN loaded: False, so it is not this run",
+  "archive": {
+    "filename": "hs_gpu_artifacts_20261108-234246-dd685561.zip",
+    "size_bytes": 12877,
+    "sha256": "665033266285704bd5ae6daf47189d445f6c60a9af218f279e671f3feaca2903",
+    "zip_crc_clean": true,
+    "secret_scan_matches": 0
+  },
+  "environment": {
+    "python": "3.13.16",
+    "torch": "2.11.0+cu130",
+    "cuda_available": true,
+    "device_count": 2,
+    "device_name": "Tesla T4",
+    "t4": true,
+    "ram_available_gib": 29.921,
+    "ram_total_gib": 31.347,
+    "vram0_free_gib": 14.46,
+    "vram0_total_gib": 14.562,
+    "transformers": "5.22.1",
+    "huggingface_hub": "1.33.0",
+    "transformer_lens": "3.8.0",
+    "accelerate": "1.15.0",
+    "circuitkit": "0.2.0",
+    "circuitkit_sha": "e71d5e17fe6e2abfde47ec9a7fbaf31649601b78",
+    "safetune": "0.1.12",
+    "safetune_sha": "3901a9f48a88984a181c8c9493be2d3a20ab160f"
+  },
+  "hf_token": {
+    "present": null,
+    "note": "No token presence boolean is recorded in this archive. The notebook asserts token presence before model loading and the CUDA model phases ran, but the archive does not independently establish token presence. No token value was read or printed."
+  },
+  "source_notebook": {
+    "local_sha256": "b1f7f74cbb30bb87493c271cbb57af1cde4c33e0cbb50b542b58abd591fd2ef6",
+    "local_commit": "056389e9491dd0cc3e830022402b08c3f20c4042",
+    "local_commit_role": "current main checkout only; not claimed as the editor-session source",
+    "editor_version_sha256": null,
+    "match": null,
+    "note": "The editor session did not save a Kaggle version and the archive contains no source notebook or run log, so the executed notebook is not identified."
+  },
+  "target_identity": {
+    "status": null,
+    "chat_template_sha256": null,
+    "tokenizer_config_sha256": null,
+    "identity_json_present": false,
+    "tokenizer_config_present": false,
+    "d8_projection": {
+      "failure_phase": "secret_missing",
+      "public_http_status": 401,
+      "secret_status": "missing",
+      "error_type": null
+    },
+    "note": "The D8 projection is not independently reproducible from this archive because its underlying identity.json is absent. The 401/secret_missing evidence remains historical runs/tokenizer-metadata-v11-2026-11-08/ identity evidence, not a new confirmed pin failure."
+  },
+  "phases": {
+    "fp16_guard": {
+      "ran": true,
+      "passed": true,
+      "candidate": "fp16_cuda",
+      "reference": "fp32_cpu",
+      "n_prompts": 20,
+      "n_finite": 20,
+      "nan_or_inf": false,
+      "mean_kl": 8.59616297930188e-06,
+      "top1_agreement": 1.0,
+      "greedy32_matches": 20,
+      "hooks_attached": true,
+      "max_abs_logit_diff": 0.027584552764892578,
+      "peak_rss_gib": 20.12,
+      "evidence": "fp16_guard.json"
+    },
+    "original_fp32_sequential": {
+      "ran": false,
+      "ran_short": false,
+      "long_ran": false,
+      "status": "incomplete",
+      "passed": false,
+      "counts_as_original_gate": true,
+      "dtype": "float32",
+      "hardware": "cpu",
+      "error": "MemoryError: available RAM 29.05 GiB, total 31.35 GiB; fp32 conversion needs 32 GiB (about 25 GiB plus overhead). A host restart is not a catchable MemoryError.",
+      "ram_available_before_gib": 29.05,
+      "ram_total_gib": 31.347,
+      "peak_rss_gib": 1.011,
+      "short_kl": {},
+      "long_kl": null,
+      "evidence": "parity_original_sequential.json, parity_long_prompt.json"
+    },
+    "bf16_variant": {
+      "ran": true,
+      "status": "pass",
+      "provisional": true,
+      "dtype": "bfloat16",
+      "hardware": "cpu",
+      "short_mean_kl": 0.0004105035332031548,
+      "short_top1_agreement": 1.0,
+      "short_kl_decision_passed": true,
+      "long_ran": true,
+      "long_kl": 4.146346327615902e-06,
+      "long_decision_passed": true,
+      "peak_rss_gib": 20.12,
+      "note": "Separate predeclared provisional variant. Not original fp32 parity credit.",
+      "evidence": "parity_variant_bf16.json"
+    },
+    "d8_descriptive": {
+      "artifact_kind": "blocker",
+      "scored_baseline": false,
+      "metrics_eligible": false,
+      "primary_asr": null,
+      "metric_label": "automated-judge only, human calibration pending",
+      "blocker": "target chat-template pin is unavailable",
+      "metrics": {
+        "asr": null,
+        "over_refusal": null,
+        "language_gap": null,
+        "capability": null
+      },
+      "evidence": "d8_descriptive_status.json"
+    },
+    "fixture_generation": {
+      "n_prompts": 7,
+      "languages": {
+        "en": 3,
+        "hi": 2,
+        "hinglish": 2
+      },
+      "max_new_tokens": 64,
+      "max_new_tokens_scope": "fixture_only",
+      "status": "ok",
+      "artifact_kind": "fixture",
+      "split": "example",
+      "not_asr": true,
+      "evidence": "predictions.jsonl, baseline_manifest.json, metrics_stub.json"
+    },
+    "optional_dual_resident_pytest": {
+      "ran": false,
+      "skipped": true,
+      "skip_reason": "RUN_ORIGINAL_PYTEST=False (default). Dual-resident fp32 needs about 25 GiB for the whole test.",
+      "evidence": "parity_pytest.json"
+    }
+  },
+  "dependencies": {
+    "scoped": {
+      "passed": true,
+      "scope": "transitive_declared_dependencies",
+      "checked_packages": 183,
+      "evidence": "dependency_check.json"
+    },
+    "global": {
+      "passed": false,
+      "scope": "entire_preinstalled_environment",
+      "failure_preserved": true,
+      "evidence": "dependency_check_global.json"
+    }
+  },
+  "metrics": {
+    "asr": null,
+    "pooled_asr": null,
+    "wilson_95": null,
+    "family_bootstrap": null,
+    "cohen_kappa": null,
+    "reason": "D8 is a blocker and no calibration/dev scored inputs exist; no repo aggregation was run and no metric was hand-typed."
+  },
+  "locked_test_accessed": false,
+  "limitations": [
+    "ZIP inspection does not authenticate the producing machine.",
+    "The Kaggle CLI has no completed version for this editor session: kernels status is KernelWorkerStatus.ERROR and kernels output is stale v12 evidence.",
+    "The archive contains no run log, identity.json, tokenizer_config.json, or source notebook, so cell order and token presence are not attested.",
+    "The D8 identity projection cites secret_missing and HTTP 401, but its underlying identity artifact is absent; this run does not independently reproduce that pin failure.",
+    "fp16 guard and bf16 variant artifacts are setup-smoke evidence; fixture generations are 64-token examples, not ASR or a scored baseline.",
+    "Original fp32 short-plus-4196 credit remains incomplete after the recorded MemoryError.",
+    "Scoped dependency checks passed; the global preinstalled-environment pip check failed and is preserved."
+  ]
+}
