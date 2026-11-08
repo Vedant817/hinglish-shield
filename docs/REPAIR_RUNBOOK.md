@@ -38,6 +38,14 @@ python -m src.repair verify-freeze --manifest runs/REPAIR_ID/freeze.json
 python -m src.repair credit --parity-run runs/GPU_RUN_ID --provenance configs/repair/provenance.yaml
 ```
 
+After a GPU Locate run is ingested into `runs/<id>/` (provisional bf16 `locate_direction.json` plus `locate_status.json` validated by `scripts/ingest_gpu_artifacts.py`), the provisional arm freezes without any fp32 credit claim:
+
+```text
+python -m src.repair freeze-provisional --direction runs/<id>/locate_direction.json --out runs/<id>/repair_freeze.json
+```
+
+The direction must be calibration/dev only, `provisional_locate_v1`, bf16, node `MLP 0`, declared score `1.0`, with nonzero norm and passing alpha-zero (exact match to base) and norm-matched random (seed 7) controls. The command builds the freeze, re-verifies it before writing, and refuses test splits, fp32 claims, missing controls, or hash mismatches with exit code 2. The freeze stays `metrics_eligible: false` and `primary_asr: null`; it is a research arm, never a deployable claim.
+
 `steer` is the same sweep. `artifact-kind run` with `--backend circuitkit` is the weight path. It still fails closed unless original fp32 credit recomputes as a pass, the runtime template hash is 64 hex, node scores are supplied, calibration and dev membership pass, and both the repair worktree and the pinned CircuitKIT worktree are clean. A fixture artifact cannot authorize that load even when credit passes. Passing those gates calls `load_tiny_aya`. This checkout did not call it.
 
 ```text

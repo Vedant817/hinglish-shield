@@ -8,7 +8,13 @@ import sys
 from pathlib import Path
 
 from .errors import RepairError
-from .freeze import verify_any, write_freeze_manifest
+from .freeze import (
+    build_provisional_bf16_freeze,
+    verify_any,
+    verify_provisional_bf16_freeze,
+    write_freeze_manifest,
+)
+from .jsonutil import content_sha256, write_json
 from .parity import locate_credit
 from .protocol import load_provenance
 from .real_runtime import write_tensor_fixture_evidence
@@ -54,6 +60,13 @@ def build_parser() -> argparse.ArgumentParser:
     freeze_parser.add_argument("--sweep", type=_path, required=True)
     freeze_parser.add_argument("--direction", type=_path, required=True)
     freeze_parser.add_argument("--out", type=_path, required=True)
+
+    provisional = sub.add_parser(
+        "freeze-provisional",
+        help="Freeze a provisional bf16 locate direction (calibration/dev only)",
+    )
+    provisional.add_argument("--direction", type=_path, required=True)
+    provisional.add_argument("--out", type=_path, required=True)
 
     verify_parser = sub.add_parser("verify-freeze", help="Re-run the frozen hook in a fresh process")
     verify_parser.add_argument("--manifest", type=_path, required=True)
@@ -186,6 +199,14 @@ def main(argv: list[str] | None = None) -> int:
             return 0
         if args.command == "freeze":
             write_freeze_manifest(args.sweep, args.direction, args.out)
+            return 0
+        if args.command == "freeze-provisional":
+            manifest = build_provisional_bf16_freeze(args.direction)
+            report = verify_provisional_bf16_freeze(manifest)
+            manifest["verification"] = report
+            manifest["content_sha256"] = content_sha256(manifest)
+            write_json(args.out, manifest)
+            print(json.dumps(report, indent=2, sort_keys=True, allow_nan=False))
             return 0
         if args.command == "verify-freeze":
             completed = subprocess.run(
