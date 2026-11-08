@@ -17,6 +17,9 @@ vendor/
 .cache/
 huggingface/
 # Run artifacts except the checked-in example
+# GPU notebook output zips sitting in the repo root (ingest the bytes, never commit)
+hs_gpu_artifacts_*.zip
+*.zip
 runs/*
 !runs/_example/
 !runs/_example/**
