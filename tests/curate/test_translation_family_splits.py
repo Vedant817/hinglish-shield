@@ -1,16 +1,15 @@
-"""Wire DE B family-split checker onto translation staging CSVs.
+"""CLI tests for the family-split checker.
 
-DE B owns src/curate/check_family_splits.py and data/splits/family_splits_v2.json.
-This test:
-  - skips if the checker or manifest is not present yet
-  - otherwise runs the checker against staging translation CSVs
-  - asserts every non-blank family_id maps to one split and variants agree
+The checker is python -m src.curate.check_family_splits. These tests use a
+synthetic manifest so they do not read staging prompts.
 """
 
 from __future__ import annotations
 
 import csv
-import importlib.util
+import hashlib
+import json
+import subprocess
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -18,20 +17,8 @@ from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
-CHECKER = ROOT / "src" / "curate" / "check_family_splits.py"
-MANIFEST = ROOT / "data" / "splits" / "family_splits_v2.json"
 BATCH = ROOT / "data" / "staging" / "translations" / "batch01.csv"
 AYA = ROOT / "data" / "staging" / "translations" / "aya_hinglish" / "aya_hinglish_sample50.csv"
-
-
-def _load_checker():
-    if not CHECKER.exists():
-        pytest.skip("DE B checker not present yet (src/curate/check_family_splits.py)")
-    spec = importlib.util.spec_from_file_location("check_family_splits", CHECKER)
-    mod = importlib.util.module_from_spec(spec)
-    assert spec.loader is not None
-    spec.loader.exec_module(mod)
-    return mod
 
 
 def _read(path: Path) -> list[dict]:
@@ -39,24 +26,87 @@ def _read(path: Path) -> list[dict]:
         return list(csv.DictReader(f))
 
 
-@pytest.mark.skipif(not MANIFEST.exists(), reason="DE B family_splits_v2.json not present yet")
-def test_deb_checker_on_translation_csvs():
-    mod = _load_checker()
-    # Prefer a documented entrypoint if DE B provides one.
-    if hasattr(mod, "check_translation_csv"):
-        for path in (BATCH, AYA):
-            if path.exists():
-                mod.check_translation_csv(path)
-    elif hasattr(mod, "main"):
-        # CLI-style: pass csv paths if supported; otherwise call check_manifest
-        if hasattr(mod, "check_paths"):
-            mod.check_paths([BATCH, AYA])
-        elif hasattr(mod, "check_manifest"):
-            mod.check_manifest(MANIFEST)
-        else:
-            pytest.skip("DE B checker has no known callable API yet")
-    else:
-        pytest.skip("DE B checker module has no main/check_* API yet")
+def _manifest(tmp_path: Path) -> Path:
+    payload = {
+        "frozen": True,
+        "test_access": "locked",
+        "families": {
+            "fam_dev": {
+                "split": "dev",
+                "members": [{"source_dataset": "xstest", "source_id": "1"}],
+            },
+            "fam_test": {
+                "split": "test",
+                "members": [{"source_dataset": "xstest", "source_id": "2"}],
+            },
+        },
+    }
+    path = tmp_path / "families.json"
+    raw = (json.dumps(payload) + "\n").encode("utf-8")
+    path.write_bytes(raw)
+    (tmp_path / "families.json.sha256").write_text(hashlib.sha256(raw).hexdigest() + "\n", encoding="utf-8")
+    return path
+
+
+def _run(manifest: Path, rows: Path) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(
+        [
+            sys.executable,
+            "-m",
+            "src.curate.check_family_splits",
+            "--manifest",
+            str(manifest),
+            str(rows),
+        ],
+        cwd=str(ROOT),
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+
+def _write_jsonl(path: Path, rows: list[dict]) -> None:
+    path.write_text("".join(json.dumps(row) + "\n" for row in rows), encoding="utf-8")
+
+
+def test_cli_accepts_source_membership(tmp_path: Path):
+    manifest = _manifest(tmp_path)
+    rows = tmp_path / "ok.jsonl"
+    _write_jsonl(rows, [{
+        "source_dataset": "xstest",
+        "source_id": "1",
+        "family_id": "fam_dev",
+        "split": "dev",
+    }])
+    result = _run(manifest, rows)
+    assert result.returncode == 0, result.stdout + result.stderr
+    assert "RESULT: PASS" in result.stdout
+
+
+def test_cli_rejects_wrong_family(tmp_path: Path):
+    manifest = _manifest(tmp_path)
+    rows = tmp_path / "wrong.jsonl"
+    _write_jsonl(rows, [{
+        "source_dataset": "xstest",
+        "source_id": "1",
+        "family_id": "fam_test",
+        "split": "test",
+    }])
+    result = _run(manifest, rows)
+    assert result.returncode == 1
+    assert "wrong family" in result.stdout
+
+
+def test_cli_rejects_cross_split(tmp_path: Path):
+    manifest = _manifest(tmp_path)
+    rows = tmp_path / "cross.jsonl"
+    _write_jsonl(rows, [
+        {"source_dataset": "xstest", "source_id": "1", "family_id": "fam_dev", "split": "dev"},
+        {"source_dataset": "xstest", "source_id": "1", "family_id": "fam_dev", "split": "test"},
+    ])
+    result = _run(manifest, rows)
+    assert result.returncode == 1
+    assert "crosses splits" in result.stdout
 
 
 def test_one_split_per_family_within_staging_csvs():

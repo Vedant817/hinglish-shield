@@ -4,11 +4,14 @@
 Usage:
   python -m src.curate.check_family_splits [--manifest data/splits/family_splits_v2.json] FILE [FILE ...]
 
-FILE is JSONL or CSV. A row is resolved by (family_id) if present, else by (source, source_id)
-or (source_dataset, source_id) via the manifest lookup. If the row has a `split` column it must
-match the manifest. Exit 1 if: manifest SHA-256 mismatches its .sha256 sidecar; the manifest
-puts a family in >1 split; any row lacks a family; any row's split disagrees with the manifest;
-any family appears under >1 split across the given files. Prints per-file coverage by split.
+FILE is JSONL or CSV. A row's family is the manifest member for (source, source_id) or
+(source_dataset, source_id). A supplied family_id must match that member. A family_id with
+no source membership is not accepted. If the row has a split column it must match the
+manifest, and that claimed split is part of the cross-split check. Exit 1 if: manifest
+SHA-256 mismatches its .sha256 sidecar; the manifest puts one member in two families; any
+row lacks a verified family; a supplied family_id disagrees with source membership; any
+row's split disagrees with the manifest; any family is observed under more than one split
+across the given files. Prints per-file coverage by split.
 """
 from __future__ import annotations
 
@@ -65,22 +68,37 @@ def main() -> int:
         p = Path(fp)
         cov, bad = Counter(), 0
         for i, r in enumerate(rows_of(p)):
-            fid = r.get("family_id") or None
-            if not fid:
-                src = r.get("source") or r.get("source_dataset")
-                sid = r.get("source_id")
-                if src is not None and sid is not None:
-                    fid = key_fam.get(canon(src, sid))
-            if not fid or fid not in fam_split:
+            supplied = (r.get("family_id") or "").strip() or None
+            src = r.get("source") or r.get("source_dataset")
+            sid = r.get("source_id")
+            canonical = None
+            if src not in (None, "") and sid not in (None, ""):
+                canonical = key_fam.get(canon(str(src), str(sid)))
+            if supplied and canonical and supplied != canonical:
+                cov["UNMAPPED"] += 1
+                bad += 1
+                errors.append(
+                    f"{p}:{i}: wrong family {supplied} != canonical {canonical} for {src}:{sid}"
+                )
+                continue
+            if not canonical:
                 cov["UNMAPPED"] += 1
                 bad += 1
                 if bad <= 5:
-                    errors.append(f"{p}:{i}: no family for {r.get('source') or r.get('source_dataset')}:{r.get('source_id')}")
+                    if supplied:
+                        errors.append(
+                            f"{p}:{i}: family_id {supplied} is not verified by source membership"
+                        )
+                    else:
+                        errors.append(f"{p}:{i}: no family for {src}:{sid}")
                 continue
+            fid = canonical
             s = fam_split[fid]
             cov[s] += 1
+            rs = (r.get("split") or "").strip()
             seen[fid].add(s)
-            rs = r.get("split")
+            if rs:
+                seen[fid].add(rs)
             if rs and rs != s:
                 errors.append(f"{p}:{i}: split {rs} != manifest {s} for {fid}")
         if bad > 5:
