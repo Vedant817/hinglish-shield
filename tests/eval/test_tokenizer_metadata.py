@@ -74,7 +74,9 @@ def test_public_fallback_sends_no_authorization_and_can_pin(tmp_path):
     result = collect_identity(tmp_path / "public", source_commit="a" * 40, source_sha256="b" * 64,
                               credential_provider=missing, open_url=fetch, public_fallback=True)
     assert result["status"] == "metadata_retrieved" and result["auth_mode"] == "unauthenticated_public"
-    assert result["secret_status"] == "missing" and "failure_phase" not in result
+    assert result["secret_status"] == "missing"
+    assert "failure_phase" not in result and "error_type" not in result
+    assert "fetched without Authorization" in result["note"]
     assert result["chat_template_sha256"] == hashlib.sha256(b"public-template").hexdigest()
 
 

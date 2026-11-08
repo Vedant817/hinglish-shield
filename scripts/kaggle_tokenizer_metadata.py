@@ -125,6 +125,11 @@ def collect_identity(out: Path, *, source_commit: str, source_sha256: str,
                 _pin_asset(report, out, raw)
                 report["auth_mode"] = "unauthenticated_public"
                 report.pop("failure_phase", None)
+                report.pop("error_type", None)
+                report["note"] = (
+                    "Existing HF_TOKEN secret was unavailable. "
+                    "The checkpoint asset was fetched without Authorization."
+                )
             except (HTTPError, URLError, ConnectionError, TimeoutError) as public_exc:
                 _record_transport_failure(report, public_exc, prefix="public_")
             except Exception as public_exc:
