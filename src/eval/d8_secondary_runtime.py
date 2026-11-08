@@ -173,7 +173,18 @@ def _child_env() -> dict[str, str]:
     root = str(ROOT)
     previous = env.get("PYTHONPATH", "")
     env["PYTHONPATH"] = root if previous == "" else root + os.pathsep + previous
+    env["PYTHONIOENCODING"] = "utf-8"
+    env["PYTHONUTF8"] = "1"
     return env
+
+
+def configure_stdio_utf8(stdin: TextIO, stdout: TextIO) -> None:
+    """Use UTF-8 on the worker pipes. Locale cp1252 cannot encode Devanagari."""
+    for stream in (stdin, stdout):
+        reconfigure = getattr(stream, "reconfigure", None)
+        if not callable(reconfigure):
+            continue
+        reconfigure(encoding="utf-8", errors="strict")
 
 
 class PinnedCpuSecondaryProcess:
@@ -191,6 +202,8 @@ class PinnedCpuSecondaryProcess:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.DEVNULL,
                 text=True,
+                encoding="utf-8",
+                errors="strict",
                 env=_child_env(),
             )
         except OSError:
@@ -282,6 +295,7 @@ def main() -> int:
     """Worker entry. Construction checks pins and does not load weights."""
     from .secondary_adapter import Qwen3GuardSecondaryAdapter
 
+    configure_stdio_utf8(sys.stdin, sys.stdout)
     try:
         pins = json.loads(SECONDARY_PROTOCOL.read_text(encoding="utf-8"))
         adapter = Qwen3GuardSecondaryAdapter(pins)

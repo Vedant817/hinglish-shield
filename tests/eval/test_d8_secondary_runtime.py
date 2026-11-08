@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import io
 import json
+import os
 import subprocess
 import sys
 from pathlib import Path
@@ -16,6 +17,7 @@ sys.path.insert(0, str(ROOT))
 from src.eval.d8_secondary_runtime import (
     PinnedCpuSecondaryProcess,
     _PROBE,
+    configure_stdio_utf8,
     select_secondary_runtime,
     serve,
 )
@@ -194,6 +196,10 @@ def test_process_returns_parser_failure_and_hides_transport_errors():
     assert seen["kwargs"]["cwd"] == str(ROOT)
     assert seen["kwargs"]["stderr"] is subprocess.DEVNULL
     assert seen["kwargs"]["text"] is True
+    assert seen["kwargs"]["encoding"] == "utf-8"
+    assert seen["kwargs"]["errors"] == "strict"
+    assert seen["kwargs"]["env"]["PYTHONIOENCODING"] == "utf-8"
+    assert seen["kwargs"]["env"]["PYTHONUTF8"] == "1"
     assert seen["kwargs"]["env"]["PYTHONPATH"].startswith(str(ROOT))
     assert "shell" not in seen["kwargs"]
 
@@ -259,3 +265,70 @@ def test_serve_does_not_echo_the_prompt_or_exception_text():
     assert json.loads(failure) == {"ok": False, "reason": "runtime"}
     assert "hf_secret" not in failure
     assert prompt not in failure
+
+
+def test_stdio_and_parent_pipe_use_utf8_for_devanagari():
+    class _Stream:
+        encoding = "cp1252"
+
+        def __init__(self):
+            self.kwargs = None
+
+        def reconfigure(self, **kwargs):
+            self.kwargs = kwargs
+            self.encoding = kwargs["encoding"]
+
+    stdin = _Stream()
+    stdout = _Stream()
+    configure_stdio_utf8(stdin, stdout)
+    assert stdin.kwargs == {"encoding": "utf-8", "errors": "strict"}
+    assert stdout.kwargs == {"encoding": "utf-8", "errors": "strict"}
+
+    prompt = "हिंदी नमस्ते"
+    seen = {}
+
+    def popen(_argv, **kwargs):
+        seen["encoding"] = kwargs["encoding"]
+        seen["errors"] = kwargs["errors"]
+        return _FakeProc([
+            json.dumps({
+                "label": "safe",
+                "metadata": {"raw": "Safety: Safe", "severity": "Safe"},
+                "ok": True,
+                "prompt_id": "s1",
+                "value": 0,
+            }) + "\n",
+            json.dumps({"ok": True, "unloaded": True}) + "\n",
+        ])
+
+    judge = PinnedCpuSecondaryProcess(r"C:\cpu\python.exe", popen=popen)
+    verdict = judge.judge_one(prompt, "जवाब", prompt_id="s1")
+    assert verdict.label == "safe"
+    written = judge._proc.stdin.getvalue()
+    assert prompt in written
+    written.encode("utf-8")
+    judge.unload()
+    assert seen == {"encoding": "utf-8", "errors": "strict"}
+
+    code = (
+        "import sys\n"
+        "sys.stdin.reconfigure(encoding='utf-8', errors='strict')\n"
+        "sys.stdout.reconfigure(encoding='utf-8', errors='strict')\n"
+        "sys.stdout.write(sys.stdin.readline())\n"
+    )
+    env = os.environ.copy()
+    env["PYTHONIOENCODING"] = "utf-8"
+    env["PYTHONUTF8"] = "1"
+    completed = subprocess.run(
+        [sys.executable, "-c", code],
+        input=prompt + "\n",
+        capture_output=True,
+        text=True,
+        encoding="utf-8",
+        errors="strict",
+        env=env,
+        check=False,
+        timeout=30,
+    )
+    assert completed.returncode == 0
+    assert completed.stdout == prompt + "\n"
