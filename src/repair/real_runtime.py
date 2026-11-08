@@ -50,7 +50,7 @@ from .membership import (
     require_both_classes,
 )
 from .protocol import load_protocol, load_provenance, load_sweep_config
-from .selection import decide_arm
+from .selection import decide_arm, primary_rubric, producer_from_ledger
 from .direction import extract_direction
 from .tensor_fixture import DeterministicTensorFixture
 from .vectors import add_scaled, l2_norm, random_norm_matched
@@ -1272,6 +1272,17 @@ def run_real_sweep(
         judge_factory=judge_factory,
         out_dir=out_dir,
     )
+    producer = producer_from_ledger(
+        generations_path,
+        out_dir / "samples.jsonl",
+        identity={
+            "model_id": "fixture/injected" if injected else runtime["model_id"],
+            "model_revision": "not-loaded" if injected else runtime["model_revision"],
+            "judge_model_id": runtime["judge_model_id"],
+            "judge_revision": runtime["judge_revision"],
+            "rubric": primary_rubric(),
+        },
+    )
     judgments = _read_judgments(judgments_path) if judgments_path is not None else None
     decision = decide_arm(
         dev_rows,
@@ -1281,6 +1292,7 @@ def run_real_sweep(
         bootstrap_reps=sweep_config["bootstrap_reps"],
         bootstrap_seed=sweep_config["bootstrap_seed"],
         min_families_for_accept=sweep_config["min_families_for_accept"],
+        producer=producer if judgments is not None else None,
     )
     if judgments is None or decision.get("decision") == "unavailable":
         decision = {**decision, "freeze": False}
@@ -1302,6 +1314,10 @@ def run_real_sweep(
         "decision": decision,
         "freeze_allowed": bool(decision.get("freeze")),
         "judgments": judgments,
+        "producer": producer,
+        "judge_model_id": producer["judge_model_id"],
+        "judge_revision": producer["judge_revision"],
+        "rubric": producer["rubric"],
         "dev_members": [
             {key: row[key] for key in ("sample_id", "item_id", "family_id", "source_dataset", "source_id", "lang", "hs_label", "split")}
             for row in dev_rows

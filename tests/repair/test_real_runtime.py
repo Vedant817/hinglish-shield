@@ -819,6 +819,99 @@ def test_library_freeze_refuses_a_fixture_label(tmp_path: Path):
     assert caught.value.stage == "freeze"
 
 
+def _measured_shell(tmp_path: Path, judgments: dict, producer: dict | None) -> tuple[Path, Path]:
+    from src.repair.protocol import load_sweep_config
+
+    sweep_config = load_sweep_config(ROOT / "configs" / "repair" / "sweep.yaml")
+    direction = {"vector": [1.0, 0.0], "layer_index": 0, "not_tiny_aya": True}
+    direction["content_sha256"] = content_sha256(direction)
+    payload = {
+        "generation": "per_step_hook_forward",
+        "direction_sha256": direction["content_sha256"],
+        "primary_asr": None,
+        "metrics_eligible": False,
+        "proven_refusal_mechanism": False,
+        "dev_members": [
+            {"sample_id": "s1", "family_id": "f", "hs_label": "harm", "split": "dev"},
+            {"sample_id": "b1", "family_id": "f", "hs_label": "benign", "split": "dev"},
+        ],
+        "judgments": judgments,
+        "producer": producer,
+        "sweep_sha256": sweep_config["sha256"],
+        "decision": {"decision": "accept", "freeze": True},
+        "artifact_kind": "fixture",
+        "model_id": "fixture/injected",
+        "model_revision": "not-loaded",
+        "judge_model_id": "allenai/wildguard",
+        "judge_revision": "cbba4823f3e8020e5a74a5e29bf85072def6f2ff",
+    }
+    payload["content_sha256"] = content_sha256(payload)
+    sweep_path = tmp_path / "sweep.json"
+    direction_path = tmp_path / "direction.json"
+    sweep_path.write_text(json.dumps(payload), encoding="utf-8")
+    direction_path.write_text(json.dumps(direction), encoding="utf-8")
+    return sweep_path, direction_path
+
+
+def test_measured_freeze_rejects_judgments_that_are_not_on_the_ledger(tmp_path: Path):
+    from src.repair.selection import primary_rubric, producer_from_ledger
+
+    sweep_path, direction_path = _measured_shell(tmp_path, {"capability_unit": "task_points", "rows": []}, None)
+    with pytest.raises(RepairError, match="generation ledger is missing"):
+        build_measured_freeze(sweep_path, direction_path)
+
+    records = []
+    for arm in ("base_no_intervention", "candidate_alpha_1"):
+        for sample_id, hs_label, text in (("s1", "harm", "harm text"), ("b1", "benign", "benign text")):
+            records.append({
+                "arm_id": arm,
+                "sample_id": sample_id,
+                "family_id": "f",
+                "hs_label": hs_label,
+                "new_token_ids": [1],
+                "response": text,
+                "status": "ok",
+            })
+    generations = tmp_path / "generations.jsonl"
+    samples = tmp_path / "samples.jsonl"
+    generations.write_text("".join(json.dumps(row) + "\n" for row in records), encoding="utf-8")
+    labeled = [{**row, "judge_label": "refusal"} for row in records]
+    samples.write_text("".join(json.dumps(row) + "\n" for row in labeled), encoding="utf-8")
+    identity = {
+        "model_id": "fixture/injected",
+        "model_revision": "not-loaded",
+        "judge_model_id": "allenai/wildguard",
+        "judge_revision": "cbba4823f3e8020e5a74a5e29bf85072def6f2ff",
+        "rubric": primary_rubric(),
+    }
+    producer = producer_from_ledger(generations, samples, identity=identity)
+    rows = []
+    for item in producer["responses"]:
+        rows.append({
+            "arm_id": item["arm_id"],
+            "sample_id": item["sample_id"],
+            "family_id": "f",
+            "split": "dev",
+            "hs_label": "harm" if item["sample_id"] == "s1" else "benign",
+            "judge_label": item["judge_label"],
+            "capability_score": None if item["sample_id"] == "s1" else 10,
+            "response_sha256": "0" * 64 if item["sample_id"] == "s1" else item["response_sha256"],
+            "run_id": producer["run_id"],
+            "model_id": producer["model_id"],
+            "model_revision": producer["model_revision"],
+            "judge_model_id": producer["judge_model_id"],
+            "judge_revision": producer["judge_revision"],
+            "rubric": producer["rubric"],
+        })
+    sweep_path, direction_path = _measured_shell(
+        tmp_path,
+        {"capability_unit": "task_points", "rows": rows},
+        producer,
+    )
+    with pytest.raises(RepairError, match="response hash"):
+        build_measured_freeze(sweep_path, direction_path)
+
+
 def test_accept_requires_the_family_floor_and_recomputed_evidence(tmp_path: Path):
     forged = {
         "decision": "accept",
