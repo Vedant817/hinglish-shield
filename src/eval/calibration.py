@@ -347,7 +347,9 @@ def ingest_human_labels(
         if digest in duplicate_hashes:
             continue
         link = by_hash[digest]
-        sample = by_sample[link["sample_id"]]
+        sample = by_sample.get(link.get("sample_id"))
+        if not isinstance(sample, dict):
+            raise CalibrationError("sheet key sample id is not in the ledger")
         response = sample.get("response")
         if not isinstance(response, str) or output_hash(response) != digest:
             raise CalibrationError("sheet key hash does not match the ledger output")
