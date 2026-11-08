@@ -852,6 +852,7 @@ def _assess_runtime(provenance: Mapping[str, Any], evidence_path: Path | None) -
 def _assess_calibration(
     report_path: Path | None,
     samples: Sequence[Mapping[str, Any]],
+    run_id: Any,
 ) -> tuple[list[str], dict[str, Any]]:
     if report_path is None:
         return ["human calibration report missing"], {}
@@ -859,6 +860,8 @@ def _assess_calibration(
     if not isinstance(report, dict) or report.get("schema_version") != "human_calibration_v1":
         return ["human calibration report schema is not recognized"], {}
     reasons: list[str] = []
+    if not isinstance(run_id, str) or run_id.strip() == "" or report.get("run_id") != run_id:
+        reasons.append("calibration report run id does not match the ledger")
     if report.get("sheet_kind") != "dev":
         reasons.append("calibration sheet is not a dev sheet")
     if (report.get("labels_admissible_for_run") is not True or report.get("n_duplicate") != 0
@@ -894,6 +897,12 @@ def _assess_calibration(
         if sample is None:
             reasons.append("calibration pair hash is not in the ledger")
             continue
+        if pair.get("run_id") != run_id:
+            reasons.append("calibration pair run id does not match the ledger")
+        if pair.get("sample_id") != sample.get("sample_id"):
+            reasons.append("calibration pair sample id does not match the ledger")
+        if pair.get("prompt_hash") != sample.get("prompt_hash"):
+            reasons.append("calibration pair prompt hash does not match the ledger")
         if pair.get("judge_category") != sample.get("category"):
             reasons.append("calibration pair judge category does not match the ledger")
         if pair.get("lang") != sample.get("lang"):
@@ -1417,7 +1426,9 @@ def aggregate_ledger(
             "metric_label": D8_METRIC_LABEL,
         })
     elif manifest.get("artifact_kind") == "run":
-        calibration_reasons, calibration_summary = _assess_calibration(calibration_report_path, samples)
+        calibration_reasons, calibration_summary = _assess_calibration(
+            calibration_report_path, samples, manifest.get("run_id")
+        )
     else:
         calibration_reasons, calibration_summary = ([], {})
     capability_value, capability_reason, capability_detail = (None, None, {})

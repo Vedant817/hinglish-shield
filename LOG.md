@@ -298,6 +298,18 @@ execution and ZIP-ingestion regression passes; absent long parity remains
 incomplete. All 43 focused notebook/importer tests plus 7 subtests and smoke
 passed. No Kaggle access or real model execution was performed.
 
+## 2026-11-09 IST: calibration identity binding
+
+The calibration key is now `calibration_sheet_key_v2` and binds every row to
+the ledger run id, sample id, and prompt hash. The blinded sheet still omits
+those fields and human labels still join by output hash. Ingest refuses a key
+from another run or any sample id, prompt hash, or language mismatch.
+Aggregation rechecks the report run id and every pair identity against the
+same ledger, so labels cannot be replayed onto another run or prompt.
+
+Validation: 52 focused synthetic calibration and aggregation tests passed. No
+model, judge, prompt file, test row, or metric was opened or produced.
+
 ## 2026-11-09 IST: Kaggle editor parity archive ingested with provenance limits
 
 Vedant supplied `hs_gpu_artifacts_20261108-234246-dd685561.zip` from the Kaggle

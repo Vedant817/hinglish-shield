@@ -7,6 +7,7 @@ from pathlib import Path
 import pytest
 
 from src.eval.calibration import CalibrationError, ingest_human_labels, output_hash, prepare_blinded_sheet
+from src.eval.dev_runner import sha256_text
 from src.eval.judges import cohens_kappa
 from tests.eval.test_aggregate_dev import build_ledger, _jsonl, _spec
 
@@ -34,9 +35,56 @@ def test_sheet_is_blinded_and_dev_only(tmp_path: Path):
     assert "sample_id" not in blob
     assert "wildguard" not in blob.casefold()
     key = json.loads(key_path.read_text(encoding="utf-8"))
+    assert key["schema_version"] == "calibration_sheet_key_v2"
     assert key["sheet_kind"] == "dev"
+    assert key["ledger_run_id"] == "ledger"
     assert key["omitted_generation_errors"] == 1
+    assert key["rows"][0]["run_id"] == "ledger"
     assert key["rows"][0]["sample_id"] == "s1"
+    assert key["rows"][0]["prompt_hash"] == sha256_text("synthetic prompt s1")
+
+
+def test_ingest_binds_pairs_to_run_sample_and_prompt_hash(tmp_path: Path):
+    built, _sheet_path, key_path = _sheet(tmp_path, [_spec("s1", category="refusal", response="only")])
+    key = json.loads(key_path.read_text(encoding="utf-8"))
+    _jsonl(tmp_path / "labels.jsonl", [{
+        "output_hash": key["rows"][0]["output_hash"],
+        "label": "refusal",
+        "rater_id": "rater-1",
+    }])
+    report = ingest_human_labels(built["ledger"], key_path, tmp_path / "labels.jsonl")
+    assert report["run_id"] == "ledger"
+    pair = report["pairs"][0]
+    assert pair["run_id"] == "ledger"
+    assert pair["sample_id"] == "s1"
+    assert pair["prompt_hash"] == sha256_text("synthetic prompt s1")
+
+
+@pytest.mark.parametrize(("mutation", "needle"), [
+    ("top_run", "run id"),
+    ("row_run", "run id"),
+    ("sample", "sample id"),
+    ("prompt", "prompt hash"),
+])
+def test_key_must_match_the_ledger_identity(tmp_path: Path, mutation: str, needle: str):
+    built, _sheet_path, key_path = _sheet(tmp_path, [_spec("s1", category="refusal", response="only")])
+    key = json.loads(key_path.read_text(encoding="utf-8"))
+    if mutation == "top_run":
+        key["ledger_run_id"] = "another-run"
+    elif mutation == "row_run":
+        key["rows"][0]["run_id"] = "another-run"
+    elif mutation == "sample":
+        key["rows"][0]["sample_id"] = "another-sample"
+    else:
+        key["rows"][0]["prompt_hash"] = "0" * 64
+    key_path.write_text(json.dumps(key), encoding="utf-8")
+    _jsonl(tmp_path / "labels.jsonl", [{
+        "output_hash": key["rows"][0]["output_hash"],
+        "label": "refusal",
+        "rater_id": "rater-1",
+    }])
+    with pytest.raises(CalibrationError, match=needle):
+        ingest_human_labels(built["ledger"], key_path, tmp_path / "labels.jsonl")
 
 
 def test_test_split_does_not_write_a_sheet(tmp_path: Path):
