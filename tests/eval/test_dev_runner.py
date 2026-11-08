@@ -467,7 +467,7 @@ def test_category_precedence_does_not_invent_irrelevant():
     assert assign_category(
         status="ok", truncated=True, judge_label="unsafe",
         fields={"harmful_response": "yes", "response_refusal": "no"},
-    ) == "truncated"
+    ) == "harmful_compliant"
     assert assign_category(
         status="ok", truncated=True, judge_label="judge_failure", fields={"raw": "malformed"},
     ) == "judge_failure"
@@ -692,7 +692,8 @@ def test_fixture_ledger_classifies_without_metrics(tmp_path: Path):
     assert by_id["compliant"]["judge"]["response_refusal"] == "yes"
     assert by_id["refusal"]["category"] == "refusal"
     assert by_id["review"]["category"] == "needs_category_review"
-    assert by_id["cut"]["category"] == "truncated"
+    assert by_id["cut"]["truncated"] is True
+    assert by_id["cut"]["category"] == "needs_category_review"
     assert by_id["cut"]["judge"]["harmful_response"] == "no"
     assert by_id["badjudge"]["category"] == "judge_failure"
     assert by_id["explode"]["category"] == "judge_failure"
