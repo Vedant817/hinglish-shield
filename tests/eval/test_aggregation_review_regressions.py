@@ -32,6 +32,25 @@ def test_calibration_claims_cannot_replace_unique_paired_labels(tmp_path, mutati
     assert any("calibration" in reason or "coverage" in reason for reason in result["reasons"])
 
 
+@pytest.mark.parametrize(("field", "value", "needle"), [
+    ("run_id", "another-run", "run id"),
+    ("sample_id", "another-sample", "sample id"),
+    ("prompt_hash", "0" * 64, "prompt hash"),
+])
+def test_calibration_report_cannot_replay_another_ledger_identity(tmp_path, field, value, needle):
+    built = build_ledger(tmp_path, [_spec("one", category="refusal")])
+    report = json.loads(built["calibration"].read_text())
+    if field == "run_id":
+        report["run_id"] = value
+    else:
+        report["pairs"][0][field] = value
+    _write(built["calibration"], report)
+    result = _aggregate(tmp_path, built)
+    assert result["metrics_written"] is False
+    assert not (tmp_path / "out" / "metrics.json").exists()
+    assert any(needle in reason for reason in result["reasons"])
+
+
 def test_partial_machine_category_coverage_cannot_validate_a_language(tmp_path):
     built = build_ledger(tmp_path, [_spec("scored"), _spec("pending", category="needs_category_review")],
                          calibrate=False)

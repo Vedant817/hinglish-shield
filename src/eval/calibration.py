@@ -10,6 +10,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any, Mapping, Sequence
@@ -17,11 +18,18 @@ from typing import Any, Mapping, Sequence
 from .judges import cohens_kappa
 
 SCHEMA_SHEET = "calibration_sheet_v1"
-SCHEMA_KEY = "calibration_sheet_key_v1"
+SCHEMA_KEY = "calibration_sheet_key_v2"
 SCHEMA_REPORT = "human_calibration_v1"
 HUMAN_LABELS = frozenset({"harmful_compliant", "refusal", "irrelevant", "truncated"})
 SHEET_FIELDS = ("sheet_row_id", "output_hash", "lang", "response")
 LANGS = ("en", "hi", "hinglish")
+_SHA256 = re.compile(r"[0-9a-f]{64}")
+
+
+def _sha256_hex(value: Any, label: str) -> str:
+    if not isinstance(value, str) or _SHA256.fullmatch(value) is None:
+        raise CalibrationError(f"{label} is not a lowercase SHA-256")
+    return value
 
 
 class CalibrationError(Exception):
@@ -116,6 +124,9 @@ def prepare_blinded_sheet(
     """
     manifest, samples = _load_ledger_samples(ledger_dir)
     _reject_test_rows(samples)
+    run_id = manifest.get("run_id")
+    if not isinstance(run_id, str) or run_id.strip() == "":
+        raise CalibrationError("ledger run id is missing")
     if manifest.get("membership_split") not in (None, "dev"):
         raise CalibrationError("ledger membership is not dev")
     if manifest.get("split") == "test":
@@ -146,6 +157,7 @@ def prepare_blinded_sheet(
         lang = row.get("lang")
         if not isinstance(response, str) or not isinstance(sample_id, str) or lang not in LANGS:
             raise CalibrationError("generated row is missing response, id, or language")
+        prompt_hash = _sha256_hex(row.get("prompt_hash"), "generated row prompt hash")
         digest = output_hash(response)
         if digest in seen_hash:
             raise CalibrationError("duplicate output hash; human labels would be ambiguous")
@@ -155,6 +167,7 @@ def prepare_blinded_sheet(
             "lang": lang,
             "hs_label": row.get("hs_label"),
             "family_id": row.get("family_id"),
+            "prompt_hash": prompt_hash,
             "output_hash": digest,
             "response": response,
         })
@@ -171,7 +184,9 @@ def prepare_blinded_sheet(
         })
         key_rows.append({
             "sheet_row_id": sheet_row_id,
+            "run_id": run_id,
             "sample_id": row["sample_id"],
+            "prompt_hash": row["prompt_hash"],
             "output_hash": row["output_hash"],
             "lang": row["lang"],
             "hs_label": row["hs_label"],
@@ -251,24 +266,51 @@ def ingest_human_labels(
     Kappa is reported for the unique matched pairs and is null when the
     pair set is degenerate. Incomplete coverage does not invent labels.
     """
-    _manifest, samples = _load_ledger_samples(ledger_dir)
+    manifest, samples = _load_ledger_samples(ledger_dir)
     _reject_test_rows(samples)
+    run_id = manifest.get("run_id")
+    if not isinstance(run_id, str) or run_id.strip() == "":
+        raise CalibrationError("ledger run id is missing")
     key_payload = _read_json(key_path, "sheet key")
     if not isinstance(key_payload, dict) or key_payload.get("schema_version") != SCHEMA_KEY:
         raise CalibrationError("sheet key schema is not recognized")
+    if key_payload.get("ledger_run_id") != run_id:
+        raise CalibrationError("sheet key run id does not match the ledger")
     key_rows = key_payload.get("rows")
     if not isinstance(key_rows, list):
         raise CalibrationError("sheet key rows are missing")
     by_hash: dict[str, dict[str, Any]] = {}
+    seen_samples: set[str] = set()
     for row in key_rows:
         if not isinstance(row, dict):
             raise CalibrationError("sheet key row is not an object")
-        digest = row.get("output_hash")
-        if not isinstance(digest, str) or digest in by_hash:
+        if row.get("run_id") != run_id:
+            raise CalibrationError("sheet key row run id does not match the ledger")
+        sample_id = row.get("sample_id")
+        if not isinstance(sample_id, str) or sample_id.strip() == "" or sample_id in seen_samples:
+            raise CalibrationError("sheet key sample id is missing or duplicated")
+        seen_samples.add(sample_id)
+        _sha256_hex(row.get("prompt_hash"), "sheet key prompt hash")
+        digest = _sha256_hex(row.get("output_hash"), "sheet key output hash")
+        if digest in by_hash:
             raise CalibrationError("sheet key output hash is missing or duplicated")
         by_hash[digest] = row
 
-    by_sample = {row.get("sample_id"): row for row in samples}
+    by_sample: dict[str, dict[str, Any]] = {}
+    for row in samples:
+        sample_id = row.get("sample_id")
+        if not isinstance(sample_id, str) or sample_id in by_sample:
+            raise CalibrationError("ledger sample id is missing or duplicated")
+        by_sample[sample_id] = row
+
+    for row in key_rows:
+        sample = by_sample.get(row["sample_id"])
+        if sample is None:
+            raise CalibrationError("sheet key sample id is not in the ledger")
+        if sample.get("prompt_hash") != row.get("prompt_hash"):
+            raise CalibrationError("sheet key prompt hash does not match the ledger")
+        if sample.get("lang") != row.get("lang"):
+            raise CalibrationError("sheet key language does not match the ledger")
     label_rows = _read_jsonl(labels_path, "human labels")
     seen: set[str] = set()
     duplicate_hashes: list[str] = []
@@ -305,10 +347,7 @@ def ingest_human_labels(
         if digest in duplicate_hashes:
             continue
         link = by_hash[digest]
-        sample = by_sample.get(link.get("sample_id"))
-        if not isinstance(sample, dict):
-            unmatched_hashes.append(digest)
-            continue
+        sample = by_sample[link["sample_id"]]
         response = sample.get("response")
         if not isinstance(response, str) or output_hash(response) != digest:
             raise CalibrationError("sheet key hash does not match the ledger output")
@@ -317,6 +356,9 @@ def ingest_human_labels(
             skipped_unresolved += 1
             continue
         pairs.append({
+            "run_id": run_id,
+            "sample_id": sample["sample_id"],
+            "prompt_hash": link["prompt_hash"],
             "output_hash": digest,
             "lang": link.get("lang"),
             "human_label": human_label,
@@ -352,6 +394,7 @@ def ingest_human_labels(
     )
     report = {
         "schema_version": SCHEMA_REPORT,
+        "run_id": run_id,
         "sheet_kind": key_payload.get("sheet_kind"),
         "labels_admissible": admissible,
         "n_duplicate": len(set(duplicate_hashes)),
@@ -397,7 +440,7 @@ def main(argv: list[str] | None = None) -> int:
     prepare.add_argument("--sheet", required=True, type=Path)
     prepare.add_argument("--key", required=True, type=Path)
     prepare.add_argument("--sample-id", action="append", default=None)
-    ingest = sub.add_parser("ingest", help="Ingest human labels keyed by output hash.")
+    ingest = sub.add_parser("ingest", help="Ingest blinded human labels bound to the run, sample, and prompt hash.")
     ingest.add_argument("--ledger", required=True, type=Path)
     ingest.add_argument("--key", required=True, type=Path)
     ingest.add_argument("--labels", required=True, type=Path)
