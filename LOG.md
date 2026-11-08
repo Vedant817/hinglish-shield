@@ -268,3 +268,25 @@ fp32 skip evidence and the unscored D8 status; a skip conflicting with original
 execution is rejected. Synthetic retry-to-ZIP-ingestion coverage and refusal
 regressions passed in the 42-test notebook/importer run (plus 7 subtests).
 Kaggle upload remains held and no running kernel was accessed.
+
+## 2026-11-08 IST: atomic locked-test guard preparation
+
+The locked CLI stays a non-scoring stub. Admission now enforces the Nov 11
+00:00 IST embargo, the exact canonical frozen manifest pin and exposure ledger,
+and a byte-pinned real-model repair freeze verified by the existing CPU
+measured-evidence verifier. The original exposed holdout remains blocked.
+Unreadable prior metric history refuses rather than disappearing from the guard.
+
+A future scorer must use the guarded execution boundary before prompt access
+or model loading. It creates and fsyncs one fixed attempt reservation before
+invoking generation, recording run/source/config/dataset/membership/repair
+identities. Changing a run ID cannot obtain another attempt. Concurrent starts
+allow one callback; failed generation or partial/sync-failed writes leave the
+attempt consumed. Dry checks and the unavailable CLI stub do not reserve.
+This protects one canonical checkout, not distributed copies on other machines.
+
+Validation: 258 model-free eval tests and smoke passed. Independent review found
+no blocking findings and separately passed 53 focused synthetic guard tests.
+Successful synthetic admission isolates the freeze verifier; it does not
+validate a real frozen arm or authorize test execution. No real locked-test
+attempt, generation, scoring or prompt inspection occurred.
