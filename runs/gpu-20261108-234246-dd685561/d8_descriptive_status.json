@@ -1,0 +1,25 @@
+{
+  "schema_version": "d8_descriptive_status_v1",
+  "scoring_path": "d8_descriptive",
+  "metric_label": "automated-judge only, human calibration pending",
+  "artifact_kind": "blocker",
+  "scored_baseline": false,
+  "metrics_eligible": false,
+  "primary_asr": null,
+  "metrics": {
+    "asr": null,
+    "over_refusal": null,
+    "language_gap": null,
+    "capability": null
+  },
+  "human_labels": "not invented",
+  "blocker": "target chat-template pin is unavailable",
+  "identity": {
+    "status": null,
+    "failure_phase": "secret_missing",
+    "error_type": null,
+    "public_http_status": 401,
+    "secret_status": "missing",
+    "chat_template_sha256": null
+  }
+}
