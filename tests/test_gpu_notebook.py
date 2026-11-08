@@ -1017,7 +1017,9 @@ class TestGpuNotebook(unittest.TestCase):
         self.assertEqual(len(values["HS_DATA_COMMIT"]), 40)
         total = 0
         for slice_name, (relpath, expected) in values["HS_DATA_FILES"].items():
-            data = (ROOT / relpath).read_bytes()
+            raw = (ROOT / relpath).read_bytes()
+            # Compare LF bytes, the bytes raw GitHub serves at the pin commit.
+            data = raw.replace(b"\r\n", b"\n").replace(b"\r", b"\n")
             self.assertEqual(hashlib.sha256(data).hexdigest(), expected, slice_name)
             total += sum(1 for line in data.decode("utf-8").splitlines() if line.strip())
         self.assertEqual(total, 771)
