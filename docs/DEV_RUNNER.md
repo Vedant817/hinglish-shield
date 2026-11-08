@@ -16,7 +16,7 @@ The explicit D8 path is `--scoring-path d8_descriptive`. `--split` may then be `
 
 Exit 0 means the ledger status is `complete`. It does not mean a score exists. Exit 2 is a protocol refusal. Exit 3 is a runtime failure after the run directory was reserved. A second invocation with the same `--out` is refused. Use a new run id for a retry. Never delete a failed directory to reuse its id. The runner does not resume, overwrite, or delete evidence.
 
-The default path constructs `HuggingFaceGreedyGenerator` and then `WildGuardPrimaryJudge` from `src/eval/judges.py`. The D8 path constructs that primary judge and `LLMSecondaryJudge` from `configs/eval/prospective_secondary.json` after the target is unloaded. Torch and transformers are imported inside the generator constructor, not when this module is imported. Import does not download weights.
+The default path constructs `HuggingFaceGreedyGenerator` and then `WildGuardPrimaryJudge` from `src/eval/judges.py`. The D8 path constructs that primary judge and the pinned secondary judge from `configs/eval/prospective_secondary.json` after the target is unloaded. The secondary judge stays in-process only when this interpreter already matches the pinned CPU libraries (`torch` `2.15.0+cpu`, `transformers` `5.22.2`, `huggingface-hub` `2.4.0`). Otherwise set `HS_SECONDARY_PYTHON` to an interpreter that matches that pin. The parent does not load secondary weights on that path. A CUDA build with no such interpreter refuses the D8 path before any row is judged. Torch and transformers are imported inside the generator constructor, not when this module is imported. Import does not download weights.
 
 ## Inputs
 

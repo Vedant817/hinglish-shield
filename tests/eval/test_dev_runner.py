@@ -721,6 +721,54 @@ def test_d8_keeps_unreviewed_calibration_and_requires_both_judges(tmp_path: Path
         )
 
 
+def test_d8_secondary_runtime_error_is_not_stored_as_judge_failure(tmp_path: Path):
+    from src.eval.dev_runner import D8_SCORING_PATH
+
+    ready = tmp_path / "runtime"
+    paths = _bundle(
+        ready,
+        [_row("s1", split="calibration", review="unreviewed")],
+        family_split="calibration",
+        manifest_review="unreviewed",
+    )
+
+    class _Primary:
+        def judge_one(self, _prompt, _response, **kwargs):
+            return SimpleNamespace(
+                prompt_id=kwargs["prompt_id"],
+                value=1.0,
+                label="unsafe",
+                metadata={"harmful_request": "yes", "response_refusal": "no", "harmful_response": "yes"},
+            )
+
+        def unload(self):
+            return None
+
+    class _Secondary:
+        def judge_one(self, prompt, _response, **_kwargs):
+            raise DevRunnerError("D8 secondary process failed", stage="runtime")
+
+        def unload(self):
+            return None
+
+    with pytest.raises(DevRunnerError, match="D8 secondary process failed"):
+        run_dev_ledger(
+            config_path=paths["config"],
+            index_path=paths["index"],
+            prompts_path=paths["prompts"],
+            family_manifest_path=paths["manifest"],
+            out_dir=ready / "ledger",
+            split="calibration",
+            scoring_path=D8_SCORING_PATH,
+            generator_factory=lambda _config: _Generator(_ok),
+            judge_factory=lambda _config: _Primary(),
+            secondary_judge_factory=lambda _config: _Secondary(),
+        )
+    samples = ready / "ledger" / "samples.jsonl"
+    text = samples.read_text(encoding="utf-8") if samples.exists() else ""
+    assert "judge_failure" not in text
+
+
 def test_prompt_hash_and_dataset_hash_block_before_factories(tmp_path: Path):
     bad_hash = _paths(tmp_path, dataset_hash="d" * 64)
     calls = []

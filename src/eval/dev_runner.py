@@ -852,16 +852,29 @@ class D8JudgePair:
 
 
 def default_d8_judge_factory(config: Mapping[str, Any]) -> D8JudgePair:
-    """Build both pinned judges. Construction does not score and does not write metrics."""
-    primary = default_judge_factory(config)
+    """Build both pinned judges. Construction does not score and does not write metrics.
+
+    The secondary judge stays in-process only when this interpreter matches the
+    pinned CPU libraries. Otherwise it runs under ``HS_SECONDARY_PYTHON``.
+    A missing match refuses before the primary judge is constructed.
+    """
+    from .d8_secondary_runtime import PinnedCpuSecondaryProcess, select_secondary_runtime
+    from .secondary_adapter import UnavailableError, require_selected_pins
+
+    runtime = select_secondary_runtime()
     if not SECONDARY_PROTOCOL.is_file():
         raise DevRunnerError("D8 descriptive path requires both judges")
-    secondary = LLMSecondaryJudge.from_protocol(SECONDARY_PROTOCOL)
-    pins = getattr(getattr(secondary, "adapter", None), "pins", None)
-    if not isinstance(pins, Mapping):
-        raise DevRunnerError("D8 descriptive path requires both judges")
+    try:
+        pins = require_selected_pins(json.loads(SECONDARY_PROTOCOL.read_text(encoding="utf-8")))
+    except (OSError, json.JSONDecodeError, UnavailableError):
+        raise DevRunnerError("D8 descriptive path requires both judges") from None
     if pins.get("model_id") != SECONDARY_MODEL_ID or pins.get("model_revision") != SECONDARY_REVISION:
         raise DevRunnerError("D8 secondary revision is not the pinned Qwen3Guard revision")
+    primary = default_judge_factory(config)
+    if runtime is None:
+        secondary = LLMSecondaryJudge.from_protocol(SECONDARY_PROTOCOL)
+    else:
+        secondary = PinnedCpuSecondaryProcess(runtime)
     return D8JudgePair(primary, secondary)
 
 
@@ -1390,6 +1403,8 @@ def run_dev_ledger(
                             record["response"],
                             prompt_id=record["sample_id"],
                         )
+                    except DevRunnerError:
+                        raise
                     except Exception as exc:
                         sample["secondary_judge"] = {
                             "error_type": type(exc).__name__,
