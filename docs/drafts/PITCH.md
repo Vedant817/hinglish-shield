@@ -1,13 +1,43 @@
-# Local pitch draft
+# Local pitch draft (skeleton)
 
-Not approved for publication or submission. Measured benchmark results: Not run.
+Not approved for publication or submission. Measured benchmark results:
+**Not run**. Every number comes from `runs/<run-id>/metrics.json` after the
+ingest command runs. Placeholders show the field each figure will take;
+they stay empty now.
 
-Hinglish Shield asks whether a small multilingual financial-support assistant can become safer without losing useful support behavior. We are building a reproducible audit and repair acceptance pack around Tiny Aya Global and verified portions of the Lexsi libraries.
+## The ask
 
-The pack keeps related prompts in semantic families, records translation lineage, checks full judge outputs and separates runtime fixtures from measured safety. English WildGuard and secondary-adapter fixture loading/parsing are evidenced. Hindi and Hinglish accuracy, the dev ASR, and a successful model repair are Not run. Original fp32 parity is Not run. The CPU bf16 files under `runs/kaggle-parity-v8-2026-11-07/` are a provisional variant, not ASR.
+We are building a reproducible audit and repair acceptance pack for a small
+multilingual financial-support assistant. Hinglish Shield asks whether Tiny
+Aya Global can become safer without losing useful support behavior, using
+English, Hindi and Hinglish.
 
-The target chat-template hash is Not run. Kaggle version 11 recorded `failure_phase` `secret_missing` and an unauthenticated HTTP 401 (`runs/tokenizer-metadata-v11-2026-11-08/`). The CLI cannot attach `HF_TOKEN`. D8 says a future dev baseline is automated-judge only, with human calibration still pending. Unreviewed rows are not human labels.
+## What exists today (no numbers)
 
-The next evidence is reviewed multilingual data and human response calibration, followed by an admitted dev baseline. Final evaluation requires a frozen repair, preservation controls and a prospectively resolved holdout incident. Our submission should show the reproducible artifacts and honest unavailable results, not present fixtures as proof of safety.
+- Source-family identity and translation review keep related prompts
+  together and record lineage.
+- English WildGuard and secondary-adapter fixture loading/parsing are
+  evidenced. Hindi and Hinglish accuracy are **Not run**.
+- Original fp32 parity is **Not run**. The CPU bf16 parity files are a
+  provisional variant, not ASR and not original fp32 credit.
+- The dev ASR and a measured repair acceptance are **Not run**.
 
-Evidence anchors: `runs/dev-readiness-2026-11-07/`, `runs/secondary-adapter-fixture-local-20261107-parent/`, and `runs/postmerge-readiness-2026-11-07/`. These are readiness/fixture evidence, not eligible benchmark results. Results remain **Not run** until admission writes traceable run-kind metrics and a matching aggregation sidecar.
+## What the next run will put here
+
+- [[METRICS runs/<run-id>/metrics.json -> target_identity.status]] for the
+  target chat-template pin.
+- [[METRICS -> d8_descriptive.by_slice.<slice>.wildguard_unsafe_rate]] for
+  descriptive judge rates, labeled `automated-judge only, human calibration
+  pending`, with `metrics_eligible` false.
+- [[METRICS -> provisional_locate.l2_norm]] and [[METRICS ->
+  provisional_locate.checks.alpha_zero_matches_base]] for provisional
+  locate evidence (no fp32 credit).
+- Repair freeze [[METRICS -> runs/<id>/repair_freeze.json verification]]:
+  research arm only, never a deployable claim.
+
+## The standard
+
+The submission will show the reproducible artifacts and honest unavailable
+results. Fixtures are never presented as proof of safety. Final evaluation
+waits on a frozen repair, preservation controls, and the Nov 11 IST locked
+test. Do not fill any placeholder by hand.
