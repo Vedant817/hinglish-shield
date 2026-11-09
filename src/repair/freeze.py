@@ -156,7 +156,7 @@ def _require_provisional_locate(direction: Mapping[str, Any]) -> None:
     declared_norm = direction.get("l2_norm")
     if (isinstance(declared_norm, bool) or not isinstance(declared_norm, (int, float))
             or not math.isfinite(float(declared_norm)) or norm == 0.0
-            or abs(float(declared_norm) - norm) > 1e-6):
+            or abs(float(declared_norm) - norm) > max(1e-9, norm * 1e-5)):
         raise RepairError("freeze refused: locate direction norm does not match", stage="freeze")
     controls = direction.get("controls")
     if not isinstance(controls, dict):
