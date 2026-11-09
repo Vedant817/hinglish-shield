@@ -293,9 +293,17 @@ def _make_transformers(identity_template):
 class FakeLocateModel:
     def __init__(self):
         self.cfg = types.SimpleNamespace()
+        self.training = False
+        self.hook_dict = {}
 
     def eval(self):
         return self
+
+    def reset_hooks(self):
+        self.hook_dict = {}
+
+    def named_modules(self):
+        return []
 
     def __call__(self, item):
         return FakeLogits(BASE_LOGITS)
