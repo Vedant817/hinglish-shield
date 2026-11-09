@@ -28,6 +28,7 @@ FUNC_NAMES = {
     "_all_finite_kls",
     "sha256_hex",
     "canonical_sha256",
+    "selected_chat_template",
     "redact_secrets",
     "make_phase_status",
     "checkpoint_phase",
@@ -983,18 +984,33 @@ class TestGpuNotebook(unittest.TestCase):
         self.assertNotIn("x" * 30, redacted)
         self.assertIn("[redacted]", redacted)
 
+    def test_selected_chat_template_never_silently_falls_back(self) -> None:
+        select = self.ns["selected_chat_template"]
+        template = "chat-template-fixture"
+        pin = hashlib.sha256(template.encode("utf-8")).hexdigest()
+        self.assertEqual(select(template, pin, "target"), template)
+        self.assertEqual(select({"default": template}, pin, "target"), template)
+        with self.assertRaises(ValueError):
+            select({"default": "other"}, pin, "target")
+        with self.assertRaises(ValueError):
+            select({"other": template}, pin, "target")
+        with self.assertRaises(ValueError):
+            select(123, pin, "target")
+
     def test_d8_and_locate_cells_chain_with_checkpoints(self) -> None:
         d8 = cell_with("def fetch_d8_rows")
         for marker in ("d8_descriptive.json", "d8_status.json", "d8_generations.jsonl",
                        "d8_judge_scores.jsonl", "d8_descriptive_status.json",
                        "WildGuard", "Qwen3Guard", "checkpoint_phase",
                        "automated-judge only, human calibration pending",
-                       "HS_DATA_FILES", "HS_DATA_BASE"):
+                       "HS_DATA_FILES", "HS_DATA_BASE", "selected_chat_template",
+                       "unreviewed_translation", "HS_FAMILY_MANIFEST_PATH", "HS_HI_SEED_PATH"):
             self.assertIn(marker, d8)
         self.assertNotIn("test_locked", d8)
         self.assertNotIn("hs_benign_en/test", d8)
         locate = cell_with("provisional_locate_v1")
         for marker in ("MLP 0", "locate_direction.json", "locate_status.json",
+                       "locate_diagnostics.json", "selected_chat_template",
                        "checkpoint_phase", "original_fp32_credit",
                        "alpha_zero_with_wrapper", "random_norm_matched_seed_7",
                        "candidate_alpha_1", "ActivationSteering"):
@@ -1009,10 +1025,13 @@ class TestGpuNotebook(unittest.TestCase):
         config = cell_with("HS_DATA_FILES = {")
         tree = ast.parse(config)
         values = {}
+        wanted = {"HS_DATA_FILES", "HS_DATA_COMMIT", "HS_HI_SEED_SHA256",
+                  "HS_FAMILY_MANIFEST_SHA256", "TINY_AYA_CHAT_TEMPLATE_SHA256",
+                  "HS_HI_SEED_PATH", "HS_FAMILY_MANIFEST_PATH"}
         for node in tree.body:
             if isinstance(node, ast.Assign):
                 for target in node.targets:
-                    if isinstance(target, ast.Name) and target.id in {"HS_DATA_FILES", "HS_DATA_COMMIT"}:
+                    if isinstance(target, ast.Name) and target.id in wanted:
                         values[target.id] = ast.literal_eval(node.value)
         self.assertEqual(len(values["HS_DATA_COMMIT"]), 40)
         total = 0
@@ -1023,6 +1042,26 @@ class TestGpuNotebook(unittest.TestCase):
             self.assertEqual(hashlib.sha256(data).hexdigest(), expected, slice_name)
             total += sum(1 for line in data.decode("utf-8").splitlines() if line.strip())
         self.assertEqual(total, 771)
+        # Hindi: membership comes from the frozen family manifest; prompts are
+        # bound positionally from the pinned seed file (source_id hin:<n>).
+        seed = (ROOT / values["HS_HI_SEED_PATH"]).read_bytes().replace(b"\r\n", b"\n")
+        self.assertEqual(hashlib.sha256(seed).hexdigest(), values["HS_HI_SEED_SHA256"])
+        manifest = (ROOT / values["HS_FAMILY_MANIFEST_PATH"]).read_bytes().replace(b"\r\n", b"\n")
+        self.assertEqual(hashlib.sha256(manifest).hexdigest(),
+                         values["HS_FAMILY_MANIFEST_SHA256"])
+        membership = json.loads(manifest.decode("utf-8"))
+        hi_counts = {}
+        for fam in membership["families"].values():
+            if fam.get("split") not in {"calibration", "dev"}:
+                continue
+            for mem in fam.get("members", []):
+                if mem.get("lang") == "hi":
+                    slice_name = f'{mem.get("hs_label")}_{fam["split"]}_hi'
+                    hi_counts[slice_name] = hi_counts.get(slice_name, 0) + 1
+        self.assertEqual(hi_counts, {"harm_calibration_hi": 196, "harm_dev_hi": 277})
+        self.assertEqual(total + sum(hi_counts.values()), 1244)
+        self.assertEqual(values["TINY_AYA_CHAT_TEMPLATE_SHA256"],
+                         "2147c474f41b522b7296f74692b9f31e45f49a31465960576a9d321339c5915a")
 
 
 if __name__ == "__main__":

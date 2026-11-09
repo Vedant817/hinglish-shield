@@ -149,7 +149,8 @@ def _d8_summary():
         "artifact_kind": "descriptive", "scoring_path": "d8_descriptive",
         "metric_label": "automated-judge only, human calibration pending",
         "scored_baseline": False, "metrics_eligible": False, "primary_asr": None,
-        "human_calibration": "pending", "split": "calibration+dev",
+        "human_calibration": "pending", "translation_review": "unreviewed_translation",
+        "split": "calibration+dev",
         "metrics": {"asr": None, "over_refusal": None, "language_gap": None},
         "by_slice": {name: {"n": 1} for name in data_pin},
         "data_pin": data_pin,
@@ -209,6 +210,48 @@ def test_phase_chain_artifacts_import_without_metrics(tmp_path):
     assert metrics["d8_descriptive"]["scored_baseline"] is False
     assert metrics["provisional_locate"]["original_fp32_credit"] is False
     assert metrics["target_identity"]["status"] == "metadata_retrieved"
+
+
+def test_locate_diagnostics_import_keeps_failure_reason(tmp_path):
+    diagnostics = {"phase": "locate", "status": "failed",
+                   "provisional": True, "original_fp32_credit": False,
+                   "metrics_eligible": False, "primary_asr": None,
+                   "controls": {"candidate_alpha_1": {"ran": False}},
+                   "checks": {"layer_scores": {"MLP 0": 1.0}},
+                   "error_type": "AttributeError", "error": "fixture error"}
+    files = {
+        "locate_status.json": _phase_status("locate", "failed", provisional=True,
+                                            original_fp32_credit=False, error="fixture error"),
+        "locate_diagnostics.json": json.dumps(diagnostics).encode(),
+    }
+    _, summary = inspect_archive(archive(tmp_path, files))
+    assert summary["phase_status"]["locate"]["status"] == "failed"
+    files = {"locate_diagnostics.json": json.dumps(diagnostics).encode()}
+    with pytest.raises(ValueError, match="diagnostics require"):
+        inspect_archive(archive(tmp_path, files))
+    bad = dict(diagnostics, provisional=False)
+    files = {"locate_status.json": _phase_status("locate", "failed", provisional=True,
+                                                 original_fp32_credit=False),
+             "locate_diagnostics.json": json.dumps(bad).encode()}
+    with pytest.raises(ValueError, match="diagnostics cannot claim"):
+        inspect_archive(archive(tmp_path, files))
+
+
+def test_d8_summary_requires_unreviewed_translation_label(tmp_path):
+    summary = _d8_summary()
+    del summary["translation_review"]
+    files = {"d8_descriptive.json": json.dumps(summary).encode(),
+             "d8_status.json": _phase_status("d8", "ok")}
+    with pytest.raises(ValueError):
+        inspect_archive(archive(tmp_path, files))
+
+
+def test_hi_rows_require_the_unreviewed_translation_label(tmp_path):
+    row = {"item_id": "aya_hin:1", "split": "dev", "slice": "harm_dev_hi",
+           "translation_review": "reviewed", "metrics_eligible": False, "primary_asr": None}
+    files = {"d8_judge_scores.jsonl": (json.dumps(row) + "\n").encode()}
+    with pytest.raises(ValueError, match="unreviewed"):
+        inspect_archive(archive(tmp_path, files))
 
 
 def test_failed_phases_stay_failures_and_refuse_score_claims(tmp_path):
