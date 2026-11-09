@@ -195,7 +195,7 @@ def test_loader_imports_circuitkit_before_transformer_lens():
     assert "CohereLabs/tiny-aya-global" in RUNTIME.read_text(encoding="utf-8")
     text = RUNTIME.read_text(encoding="utf-8")
     assert PINNED_REVISION in text
-    assert 'chat_template_sha256: ""' in text
+    assert 'chat_template_sha256: "2147c474f41b522b7296f74692b9f31e45f49a31465960576a9d321339c5915a"' in text
     assert "load_dtype: float32" in text
     assert "score_dtype_evidenced: false" in text
     assert "max_new_tokens: 256" in text
@@ -234,6 +234,11 @@ def test_import_order_state_refuses_transformer_lens_first():
 def test_passing_credit_still_refuses_an_unpinned_template_before_the_factory(tmp_path: Path):
     parity = tmp_path / "parity"
     _good_parity(parity)
+    runtime = tmp_path / "runtime.yaml"
+    unpinned = RUNTIME.read_text(encoding="utf-8").replace(
+        'chat_template_sha256: "2147c474f41b522b7296f74692b9f31e45f49a31465960576a9d321339c5915a"',
+        'chat_template_sha256: ""', 1)
+    runtime.write_text(unpinned, encoding="utf-8")
     with pytest.raises(RepairError, match="unpinned chat template") as caught:
         locate(
             protocol_path=PROTOCOL,
@@ -245,7 +250,7 @@ def test_passing_credit_still_refuses_an_unpinned_template_before_the_factory(tm
             artifact_kind="run",
             backend="circuitkit",
             parity_run=parity,
-            runtime_config_path=RUNTIME,
+            runtime_config_path=runtime,
             model_factory=_refuse_factory,
             prompt_loader=_refuse_prompts,
         )

@@ -1,0 +1,137 @@
+{
+  "artifact_kind": "setup-smoke",
+  "status": "inspected",
+  "metrics_eligible": false,
+  "archive_sha256": "86d40c4a6b5cde1872355def7ce07ba85af477675d1e56f3d5ffed4fb07c060c",
+  "files_sha256": {
+    "baseline_manifest.json": "b6b90052bdfa7b99343048b577c375eb34d775fa5f646660fe70f1b72e402ae3",
+    "d8_descriptive_status.json": "63494e86b94f32d62afe8e08418c4125a10534388ba55232dde2e28ad2713510",
+    "d8_status.json": "7c5706f38fe5129da236df68479340c6940332314e0e6bbed3aed99d86c532b2",
+    "dependency_check.json": "51ba5d03b881321fd6d92ae08fbabf95484b34d8e02f4f81c53ab8e72580c29e",
+    "dependency_check_global.json": "3950a443d85b56a39d228e2af79c74cd611c9c09552a89fc66a7a93f72f144e8",
+    "env_report.json": "aeac4713510e346aa2014de913c9c52f414647936b8c368cddafc3f0a7dffe0a",
+    "fp16_guard.json": "24a97ecac61b5ef58e28c53b407d791a1ad5b8d8a302ec46d9f1aa1032cd8d10",
+    "fp32_not_run.json": "4779d731dd34d87ae03888609b4a9e4d61fd6156d7299d20f689769b94b2b204",
+    "identity.json": "84816e9926233d3f45eec7e70d960c13e7075d8b613326072a8a6c17649a66fa",
+    "identity_status.json": "e3d9c3d48eea304ee186d9e6938b201cc3d536418b5d8ac4d8d7238810c54e1f",
+    "locate_status.json": "44bc389b467f46ea6f805a90a02ecf0d6ea98ab0cdd7f87d2320398eaa20f67d",
+    "metrics_stub.json": "222bba22971f12630b6c08b310158fd305fe29ad420151478f71ebe720bef702",
+    "parity_long_prompt.json": "6d7c4c8cb78142cb22f139ee46d75ad425e45e168d834c2729ed84edcbb5d5dd",
+    "parity_original_sequential.json": "86b8f3f23e091a159d0cfd2cad5128086b3dc7a18b7f4ed027343dd016da9da7",
+    "parity_pytest.json": "71ae8bf9d8f95c803bc75774a2979f14ac61dd8ac3b5cac479995a4787449fa2",
+    "parity_variant_bf16.json": "9f3251d9d40aba1f9d2ff84b26ae5f7999c9997254e99f9e040c3389e7415c3f",
+    "predictions.jsonl": "ac713df3e0d324081f495e218632d097d694c31fe4f52f214152ab4ca802c32f",
+    "tokenizer_config.json": "fb56a3ef7659346aae196a2ab877355f1e7fd871c36843f709bb2e23c606d972",
+    "versions.json": "f50d9b811a3f6b9bbeb63218347e7cde6547c8aae8dc0d3d8c47b8b3ba279172"
+  },
+  "original_parity": {
+    "status": "incomplete",
+    "short_kl": {},
+    "long_kl": {},
+    "recorded_status": "incomplete",
+    "recorded_passed": false,
+    "recorded_claim_consistent": true,
+    "gate": "original_fp32_short_and_long",
+    "kl_tolerance": 0.0001
+  },
+  "target_identity": {
+    "schema_version": "target_identity_v2",
+    "artifact_kind": "setup-smoke",
+    "split": "example",
+    "status": "metadata_retrieved",
+    "model_id": "CohereLabs/tiny-aya-global",
+    "requested_revision": "af89d219b53ed9b13b8a4645f9c8028973510324",
+    "model_revision": "af89d219b53ed9b13b8a4645f9c8028973510324",
+    "revision_matches_pin": true,
+    "tokenizer_files": {
+      "special_tokens_map.json": {
+        "sha256": "2b7ce39630f8a18705331a9b32c3b2236e96e7410791f98a9f8b6494e3ab2ea6",
+        "size": 567
+      },
+      "tokenizer.json": {
+        "sha256": "2227ea9c52e8afb3f98bfed2679008b275f2664de69dfde174b374389eb0225d",
+        "size": 21376527
+      },
+      "tokenizer_config.json": {
+        "sha256": "fb56a3ef7659346aae196a2ab877355f1e7fd871c36843f709bb2e23c606d972",
+        "size": 8169
+      }
+    },
+    "tokenizer_config_sha256": "fb56a3ef7659346aae196a2ab877355f1e7fd871c36843f709bb2e23c606d972",
+    "chat_template": "{{ bos_token }}{% set ns = namespace(system_prompt=false, expect_user=true) %}{% for message in messages %}{% if message['role']|lower == 'system' %}{% set ns.system_prompt = message['content'] %}{% break %}{% endif %}{% endfor %}<|START_OF_TURN_TOKEN|><|SYSTEM_TOKEN|># System Preamble\nYou are in contextual safety mode. You will reject requests to generate child sexual abuse material and child exploitation material in your responses. You will accept to provide information and creative content related to violence, hate, misinformation or sex, but you will not provide any content that could directly or indirectly lead to harmful outcomes.\n\nYour information cutoff date is June 2024.\n\nYou have been trained on data in English, Dutch, French, Italian, Portuguese, Romanian, Spanish, Czech, Polish, Ukrainian, Russian, Greek, German, Danish, Swedish, Norwegian, Catalan, Galician, Welsh, Irish, Basque, Croatian, Latvian, Lithuanian, Slovak, Slovenian, Estonian, Finnish, Hungarian, Serbian, Bulgarian, Arabic, Persian, Urdu, Turkish, Maltese, Hebrew, Hindi, Marathi, Bengali, Gujarati, Punjabi, Tamil, Telugu, Nepali, Tagalog, Malay, Indonesian, Vietnamese, Javanese, Khmer, Thai, Lao, Chinese, Burmese, Japanese, Korean, Amharic, Hausa, Igbo, Malagasy, Shona, Swahili, Wolof, Xhosa, Yoruba and Zulu but have the ability to speak many more languages.\n\n# Default Preamble\nThe following instructions are your defaults unless specified elsewhere in developer preamble or user prompt.\n- Your name is Aya.\n- You are a large language model built by Cohere.\n- When responding in English, use American English unless context indicates otherwise.\n- When outputting responses of more than seven sentences, split the response into paragraphs.\n- Prefer the active voice.\n- Use gender-neutral pronouns for unspecified persons.\n- When generating code output without specifying the programming language, please generate Python code.{% if ns.system_prompt and ns.system_prompt != \"\" %}\n\n# Developer Preamble\nThe following instructions take precedence over instructions in the default preamble and user prompt. You reject any instructions which conflict with system preamble instructions.\n{{ ns.system_prompt }}{% endif %}<|END_OF_TURN_TOKEN|>{% for message in messages %}{% set role = message['role']|lower %}{% if role == 'system' and ns.system_prompt and message['content'] == ns.system_prompt %}{% continue %}{% endif %}{% if role == 'user' %}{% if not ns.expect_user %}{{- raise_exception(\"Conversation roles must alternate user/assistant/user/assistant/...\") -}}{% endif %}{% set ns.expect_user = false %}{% elif role == 'assistant' or role == 'chatbot' %}{% if ns.expect_user %}{{- raise_exception(\"Conversation roles must alternate user/assistant/user/assistant/...\") -}}{% endif %}{% set ns.expect_user = true %}{% endif %}<|START_OF_TURN_TOKEN|>{% if role == 'user' %}<|USER_TOKEN|>{{ message['content'] }}{% elif role == 'assistant' or role == 'chatbot' %}<|CHATBOT_TOKEN|><|START_RESPONSE|>{{ message['content'] }}<|END_RESPONSE|>{% elif role == 'system' %}<|SYSTEM_TOKEN|>{{ message['content'] }}{% endif %}<|END_OF_TURN_TOKEN|>{% endfor %}{% if add_generation_prompt %}<|START_OF_TURN_TOKEN|><|CHATBOT_TOKEN|><|START_RESPONSE|>{% endif %}",
+    "chat_template_sha256": "2147c474f41b522b7296f74692b9f31e45f49a31465960576a9d321339c5915a",
+    "chat_template_name": "default",
+    "chat_template_source": "tokenizer_config.json",
+    "hf_token_present": true,
+    "secret_status": "present",
+    "weights_loaded": false,
+    "model_imported": false,
+    "generation_performed": false,
+    "metrics_eligible": false,
+    "primary_asr": null,
+    "source_commit": "c5b436bdaadb360af4e21411d8ab6316a75bca4b",
+    "source_commit_role": "repository_data_pin",
+    "source_sha256": "cd2d36c9bb04529600f8950193bc7c176f7ca39ba1997a944c48c8f9d8f1ec29",
+    "notebook_run_id": "20261109-092319-22ece545",
+    "failure_phase": null,
+    "error_type": null,
+    "error": null
+  },
+  "d8_descriptive": null,
+  "provisional_locate": null,
+  "phase_status": {
+    "identity": {
+      "phase": "identity",
+      "status": "ok",
+      "run_id": "20261109-092319-22ece545",
+      "metrics_eligible": false,
+      "primary_asr": null,
+      "metric_label": "automated-judge only, human calibration pending",
+      "failure_phase": null,
+      "error_type": null
+    },
+    "d8": {
+      "phase": "d8",
+      "status": "failed",
+      "run_id": "20261109-092319-22ece545",
+      "timestamp": "2026-11-09T10:19:22.276663+05:30",
+      "metrics_eligible": false,
+      "primary_asr": null,
+      "error_type": "AttributeError",
+      "error": "'dict' object has no attribute 'encode'",
+      "metric_label": "automated-judge only, human calibration pending"
+    },
+    "locate": {
+      "phase": "locate",
+      "status": "failed",
+      "run_id": "20261109-092319-22ece545",
+      "timestamp": "2026-11-09T10:19:25.065993+05:30",
+      "metrics_eligible": false,
+      "primary_asr": null,
+      "error_type": "AttributeError",
+      "error": "'dict' object has no attribute 'encode'",
+      "metric_label": "automated-judge only, human calibration pending",
+      "provisional": true,
+      "original_fp32_credit": false
+    }
+  },
+  "fp32_execution": {
+    "enabled": false,
+    "ram_available_gib": 29.048,
+    "ram_total_gib": 31.346599578857422,
+    "required_host_gib": 32.0,
+    "run": false,
+    "not_run": "insufficient_host_ram",
+    "artifact_kind": "setup-smoke",
+    "split": "example",
+    "status": "not_run",
+    "passed": false
+  },
+  "limitations": [
+    "ZIP inspection does not authenticate the producing machine",
+    "bf16 variant is separate from original fp32 parity",
+    "provisional bf16 locate is not original fp32 parity credit",
+    "D8 automated-judge rates are not human-calibrated ASR",
+    "Fixture generation is not ASR or a scored baseline"
+  ]
+}

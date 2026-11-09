@@ -1,0 +1,10 @@
+{
+  "phase": "identity",
+  "status": "ok",
+  "run_id": "20261109-092319-22ece545",
+  "metrics_eligible": false,
+  "primary_asr": null,
+  "metric_label": "automated-judge only, human calibration pending",
+  "failure_phase": null,
+  "error_type": null
+}

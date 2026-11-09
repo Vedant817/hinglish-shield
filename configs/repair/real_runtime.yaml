@@ -1,13 +1,14 @@
 # Weight-load pins for the CircuitKIT repair runtime.
 # The revision is the notebook MODEL_GLOBAL_REV for CohereLabs/tiny-aya-global.
-# The chat template hash is intentionally empty. This file does not invent one.
+# The chat template hash is pinned from a real identity artifact
+# (runs/gpu-20261109-092319-22ece545/identity.json), not invented.
 # load_dtype is the only dtype the original fp32 short-plus-4196 gate can evidence.
 # declared_score_dtype stays the preregistered bfloat16 and is not evidenced here.
 # circuit_scores stays null. Node scores are not invented.
 
 model_id: CohereLabs/tiny-aya-global
 model_revision: af89d219b53ed9b13b8a4645f9c8028973510324
-chat_template_sha256: ""
+chat_template_sha256: "2147c474f41b522b7296f74692b9f31e45f49a31465960576a9d321339c5915a"
 load_dtype: float32
 load_dtype_evidence: original_fp32_short_and_4196_long
 declared_score_dtype: bfloat16

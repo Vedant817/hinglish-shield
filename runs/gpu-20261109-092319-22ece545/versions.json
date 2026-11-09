@@ -1,0 +1,13 @@
+{
+  "python": "3.13.16",
+  "torch": "2.11.0+cu130",
+  "huggingface_hub": "1.33.0",
+  "transformer_lens": "3.8.0",
+  "accelerate": "1.15.0",
+  "cuda_available": true,
+  "transformers": "5.22.1",
+  "circuitkit": "0.2.0",
+  "safetune": "0.1.12",
+  "circuitkit_sha": "e71d5e17fe6e2abfde47ec9a7fbaf31649601b78",
+  "safetune_sha": "3901a9f48a88984a181c8c9493be2d3a20ab160f"
+}
