@@ -98,7 +98,7 @@ def test_notebook_locate_asserts_alpha_zero_before_any_direction():
         if LOCATE_CELL in text:
             cell = text
     assert cell is not None
-    zero_pos = cell.index("_zero_diff = _control_run({LOCATE_NODE: _vector_tensor}, 0.0)")
+    zero_pos = cell.index('_zero_diff = _control_run("alpha_zero_with_wrapper"')
     direction_pos = cell.index('write_json(ARTIFACT_DIR / "locate_direction.json"')
     gate_pos = cell.index("if _zero_diff != 0.0")
     assert zero_pos < gate_pos
