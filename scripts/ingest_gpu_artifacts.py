@@ -25,17 +25,21 @@ ALLOWED = {"env_report.json", "versions.json", "parity_original_sequential.json"
            "identity.json", "tokenizer_config.json", "identity_status.json", "fp32_not_run.json",
            "d8_descriptive_status.json", "d8_descriptive.json", "d8_status.json",
            "d8_generations.jsonl", "d8_judge_scores.jsonl",
-           "locate_direction.json", "locate_status.json", "locate_diagnostics.json"}
+           "locate_direction.json", "locate_status.json", "locate_diagnostics.json",
+           "hs_eval_hinglish_calibration.jsonl", "hs_eval_hinglish_dev.jsonl",
+           "hinglish_generation.json", "hinglish_status.json", "hinglish_review.csv"}
 DEPENDENCY_FILES = {"commands.json", "dependency_check.json", "dependency_check_global.json",
                     "failure.log", "install.log", "imports.log", "manifest.json", "pins.json",
                     "preflight_source.py", "source_notebook.ipynb", "versions.json"}
 PHASE_STATUSES = {"ok", "failed", "blocked", "skipped", "incomplete"}
 D8_SPLITS = {"calibration", "dev"}
 D8_SLICES = {"benign_calibration", "benign_dev", "harm_calibration", "harm_dev",
-             "harm_calibration_hi", "harm_dev_hi"}
+             "harm_calibration_hi", "harm_dev_hi",
+             "harm_calibration_hing", "harm_dev_hing"}
 D8_METRIC_LABEL = "automated-judge only, human calibration pending"
 PINNED_MODEL_ID = "CohereLabs/tiny-aya-global"
 PINNED_MODEL_REVISION = "af89d219b53ed9b13b8a4645f9c8028973510324"
+HINGLISH_MODEL_ID = "Qwen/Qwen2.5-7B-Instruct"
 
 
 
@@ -130,6 +134,9 @@ def _validate_d8_rows(data: bytes, label: str) -> None:
             raise ValueError(f"{label} rows must use a known calibration/dev slice")
         if str(row["slice"]).endswith("_hi") and row.get("translation_review") != "unreviewed_translation":
             raise ValueError(f"{label} Hindi rows must be labeled unreviewed translations")
+        if str(row["slice"]).endswith("_hing"):
+            if row.get("translation_review") != "unreviewed machine translation":
+                raise ValueError(f"{label} Hinglish rows must be labeled unreviewed machine translations")
         if row.get("metrics_eligible") is not False or row.get("primary_asr") is not None:
             raise ValueError(f"{label} rows cannot claim a metric")
 
@@ -142,7 +149,8 @@ def _validate_d8_summary(obj: object) -> None:
             or obj.get("metrics_eligible") is not False
             or obj.get("primary_asr") is not None
             or obj.get("human_calibration") != "pending"
-            or obj.get("translation_review") != "unreviewed_translation"):
+            or obj.get("translation_review") != "unreviewed_translation"
+            or obj.get("hinglish_translation_review") != "unreviewed machine translation"):
         raise ValueError("D8 summary cannot claim a scored or human-calibrated baseline")
     if obj.get("split") not in {"calibration", "dev", "calibration+dev"}:
         raise ValueError("D8 summary split must be calibration/dev only")
@@ -227,6 +235,22 @@ def _validate_locate_diagnostics(obj: object) -> None:
             or obj.get("primary_asr") is not None
             or obj.get("status") not in {"ok", "failed", "blocked"}):
         raise ValueError("locate diagnostics cannot claim credit or a metric")
+
+
+def _validate_hinglish_generation(obj: object) -> None:
+    if (not isinstance(obj, dict) or obj.get("schema_version") != "hinglish_generation_v1"
+            or obj.get("phase") != "hinglish"
+            or obj.get("model_id") != HINGLISH_MODEL_ID
+            or not isinstance(obj.get("model_revision"), str)
+            or len(obj.get("model_revision", "")) != 40
+            or not isinstance(obj.get("n_pairs"), int) or obj.get("n_pairs") <= 0
+            or not isinstance(obj.get("n_kept"), int) or obj.get("n_kept") < 0
+            or not isinstance(obj.get("n_dropped"), int) or obj.get("n_dropped") < 0
+            or obj.get("n_kept") + obj.get("n_dropped") != obj.get("n_pairs")
+            or obj.get("metrics_eligible") is not False
+            or obj.get("primary_asr") is not None
+            or not isinstance(obj.get("translation_review"), str)):
+        raise ValueError("hinglish generation journal is missing its model or count bindings")
 
 
 def _validate_locate_status(obj: object, has_direction: bool) -> None:
@@ -336,6 +360,10 @@ def inspect_archive(archive: Path) -> tuple[dict[str, bytes], dict]:
             _validate_locate_direction(strict_json(data))
         if name == "locate_diagnostics.json":
             _validate_locate_diagnostics(strict_json(data))
+        if name == "hinglish_generation.json":
+            _validate_hinglish_generation(strict_json(data))
+        if name == "hinglish_status.json":
+            _validate_phase_status(strict_json(data), "hinglish")
     identity = None
     if "identity.json" in files:
         identity = strict_json(files["identity.json"])
@@ -426,10 +454,13 @@ def inspect_archive(archive: Path) -> tuple[dict[str, bytes], dict]:
                "target_identity": identity,
                "d8_descriptive": (strict_json(files["d8_descriptive.json"])
                                   if "d8_descriptive.json" in files else None),
+               "hinglish_generation": (strict_json(files["hinglish_generation.json"])
+                                        if "hinglish_generation.json" in files else None),
                "provisional_locate": (strict_json(files["locate_direction.json"])
                                       if "locate_direction.json" in files else None),
                "phase_status": {phase: strict_json(files[name])
                                 for phase, name in (("identity", "identity_status.json"),
+                                                    ("hinglish", "hinglish_status.json"),
                                                     ("d8", "d8_status.json"),
                                                     ("locate", "locate_status.json"))
                                 if name in files},
