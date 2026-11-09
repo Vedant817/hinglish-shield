@@ -25,13 +25,14 @@ ALLOWED = {"env_report.json", "versions.json", "parity_original_sequential.json"
            "identity.json", "tokenizer_config.json", "identity_status.json", "fp32_not_run.json",
            "d8_descriptive_status.json", "d8_descriptive.json", "d8_status.json",
            "d8_generations.jsonl", "d8_judge_scores.jsonl",
-           "locate_direction.json", "locate_status.json"}
+           "locate_direction.json", "locate_status.json", "locate_diagnostics.json"}
 DEPENDENCY_FILES = {"commands.json", "dependency_check.json", "dependency_check_global.json",
                     "failure.log", "install.log", "imports.log", "manifest.json", "pins.json",
                     "preflight_source.py", "source_notebook.ipynb", "versions.json"}
 PHASE_STATUSES = {"ok", "failed", "blocked", "skipped", "incomplete"}
 D8_SPLITS = {"calibration", "dev"}
-D8_SLICES = {"benign_calibration", "benign_dev", "harm_calibration", "harm_dev"}
+D8_SLICES = {"benign_calibration", "benign_dev", "harm_calibration", "harm_dev",
+             "harm_calibration_hi", "harm_dev_hi"}
 D8_METRIC_LABEL = "automated-judge only, human calibration pending"
 PINNED_MODEL_ID = "CohereLabs/tiny-aya-global"
 PINNED_MODEL_REVISION = "af89d219b53ed9b13b8a4645f9c8028973510324"
@@ -127,6 +128,8 @@ def _validate_d8_rows(data: bytes, label: str) -> None:
             raise ValueError(f"{label} rows must stay on calibration/dev only")
         if row.get("slice") not in D8_SLICES:
             raise ValueError(f"{label} rows must use a known calibration/dev slice")
+        if str(row["slice"]).endswith("_hi") and row.get("translation_review") != "unreviewed_translation":
+            raise ValueError(f"{label} Hindi rows must be labeled unreviewed translations")
         if row.get("metrics_eligible") is not False or row.get("primary_asr") is not None:
             raise ValueError(f"{label} rows cannot claim a metric")
 
@@ -138,7 +141,8 @@ def _validate_d8_summary(obj: object) -> None:
             or obj.get("scored_baseline") is not False
             or obj.get("metrics_eligible") is not False
             or obj.get("primary_asr") is not None
-            or obj.get("human_calibration") != "pending"):
+            or obj.get("human_calibration") != "pending"
+            or obj.get("translation_review") != "unreviewed_translation"):
         raise ValueError("D8 summary cannot claim a scored or human-calibrated baseline")
     if obj.get("split") not in {"calibration", "dev", "calibration+dev"}:
         raise ValueError("D8 summary split must be calibration/dev only")
@@ -213,6 +217,16 @@ def _validate_locate_direction(obj: object) -> None:
     checks = obj.get("checks")
     if not isinstance(checks, dict) or checks.get("alpha_zero_matches_base") is not True:
         raise ValueError("provisional locate alpha-zero check is missing")
+
+
+def _validate_locate_diagnostics(obj: object) -> None:
+    if (not isinstance(obj, dict) or obj.get("phase") != "locate"
+            or obj.get("provisional") is not True
+            or obj.get("original_fp32_credit") is not False
+            or obj.get("metrics_eligible") is not False
+            or obj.get("primary_asr") is not None
+            or obj.get("status") not in {"ok", "failed", "blocked"}):
+        raise ValueError("locate diagnostics cannot claim credit or a metric")
 
 
 def _validate_locate_status(obj: object, has_direction: bool) -> None:
@@ -320,6 +334,8 @@ def inspect_archive(archive: Path) -> tuple[dict[str, bytes], dict]:
             _validate_d8_rows(data, name)
         if name == "locate_direction.json":
             _validate_locate_direction(strict_json(data))
+        if name == "locate_diagnostics.json":
+            _validate_locate_diagnostics(strict_json(data))
     identity = None
     if "identity.json" in files:
         identity = strict_json(files["identity.json"])
@@ -380,6 +396,8 @@ def inspect_archive(archive: Path) -> tuple[dict[str, bytes], dict]:
         _validate_locate_status(strict_json(files["locate_status.json"]), "locate_direction.json" in files)
     if "locate_direction.json" in files and "locate_status.json" not in files:
         raise ValueError("Locate direction requires its phase status")
+    if "locate_diagnostics.json" in files and "locate_status.json" not in files:
+        raise ValueError("Locate diagnostics require their phase status")
     if "d8_descriptive.json" in files and "d8_status.json" not in files:
         raise ValueError("D8 summary requires its phase status")
     standalone_dependency = {"preflight_source.py", "source_notebook.ipynb", "commands.json",
