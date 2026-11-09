@@ -201,7 +201,9 @@ def _validate_locate_direction(obj: object) -> None:
             or not all(_finite_number(value) for value in vector)):
         raise ValueError("provisional locate vector is missing or nonfinite")
     norm = math.sqrt(sum(float(value) ** 2 for value in vector))
-    if norm == 0.0 or not _finite_number(obj.get("l2_norm")) or abs(obj["l2_norm"] - norm) > 1e-6:
+    declared = obj.get("l2_norm")
+    if (norm == 0.0 or not _finite_number(declared)
+            or abs(float(declared) - norm) > max(1e-9, norm * 1e-5)):
         raise ValueError("provisional locate vector norm does not match")
     controls = obj.get("controls")
     if not isinstance(controls, dict):

@@ -281,6 +281,30 @@ def test_failed_phases_stay_failures_and_refuse_score_claims(tmp_path):
     assert summary["phase_status"]["locate"]["status"] == "blocked"
 
 
+def test_locate_norm_uses_relative_tolerance_not_absolute(tmp_path):
+    direction = _locate_direction()
+    direction["l2_norm"] = 3.0 * (1 + 5e-7)  # bf16 rounding level
+    direction["content_sha256"] = hashlib.sha256(json.dumps(
+        {k: v for k, v in direction.items() if k != "content_sha256"},
+        ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False,
+    ).encode("utf-8")).hexdigest()
+    files = {
+        "locate_direction.json": json.dumps(direction).encode(),
+        "locate_status.json": _phase_status("locate", "ok", provisional=True,
+                                            original_fp32_credit=False),
+    }
+    inspect_archive(archive(tmp_path, files))
+    bad = _locate_direction()
+    bad["l2_norm"] = 3.4
+    bad["content_sha256"] = hashlib.sha256(json.dumps(
+        {k: v for k, v in bad.items() if k != "content_sha256"},
+        ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False,
+    ).encode("utf-8")).hexdigest()
+    files["locate_direction.json"] = json.dumps(bad).encode()
+    with pytest.raises(ValueError, match="norm does not match"):
+        inspect_archive(archive(tmp_path, files))
+
+
 @pytest.mark.parametrize("files", [
     {"d8_descriptive.json": b'{"artifact_kind":"descriptive","scoring_path":"d8_descriptive","metric_label":"automated-judge only, human calibration pending","scored_baseline":true,"metrics_eligible":false,"primary_asr":null,"human_calibration":"pending","split":"dev","metrics":{"asr":null},"by_slice":{},"data_pin":{"benign_dev":{"sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}}',
      "d8_status.json": b'{"phase":"d8","status":"ok","metrics_eligible":false,"primary_asr":null}'},
