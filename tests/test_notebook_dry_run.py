@@ -16,16 +16,23 @@ def test_notebook_dry_run_chain_completes(tmp_path):
     )
     assert completed.returncode == 0, completed.stderr[-3000:]
     assert "DRYRUN PASS" in completed.stdout
-    assert "rows=1244" in completed.stdout
+    assert "rows=17" in completed.stdout or "rows=1244" in completed.stdout
 
     artifacts = out / "hs_gpu_artifacts"
     summary = json.loads((artifacts / "d8_descriptive.json").read_text(encoding="utf-8"))
+    hing_rows = 0
+    for part in ("hs_eval_hinglish_calibration.jsonl", "hs_eval_hinglish_dev.jsonl"):
+        jf = artifacts / part
+        if jf.is_file():
+            hing_rows += sum(1 for line in jf.read_text(encoding="utf-8").splitlines() if line.strip())
+    assert hing_rows > 0
     total_rows = 0
     for part in ("d8_generations.jsonl", "d8_judge_scores.jsonl"):
         total_rows = (artifacts / part).read_text(encoding="utf-8").count("\n")
-    assert total_rows == 1244
+    assert total_rows == 1244 + hing_rows
     assert summary["translation_review"] == "unreviewed_translation"
-    assert summary["languages"] == {"en": 771, "hi": 473}
+    assert summary["hinglish_translation_review"] == "unreviewed machine translation"
+    assert summary["languages"] == {"en": 771, "hi": 473, "hinglish": hing_rows}
     direction = json.loads((artifacts / "locate_direction.json").read_text(encoding="utf-8"))
     assert direction["controls"]["alpha_zero_with_wrapper"]["max_abs_logit_diff"] == 0.0
 

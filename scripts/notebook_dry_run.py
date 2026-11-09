@@ -203,6 +203,8 @@ class FakeModel:
         item = kwargs.get("max_new_tokens", 32)
         if self.kind == "wildguard":
             canned = [101, 102, 103]
+        elif self.kind == "hingen":
+            canned = [501]
         elif self.kind == "qwen":
             canned = [201, 202, 203]
         else:
@@ -222,6 +224,8 @@ def _make_transformers(identity_template):
         def from_pretrained(model_id, **kwargs):
             if "wildguard" in model_id:
                 return FakeModel("wildguard")
+            if "7B" in model_id:
+                return FakeModel("hingen")
             if "Qwen" in model_id:
                 return FakeModel("qwen")
             return FakeModel("target")
@@ -233,6 +237,7 @@ def _make_transformers(identity_template):
             self.pad_token = None
             self.pad_token_id = None
             self.eos_token = "<eos>"
+            self.eos_token_id = 0
             if kind == "target":
                 self.chat_template = {"default": identity_template}
             elif kind == "qwen":
@@ -244,6 +249,8 @@ def _make_transformers(identity_template):
         def from_pretrained(cls, model_id, **kwargs):
             if "wildguard" in model_id:
                 return cls("wildguard")
+            if "7B" in model_id:
+                return cls("hingen")
             if "Qwen" in model_id:
                 return cls("qwen")
             return cls("target")
@@ -265,6 +272,8 @@ def _make_transformers(identity_template):
                 return "harmful request: no\nresponse refusal: no\nharmful response: no"
             if seq and seq[0] == 201:
                 return "Safety: Unsafe\nCategories: Violent\nRefusal: No"
+            if seq and seq[0] == 501:
+                return "mujhe test kaise batao tell me"
             return "STUB RESPONSE"
 
     class FakeBatch(list):
@@ -402,6 +411,8 @@ def run_dryrun(out_dir: Path) -> int:
             "data/curated/hs_benign_en/dev/hs_eval.jsonl",
             "data/curated/hs_harm_en/calibration/hs_eval.jsonl",
             "data/curated/hs_harm_en/dev/hs_eval.jsonl",
+            "data/curated/hs_harm_hinglish/calibration/hs_eval.jsonl",
+            "data/curated/hs_harm_hinglish/dev/hs_eval.jsonl",
             "data/splits/family_splits_v2.json",
             "data/seeds/aya_redteaming/aya_hin.jsonl",
         ):
@@ -489,14 +500,27 @@ def run_dryrun(out_dir: Path) -> int:
             ns["HS_DATA_COMMIT"], "0" * 64)
         ns["checkpoint_phase"](artifacts, phase_zip, "identity")
 
+        # Hinglish generation stage: real top-level flow over stub transport/model.
+        exec(compile(_cell_by_id(notebook, "hs-hinglish-gen-cell"), "gencell", "exec"), ns)
+        gen_status = json.loads((artifacts / "hinglish_status.json").read_text(encoding="utf-8"))
+        assert gen_status["status"] == "ok", gen_status
+        gen_journal = json.loads((artifacts / "hinglish_generation.json").read_text(encoding="utf-8"))
+        assert gen_journal["n_kept"] > 0, gen_journal
+
         # D8 cell: real top-level flow over stub transport/model/judges.
         exec(compile(_cell_by_id(notebook, "d8desc01"), "d8cell", "exec"), ns)
         summary = json.loads((artifacts / "d8_descriptive.json").read_text(encoding="utf-8"))
-        assert summary["languages"] == {"en": 771, "hi": 473}, summary["languages"]
+        hing = 0
+        for split in ("calibration", "dev"):
+            jf = artifacts / ("hs_eval_hinglish_" + split + ".jsonl")
+            if jf.is_file():
+                hing += sum(1 for line in jf.read_text(encoding="utf-8").splitlines() if line.strip())
+        expected = 771 + 473 + hing
+        assert summary["languages"] == {"en": 771, "hi": 473, "hinglish": hing}, summary["languages"]
         generations = (artifacts / "d8_generations.jsonl").read_text(encoding="utf-8")
-        assert generations.count("\n") == 1244, generations.count("\n")
+        assert generations.count("\n") == expected, generations.count("\n")
         judging = (artifacts / "d8_judge_scores.jsonl").read_text(encoding="utf-8")
-        assert judging.count("\n") == 1244, judging.count("\n")
+        assert judging.count("\n") == expected, judging.count("\n")
 
         # Locate cell: real top-level flow over stub STEERING model.
         exec(compile(_cell_by_id(notebook, "hs-d10-locate-cell"), "locatecell", "exec"), ns)
@@ -528,7 +552,7 @@ def run_dryrun(out_dir: Path) -> int:
     finally:
         urllib.request.urlopen = real_urlopen
 
-    print("DRYRUN PASS", "rows=1244", "zip=", phase_zip)
+    print("DRYRUN PASS rows=%s zip=%s" % (expected, phase_zip))
     return 0
 
 

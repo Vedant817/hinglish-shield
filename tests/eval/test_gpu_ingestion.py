@@ -150,6 +150,7 @@ def _d8_summary():
         "metric_label": "automated-judge only, human calibration pending",
         "scored_baseline": False, "metrics_eligible": False, "primary_asr": None,
         "human_calibration": "pending", "translation_review": "unreviewed_translation",
+        "hinglish_translation_review": "unreviewed machine translation",
         "split": "calibration+dev",
         "metrics": {"asr": None, "over_refusal": None, "language_gap": None},
         "by_slice": {name: {"n": 1} for name in data_pin},
@@ -252,6 +253,20 @@ def test_hi_rows_require_the_unreviewed_translation_label(tmp_path):
     files = {"d8_judge_scores.jsonl": (json.dumps(row) + "\n").encode()}
     with pytest.raises(ValueError, match="unreviewed"):
         inspect_archive(archive(tmp_path, files))
+
+
+def test_hinglish_rows_require_the_machine_translation_label(tmp_path):
+    summary = _d8_summary()
+    files = {"d8_descriptive.json": json.dumps(summary).encode(),
+             "d8_status.json": _phase_status("d8", "ok")}
+    _, result = inspect_archive(archive(tmp_path, files))
+    assert result["d8_descriptive"]["hinglish_translation_review"] == "unreviewed machine translation"
+    row = {"item_id": "aya_hin:1:hinglish", "split": "dev", "slice": "harm_dev_hing",
+           "translation_review": "unreviewed machine translation",
+           "metrics_eligible": False, "primary_asr": None}
+    files = {"d8_generations.jsonl": (json.dumps(row) + "\n").encode()}
+    _, summary2 = inspect_archive(archive(tmp_path, files))
+    assert summary2["metrics_eligible"] is False
 
 
 def test_failed_phases_stay_failures_and_refuse_score_claims(tmp_path):
