@@ -281,6 +281,17 @@ def test_failed_phases_stay_failures_and_refuse_score_claims(tmp_path):
     assert summary["phase_status"]["locate"]["status"] == "blocked"
 
 
+@pytest.mark.parametrize("files", [
+    {"d8_descriptive.json": b'{"artifact_kind":"descriptive","scoring_path":"d8_descriptive","metric_label":"automated-judge only, human calibration pending","scored_baseline":true,"metrics_eligible":false,"primary_asr":null,"human_calibration":"pending","split":"dev","metrics":{"asr":null},"by_slice":{},"data_pin":{"benign_dev":{"sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}}',
+     "d8_status.json": b'{"phase":"d8","status":"ok","metrics_eligible":false,"primary_asr":null}'},
+    {"locate_status.json": b'{"phase":"locate","status":"ok","metrics_eligible":false,"primary_asr":null,"provisional":true,"original_fp32_credit":false}'},
+    {"d8_generations.jsonl": b'{"split":"test","slice":"harm_dev","metrics_eligible":false,"primary_asr":null}\n'},
+])
+def test_phase_chain_refuses_credit_or_test_split(tmp_path, files):
+    with pytest.raises(ValueError):
+        inspect_archive(archive(tmp_path, files))
+
+
 def test_locate_norm_uses_relative_tolerance_not_absolute(tmp_path):
     direction = _locate_direction()
     direction["l2_norm"] = 3.0 * (1 + 5e-7)  # bf16 rounding level
@@ -305,15 +316,46 @@ def test_locate_norm_uses_relative_tolerance_not_absolute(tmp_path):
         inspect_archive(archive(tmp_path, files))
 
 
-@pytest.mark.parametrize("files", [
-    {"d8_descriptive.json": b'{"artifact_kind":"descriptive","scoring_path":"d8_descriptive","metric_label":"automated-judge only, human calibration pending","scored_baseline":true,"metrics_eligible":false,"primary_asr":null,"human_calibration":"pending","split":"dev","metrics":{"asr":null},"by_slice":{},"data_pin":{"benign_dev":{"sha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}}}',
-     "d8_status.json": b'{"phase":"d8","status":"ok","metrics_eligible":false,"primary_asr":null}'},
-    {"locate_status.json": b'{"phase":"locate","status":"ok","metrics_eligible":false,"primary_asr":null,"provisional":true,"original_fp32_credit":false}'},
-    {"d8_generations.jsonl": b'{"split":"test","slice":"harm_dev","metrics_eligible":false,"primary_asr":null}\n'},
-])
-def test_phase_chain_refuses_credit_or_test_split(tmp_path, files):
-    with pytest.raises(ValueError):
+def test_partial_ingest_rejects_direction_keeps_valid_stages(tmp_path):
+    template = "synthetic template\n"
+    asset = json.dumps({"chat_template": template}).encode()
+    direction = _locate_direction()
+    direction["controls"]["alpha_zero_with_wrapper"] = {
+        "ran": True, "matches_base": False, "max_abs_logit_diff": 29.25}
+    direction["checks"] = {"alpha_zero_matches_base": False}
+    direction["content_sha256"] = hashlib.sha256(json.dumps(
+        {k: v for k, v in direction.items() if k != "content_sha256"},
+        ensure_ascii=False, sort_keys=True, separators=(",", ":"), allow_nan=False,
+    ).encode("utf-8")).hexdigest()
+    files = {
+        "identity.json": json.dumps(_v2_identity(asset, template)).encode(),
+        "tokenizer_config.json": asset,
+        "identity_status.json": _phase_status("identity", "ok"),
+        "d8_descriptive.json": json.dumps(_d8_summary()).encode(),
+        "d8_status.json": _phase_status("d8", "ok"),
+        "locate_status.json": _phase_status("locate", "ok", provisional=True,
+                                            original_fp32_credit=False),
+        "locate_direction.json": json.dumps(direction).encode(),
+        "locate_diagnostics.json": json.dumps(
+            {"phase": "locate", "status": "failed", "provisional": True,
+             "original_fp32_credit": False, "metrics_eligible": False,
+             "primary_asr": None, "controls": direction["controls"],
+             "checks": {"layer_scores": {"MLP 0": 1.0}},
+             "error_type": "Check", "error": "fixture"}).encode(),
+    }
+    with pytest.raises(ValueError, match="controls did not run or failed"):
         inspect_archive(archive(tmp_path, files))
+    destination = tmp_path / "imported"
+    summary = ingest(archive(tmp_path, files), destination, reject_locate=True)
+    assert not (destination / "locate_direction.json").exists()
+    assert summary["provisional_locate"] is None
+    rejected = json.loads((destination / "locate_status.json").read_text(encoding="utf-8"))
+    assert rejected["status"] == "failed"
+    assert rejected["alpha_zero_diff"] == 29.25
+    metrics = json.loads((destination / "metrics.json").read_text(encoding="utf-8"))
+    assert metrics["locate_rejected"]["alpha_zero_diff"] == 29.25
+    assert metrics["provisional_locate"] is None
+    assert metrics["phase_status"]["d8"]["status"] == "ok"
 
 
 def test_import_recomputes_threshold_instead_of_trusting_passed(tmp_path):

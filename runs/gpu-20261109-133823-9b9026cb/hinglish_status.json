@@ -1,0 +1,16 @@
+{
+  "phase": "hinglish",
+  "status": "ok",
+  "run_id": "20261109-133823-9b9026cb",
+  "timestamp": "2026-11-09T13:47:27.614468+05:30",
+  "metrics_eligible": false,
+  "primary_asr": null,
+  "error_type": null,
+  "error": null,
+  "metric_label": "automated-judge only, human calibration pending",
+  "provisional": false,
+  "model_id": "Qwen/Qwen2.5-7B-Instruct",
+  "n_pairs": 473,
+  "n_kept": 118,
+  "n_dropped": 355
+}

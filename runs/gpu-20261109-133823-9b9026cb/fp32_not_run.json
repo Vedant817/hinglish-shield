@@ -1,0 +1,12 @@
+{
+  "enabled": false,
+  "ram_available_gib": 27.812,
+  "ram_total_gib": 31.346603393554688,
+  "required_host_gib": 32.0,
+  "run": false,
+  "not_run": "insufficient_host_ram",
+  "artifact_kind": "setup-smoke",
+  "split": "example",
+  "status": "not_run",
+  "passed": false
+}

@@ -1,0 +1,72 @@
+{
+  "kind": "bf16_parity_variant",
+  "model": "CohereLabs/tiny-aya-base",
+  "model_revision": "d62ac17e241c871fc52e9a95d7b0e2615189d7d5",
+  "gate_change": true,
+  "enabled": true,
+  "ran": true,
+  "passed": true,
+  "status": "pass",
+  "provisional": true,
+  "load_order": [
+    "hf_fp32_floor",
+    "hf_bf16_floor",
+    "tl_bf16_short",
+    "release_tl",
+    "hf_bf16_long",
+    "tl_bf16_long_reload"
+  ],
+  "dtype": "bfloat16",
+  "hardware": "cpu",
+  "cpu_bf16_only_on_t4": true,
+  "tl_load": "HookedTransformer.from_pretrained_no_processing",
+  "fold_ln": false,
+  "hf_donor_during_convert": false,
+  "kl_hf_tl_bf16": {
+    "The capital of France is": 0.0005000195233151317,
+    "Once upon a time, there was a": 0.00043596510658971965,
+    "2 + 2 =": 0.0001410174008924514,
+    "Water boils at a temperature of": 0.0005650121020153165
+  },
+  "floor_kl_fp32_bf16": {},
+  "kl_long_hf_tl_bf16": {
+    "sliding_window_4196": 4.146346327615902e-06
+  },
+  "long_floor": null,
+  "long_floor_unavailable": true,
+  "long_floor_reason": "no extra fp32 4196 forward; short floor is not reused",
+  "top1_agreement": 1.0,
+  "error": null,
+  "peak_rss_gib": 17.666,
+  "used_fp32_tol": false,
+  "artifact_kind": "setup-smoke",
+  "split": "example",
+  "accelerator": "Tesla T4",
+  "floor_not_run": "fp32_disabled_by_config",
+  "long_ran": true,
+  "kl_decision": {
+    "passed_kl": true,
+    "mean_kl": 0.0004105035332031548,
+    "mean_floor": null,
+    "rule": "provisional mean KL < 1e-2",
+    "provisional": true,
+    "used_fp32_tol": false
+  },
+  "long_decision": {
+    "status": "pass",
+    "passed": true,
+    "provisional": true,
+    "reason": null,
+    "used_fp32_tol": false,
+    "rule": "predeclared provisional long KL < 1e-2; fp32 1e-4 does not apply; short floor is not reused"
+  },
+  "decision": {
+    "status": "pass",
+    "passed": true,
+    "provisional": true,
+    "top1_need": 0.98,
+    "top1_ok": true,
+    "reason": null,
+    "used_fp32_tol": false
+  }
+}

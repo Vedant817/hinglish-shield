@@ -265,13 +265,29 @@ def _validate_locate_status(obj: object, has_direction: bool) -> None:
         raise ValueError("locate phase status contradicts a written direction")
 
 
-def inspect_archive(archive: Path) -> tuple[dict[str, bytes], dict]:
+def inspect_archive(archive: Path, *, reject_locate: bool = False) -> tuple[dict[str, bytes], dict]:
     files = {}
     normalized = set()
+    rejections: dict = {}
     total = 0
     with zipfile.ZipFile(archive) as zipped:
         for info in zipped.infolist():
             name = info.filename
+            if reject_locate and PurePosixPath(name).name in {"locate_direction.json", "locate_status.json"}:
+                normalized.add(PurePosixPath(name).name.casefold())
+                if PurePosixPath(name).name == "locate_direction.json":
+                    with zipped.open(info) as handle:
+                        diff = None
+                        try:
+                            payload = strict_json(handle.read(MAX_FILE_BYTES + 1))
+                            controls = payload.get("controls", {})
+                            zero = controls.get("alpha_zero_with_wrapper", {})
+                            diff = zero.get("max_abs_logit_diff")
+                        except (ValueError, TypeError, AttributeError):
+                            diff = None
+                    rejections["alpha_zero_diff"] = diff
+                rejections["skipped"] = True
+                continue
             if TOKEN.search(name.encode("utf-8")):
                 raise ValueError("Secret-like archive entry name")
             path = PurePosixPath(name)
@@ -358,7 +374,7 @@ def inspect_archive(archive: Path) -> tuple[dict[str, bytes], dict]:
             _validate_d8_summary(strict_json(data))
         if name in {"d8_generations.jsonl", "d8_judge_scores.jsonl"}:
             _validate_d8_rows(data, name)
-        if name == "locate_direction.json":
+        if name == "locate_direction.json" and not reject_locate:
             _validate_locate_direction(strict_json(data))
         if name == "locate_diagnostics.json":
             _validate_locate_diagnostics(strict_json(data))
@@ -427,7 +443,8 @@ def inspect_archive(archive: Path) -> tuple[dict[str, bytes], dict]:
     if "locate_direction.json" in files and "locate_status.json" not in files:
         raise ValueError("Locate direction requires its phase status")
     if "locate_diagnostics.json" in files and "locate_status.json" not in files:
-        raise ValueError("Locate diagnostics require their phase status")
+        if not reject_locate:
+            raise ValueError("Locate diagnostics require their phase status")
     if "d8_descriptive.json" in files and "d8_status.json" not in files:
         raise ValueError("D8 summary requires its phase status")
     standalone_dependency = {"preflight_source.py", "source_notebook.ipynb", "commands.json",
@@ -460,6 +477,9 @@ def inspect_archive(archive: Path) -> tuple[dict[str, bytes], dict]:
                                         if "hinglish_generation.json" in files else None),
                "provisional_locate": (strict_json(files["locate_direction.json"])
                                       if "locate_direction.json" in files else None),
+                "locate_rejected": ({"rejected": True,
+                                       "alpha_zero_diff": rejections.get("alpha_zero_diff")}
+                                      if rejections else None),
                "phase_status": {phase: strict_json(files[name])
                                 for phase, name in (("identity", "identity_status.json"),
                                                     ("hinglish", "hinglish_status.json"),
@@ -496,20 +516,37 @@ def metrics_document(summary: dict) -> dict:
         "target_identity": summary.get("target_identity"),
         "d8_descriptive": summary.get("d8_descriptive"),
         "provisional_locate": summary.get("provisional_locate"),
+        "locate_rejected": summary.get("locate_rejected"),
         "phase_status": summary.get("phase_status", {}),
         "fp32_execution": summary.get("fp32_execution"),
         "limitations": summary.get("limitations", []),
     }
 
 
-def ingest(archive: Path, destination: Path) -> dict:
-    files, summary = inspect_archive(archive)
+def ingest(archive: Path, destination: Path, *, reject_locate: bool = False) -> dict:
+    files, summary = inspect_archive(archive, reject_locate=reject_locate)
     # Only validated bytes are copied. A durable completion marker is written last.
     destination.mkdir(parents=True, exist_ok=False)
     # Byte hashes must survive later Windows checkouts, including log newlines.
     (destination / ".gitattributes").write_bytes(b"* -text\n")
     for name, data in files.items():
         (destination / name).write_bytes(data)
+    if reject_locate and summary.get("locate_rejected"):
+        rejected_status = {
+            "phase": "locate",
+            "status": "failed",
+            "metrics_eligible": False,
+            "primary_asr": None,
+            "provisional": True,
+            "original_fp32_credit": False,
+            "rejected": "direction not imported and not frozen",
+            "reason": "alpha-zero control failed",
+            "alpha_zero_diff": summary["locate_rejected"].get("alpha_zero_diff"),
+            "metric_label": D8_METRIC_LABEL,
+        }
+        (destination / "locate_status.json").write_text(
+            json.dumps(rejected_status, indent=2) + "\n", encoding="utf-8")
+
     marker = destination / "ingestion.json.tmp"
     marker.write_text(json.dumps(summary, indent=2, allow_nan=False) + "\n", encoding="utf-8")
     marker.replace(destination / "ingestion.json")
@@ -523,8 +560,10 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("archive", type=Path)
     parser.add_argument("--run-id", required=True)
+    parser.add_argument("--reject-locate", action="store_true",
+                        help="reject locate artifacts without importing them")
     args = parser.parse_args()
     if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9_-]{0,99}", args.run_id):
         parser.error("run-id must be a simple directory name")
-    result = ingest(args.archive, ROOT / "runs" / args.run_id)
+    result = ingest(args.archive, ROOT / "runs" / args.run_id, reject_locate=args.reject_locate)
     print(json.dumps(result, indent=2, allow_nan=False))
