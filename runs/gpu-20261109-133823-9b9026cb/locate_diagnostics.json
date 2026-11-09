@@ -1,0 +1,44 @@
+{
+  "schema_version": "provisional_locate_diag_v1",
+  "phase": "locate",
+  "status": "ok",
+  "provisional": true,
+  "original_fp32_credit": false,
+  "metrics_eligible": false,
+  "primary_asr": null,
+  "node": "MLP 0",
+  "declared_score": 1.0,
+  "hook_point": "blocks.0.hook_mlp_out",
+  "controls": {
+    "base_no_intervention": {
+      "ran": true,
+      "n_check": 18
+    },
+    "alpha_zero_with_wrapper": {
+      "ran": true,
+      "matches_base": false,
+      "max_abs_logit_diff": 29.25
+    },
+    "random_norm_matched_seed_7": {
+      "ran": true,
+      "max_abs_logit_diff": 28.75,
+      "norm_gap": 1.588622413365271e-07,
+      "random_l2_norm": 3.0015769004821777
+    },
+    "candidate_alpha_1": {
+      "ran": true,
+      "max_abs_logit_diff": 29.625
+    }
+  },
+  "checks": {
+    "alpha_zero_matches_base": false,
+    "candidate_changes_logits": true,
+    "random_changes_logits": true,
+    "layer_scores": {
+      "MLP 0": 1.0
+    }
+  },
+  "error_type": null,
+  "error": null,
+  "metric_label": "automated-judge only, human calibration pending"
+}

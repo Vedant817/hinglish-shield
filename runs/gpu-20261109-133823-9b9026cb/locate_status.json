@@ -1,0 +1,12 @@
+{
+  "phase": "locate",
+  "status": "failed",
+  "metrics_eligible": false,
+  "primary_asr": null,
+  "provisional": true,
+  "original_fp32_credit": false,
+  "rejected": "direction not imported and not frozen",
+  "reason": "alpha-zero control failed",
+  "alpha_zero_diff": 29.25,
+  "metric_label": "automated-judge only, human calibration pending"
+}

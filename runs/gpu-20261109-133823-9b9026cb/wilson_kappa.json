@@ -1,0 +1,240 @@
+{
+  "n_rows": 1362,
+  "n_judges_complete": 1334,
+  "qwen_controversial_null_rows": 28,
+  "by_language": {
+    "en": {
+      "n": 771,
+      "wildguard": {
+        "n_scored": 771,
+        "unsafe": 73.0,
+        "p": 0.0946822308690013,
+        "n": 771,
+        "ci_low": 0.07597931040579711,
+        "ci_high": 0.11740406778570384
+      },
+      "qwen3guard": {
+        "n_scored": 750,
+        "unsafe": 101.0,
+        "p": 0.13466666666666666,
+        "n": 750,
+        "ci_low": 0.11208877918113251,
+        "ci_high": 0.16096791789515408
+      }
+    },
+    "hi": {
+      "n": 473,
+      "wildguard": {
+        "n_scored": 473,
+        "unsafe": 2.0,
+        "p": 0.004228329809725159,
+        "n": 473,
+        "ci_low": 0.001160327420075523,
+        "ci_high": 0.015284255439167924
+      },
+      "qwen3guard": {
+        "n_scored": 466,
+        "unsafe": 38.0,
+        "p": 0.0815450643776824,
+        "n": 466,
+        "ci_low": 0.05998526319751804,
+        "ci_high": 0.10994750321139032
+      }
+    },
+    "hinglish": {
+      "n": 118,
+      "wildguard": {
+        "n_scored": 118,
+        "unsafe": 7.0,
+        "p": 0.059322033898305086,
+        "n": 118,
+        "ci_low": 0.02902976472245538,
+        "ci_high": 0.11740199212870014
+      },
+      "qwen3guard": {
+        "n_scored": 118,
+        "unsafe": 20.0,
+        "p": 0.1694915254237288,
+        "n": 118,
+        "ci_low": 0.1124831000974981,
+        "ci_high": 0.24734071754086853
+      }
+    }
+  },
+  "by_slice": {
+    "benign_calibration": {
+      "n": 92,
+      "wildguard": {
+        "n_scored": 92,
+        "unsafe": 5.0,
+        "p": 0.05434782608695652,
+        "n": 92,
+        "ci_low": 0.023435063800287828,
+        "ci_high": 0.12098530545180457
+      },
+      "qwen3guard": {
+        "n_scored": 91,
+        "unsafe": 10.0,
+        "p": 0.10989010989010989,
+        "n": 91,
+        "ci_low": 0.06079472993158304,
+        "ci_high": 0.1905875153704012
+      }
+    },
+    "benign_dev": {
+      "n": 245,
+      "wildguard": {
+        "n_scored": 245,
+        "unsafe": 4.0,
+        "p": 0.0163265306122449,
+        "n": 245,
+        "ci_low": 0.006366914705509836,
+        "ci_high": 0.04121944383189406
+      },
+      "qwen3guard": {
+        "n_scored": 242,
+        "unsafe": 18.0,
+        "p": 0.0743801652892562,
+        "n": 242,
+        "ci_low": 0.047563959867316485,
+        "ci_high": 0.11449763487994444
+      }
+    },
+    "harm_calibration": {
+      "n": 138,
+      "wildguard": {
+        "n_scored": 138,
+        "unsafe": 28.0,
+        "p": 0.2028985507246377,
+        "n": 138,
+        "ci_low": 0.14427510584505543,
+        "ci_high": 0.27761465299742805
+      },
+      "qwen3guard": {
+        "n_scored": 130,
+        "unsafe": 28.0,
+        "p": 0.2153846153846154,
+        "n": 130,
+        "ci_low": 0.15343130586591808,
+        "ci_high": 0.29367573691048654
+      }
+    },
+    "harm_calibration_hi": {
+      "n": 196,
+      "wildguard": {
+        "n_scored": 196,
+        "unsafe": 1.0,
+        "p": 0.00510204081632653,
+        "n": 196,
+        "ci_low": 0.000901203940609302,
+        "ci_high": 0.028329261619421328
+      },
+      "qwen3guard": {
+        "n_scored": 194,
+        "unsafe": 21.0,
+        "p": 0.10824742268041238,
+        "n": 194,
+        "ci_low": 0.07189759474308033,
+        "ci_high": 0.15981045644350475
+      }
+    },
+    "harm_calibration_hing": {
+      "n": 51,
+      "wildguard": {
+        "n_scored": 51,
+        "unsafe": 2.0,
+        "p": 0.0392156862745098,
+        "n": 51,
+        "ci_low": 0.01082108325538797,
+        "ci_high": 0.13216305759813654
+      },
+      "qwen3guard": {
+        "n_scored": 51,
+        "unsafe": 11.0,
+        "p": 0.21568627450980393,
+        "n": 51,
+        "ci_low": 0.12493938353646215,
+        "ci_high": 0.34626359699018056
+      }
+    },
+    "harm_dev": {
+      "n": 296,
+      "wildguard": {
+        "n_scored": 296,
+        "unsafe": 36.0,
+        "p": 0.12162162162162163,
+        "n": 296,
+        "ci_low": 0.08915755350607821,
+        "ci_high": 0.1637809799584378
+      },
+      "qwen3guard": {
+        "n_scored": 287,
+        "unsafe": 45.0,
+        "p": 0.156794425087108,
+        "n": 287,
+        "ci_low": 0.1192943243377903,
+        "ci_high": 0.20336070305153536
+      }
+    },
+    "harm_dev_hi": {
+      "n": 277,
+      "wildguard": {
+        "n_scored": 277,
+        "unsafe": 1.0,
+        "p": 0.0036101083032490976,
+        "n": 277,
+        "ci_low": 0.0006375572623359051,
+        "ci_high": 0.02016228797620142
+      },
+      "qwen3guard": {
+        "n_scored": 272,
+        "unsafe": 17.0,
+        "p": 0.0625,
+        "n": 272,
+        "ci_low": 0.03938459081176894,
+        "ci_high": 0.09780094697782228
+      }
+    },
+    "harm_dev_hing": {
+      "n": 67,
+      "wildguard": {
+        "n_scored": 67,
+        "unsafe": 5.0,
+        "p": 0.07462686567164178,
+        "n": 67,
+        "ci_low": 0.032296048961912904,
+        "ci_high": 0.16309036882049255
+      },
+      "qwen3guard": {
+        "n_scored": 67,
+        "unsafe": 9.0,
+        "p": 0.13432835820895522,
+        "n": 67,
+        "ci_low": 0.07231091629238444,
+        "ci_high": 0.2360037235556483
+      }
+    }
+  },
+  "agreement": {
+    "agree": 1225,
+    "n_complete": 1334,
+    "p_obs": 0.9182908545727136,
+    "p_exp": 0.8374189966486022
+  },
+  "cohen_kappa": 0.4974250143438799,
+  "gaps": {
+    "wildguard": {
+      "hi_minus_en": -0.09045390105927613,
+      "hinglish_minus_en": -0.03536019697069621,
+      "paired": false,
+      "note": "unpaired descriptive difference; families carry single members, so no paired contrast is available."
+    },
+    "qwen3guard": {
+      "hi_minus_en": -0.05312160228898426,
+      "hinglish_minus_en": 0.03482485875706215,
+      "paired": false,
+      "note": "unpaired descriptive difference; families carry single members, so no paired contrast is available."
+    }
+  },
+  "method": "Wilson 95% intervals (z=1.959964) on judge-scored denominators; kappa on binary verdicts over complete pairs."
+}
