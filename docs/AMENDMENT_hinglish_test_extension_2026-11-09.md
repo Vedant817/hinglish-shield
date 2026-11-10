@@ -47,6 +47,10 @@ not to be replaced by regex transliteration or hand-written strings.
    locked-test command in `docs/LOCKED_TEST_PREP.md` does not change its
    config: extending it would be a separate frozen-config decision.
 
+The frozen arm is a provisional bf16 research arm chosen only on its
+calibration logit effect; it carries no safety-effect or circuit-superiority
+claim.
+
 ## Proposal hash
 
 proposal_sha256: 3bfcf861efe3ff465d315c925f7970a48e46490eb01d89751236b90cbea470b0
