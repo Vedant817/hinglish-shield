@@ -1,0 +1,12 @@
+{
+  "phase": "d8",
+  "status": "ok",
+  "run_id": "20261110-011925-83c016e0",
+  "timestamp": "2026-11-10T03:06:48.412765+05:30",
+  "metrics_eligible": false,
+  "primary_asr": null,
+  "error_type": null,
+  "error": null,
+  "metric_label": "automated-judge only, human calibration pending",
+  "rows": 1362
+}

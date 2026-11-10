@@ -1,0 +1,22 @@
+{
+  "kind": "original_parity_long_prompt",
+  "window": 4096,
+  "seq_len": 4196,
+  "dtype": "float32",
+  "hardware": "cpu",
+  "load_order": [
+    "release_tl",
+    "hf_fp32",
+    "release_hf",
+    "tl_fp32_reload"
+  ],
+  "ran": false,
+  "kl": null,
+  "wall_time_s": null,
+  "peak_rss_gib": null,
+  "error": "short_parity_did_not_finish; long not attempted",
+  "artifact_kind": "setup-smoke",
+  "split": "example",
+  "peak_note": "HF forward runs only after TL is released. Reloading TL for conversion peaks near 25 GiB plus overhead.",
+  "not_run": "insufficient_host_ram"
+}
