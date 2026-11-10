@@ -1,0 +1,10 @@
+{
+  "kind": "optional_dual_resident_pytest",
+  "enabled": false,
+  "ran": false,
+  "skipped": true,
+  "skip_reason": "RUN_ORIGINAL_PYTEST=False (default). Dual-resident fp32 needs about 25 GiB for the whole test.",
+  "exit_code": null,
+  "artifact_kind": "setup-smoke",
+  "split": "example"
+}
