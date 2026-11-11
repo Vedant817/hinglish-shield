@@ -1,0 +1,14 @@
+{
+  "phase": "locate",
+  "status": "ok",
+  "run_id": "20261111-180320-270579d4",
+  "timestamp": "2026-11-11T19:57:01.615191+05:30",
+  "metrics_eligible": false,
+  "primary_asr": null,
+  "error_type": null,
+  "error": null,
+  "metric_label": "automated-judge only, human calibration pending",
+  "provisional": true,
+  "original_fp32_credit": false,
+  "l2_norm": 3.0015764236450195
+}

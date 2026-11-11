@@ -1,0 +1,26 @@
+{
+  "schema_version": "dev_repair_eval_planned_v1",
+  "artifact_kind": "planned",
+  "split": "dev",
+  "arms": [
+    "base",
+    "candidate_alpha_1",
+    "random_norm_matched_seed_7",
+    "alpha_zero"
+  ],
+  "metrics_eligible": false,
+  "primary_asr": null,
+  "metric_label": "automated-judge only, human calibration pending",
+  "translation_review": "unreviewed_translation",
+  "hinglish_translation_review": "unreviewed machine translation",
+  "wilson": "z=1.959964 on judge-scored denominators",
+  "wilson_z": 1.959963984540054,
+  "over_refusal": "benign unsafe rate per language",
+  "generation": {
+    "harness": "shared across arms",
+    "max_new_tokens": 256
+  },
+  "direction_source": "runs/gpu-20261110-011925-83c016e0/locate_direction.json (v18 calibration fit)",
+  "direction_sha256": "d5ec351a001fd36a05d267bc8ebe9bb1cf9e4f44720fdc0b85492ebc2b23c8c1",
+  "claim": "a logit effect is not a safety-effect or circuit-superiority claim"
+}

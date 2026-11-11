@@ -424,3 +424,53 @@ opened or produced.
   dry-run stubs device-aware and raise on cross-device adds, add a model-free
   test, rerun the full suite, then save a new Kaggle version with --no-run.
   The locked test remains prepared only and never runs.
+
+## 2026-11-11 IST: Kaggle v21 dev repair eval completed (run 20261111-180320-270579d4)
+
+- artifact: hs_gpu_artifacts_20261111-180320-270579d4.zip ingested to
+  runs/gpu-20261111-180320-270579d4 (ingest ok). Dev slice only; no locked
+  test; no safety claim. Locate remains a provisional bf16 research arm
+  (l2_norm 3.0015764236450195, original fp32 credit false).
+- stage statuses (all ok, no errors): identity ok; d8_status ok (rows 1362,
+  descriptive, automated-judge only, human calibration pending); locate_status
+  ok (provisional); dev_repair_status ok (rows 885, arms 4); hinglish_status
+  ok. Dev eval artifact_kind run, metrics_eligible false, primary_asr null.
+- dev rows and arms: 885 dev rows total (benign 245, harm 640; by language en
+  541, hi 277, hinglish 67). Benign dev rows are English only. All 4 arms
+  (base, candidate_alpha_1, random_norm_matched_seed_7, alpha_zero) have 885/885
+  generation and judge rows (3540 each ledger). Alpha-zero byte equality vs base
+  (response and token ids): compared 885, mismatch_count 0.
+- WildGuard primary, harm unsafe rate (Wilson 95%, scored denominators):
+  base 0.0672 [0.0503, 0.0893] (43/640);
+  candidate_alpha_1 0.0703 [0.0530, 0.0928] (45/640);
+  random_norm_matched_seed_7 0.0734 [0.0557, 0.0963] (47/640);
+  alpha_zero 0.0672 [0.0503, 0.0893] (43/640).
+- WildGuard primary, benign over-refusal as unsafe rate (Wilson 95%):
+  base 0.0163 [0.0064, 0.0412] (4/245);
+  candidate_alpha_1 0.0204 [0.0087, 0.0469] (5/245);
+  random_norm_matched_seed_7 0.0082 [0.0022, 0.0293] (2/245);
+  alpha_zero 0.0163 [0.0064, 0.0412] (4/245).
+  Benign refusal rate (WG, recorded beside): base 0.1796 [0.1366, 0.2325],
+  candidate 0.1755 [0.1330, 0.2280], random 0.2000 [0.1547, 0.2545],
+  alpha_zero 0.1796 [0.1366, 0.2325].
+- Qwen3Guard secondary (harm unsafe / benign over-refusal-as-unsafe):
+  base 0.1078 [0.0861, 0.1342] / 0.0735 [0.0470, 0.1131];
+  candidate 0.1219 [0.0988, 0.1495] / 0.0694 [0.0438, 0.1083];
+  random 0.1156 [0.0931, 0.1427] / 0.0694 [0.0438, 0.1083];
+  alpha_zero 0.1078 [0.0861, 0.1342] / 0.0735 [0.0470, 0.1131].
+  Controversial labels present (per arm harm/benign): base 15/3, candidate 12/4,
+  random 10/1, alpha_zero 16/3.
+- WildGuard vs Qwen3Guard Cohen's kappa (rows where both gave a binary scored
+  verdict): base harm 0.590 (n=625), benign 0.346 (n=242), all-dev 0.550 (n=867);
+  candidate harm 0.580 (n=628), benign 0.436 (n=241), all-dev 0.560 (n=869);
+  random harm 0.634 (n=630), benign 0.199 (n=244), all-dev 0.574 (n=874);
+  alpha_zero harm 0.597 (n=624), benign 0.346 (n=242), all-dev 0.556 (n=866).
+- comparison (dev only, automated judges): all reported Wilson 95% CIs overlap
+  for candidate_alpha_1 vs random_norm_matched_seed_7 and for candidate_alpha_1
+  vs base on harm unsafe and benign over-refusal (WildGuard primary and Qwen3Guard
+  secondary). No separation is observed; point estimates do not show a consistent
+  improvement for the candidate over the random control or base. This is not a
+  safety result and does not support a circuit-superiority claim.
+- caveats: automated-judge only, human calibration pending; hi and hinglish rows
+  are unreviewed machine translations; dev split only. Locked test not run and
+  still gated on Vedant's verdict on docs/AMENDMENT_hinglish_test_extension_2026-11-09.md.

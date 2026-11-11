@@ -1,0 +1,281 @@
+{
+  "kind": "fp16_guard_d4",
+  "prereg": "D4",
+  "artifact_kind": "setup-smoke",
+  "split": "example",
+  "model_id": "CohereLabs/tiny-aya-global",
+  "revision": "af89d219b53ed9b13b8a4645f9c8028973510324",
+  "candidate": "fp16_cuda",
+  "reference": "fp32_cpu",
+  "load_order": [
+    "fp32_cpu",
+    "fp16_cuda"
+  ],
+  "hardware": {
+    "candidate": "cuda",
+    "reference": "cpu"
+  },
+  "ran": true,
+  "passed": true,
+  "deviation": null,
+  "mean_kl": 8.59616297930188e-06,
+  "top1_agreement": 1.0,
+  "greedy32_matches": 20,
+  "max_abs_logit_diff": 0.027584552764892578,
+  "nan_or_inf_logits": false,
+  "nan_or_inf_residual": false,
+  "hooks_attached": true,
+  "n_prompts": 20,
+  "n_finite": 20,
+  "per_prompt": [
+    {
+      "id": "cal_en_b1",
+      "lang": "en",
+      "kl": 2.1777536858280655e-06,
+      "finite": true,
+      "top1_agree": true,
+      "greedy32_match": true,
+      "max_abs_logit_diff": 0.017942428588867188,
+      "artifact_kind": "fixture",
+      "split": "example"
+    },
+    {
+      "id": "cal_en_b2",
+      "lang": "en",
+      "kl": 1.983455331355799e-05,
+      "finite": true,
+      "top1_agree": true,
+      "greedy32_match": true,
+      "max_abs_logit_diff": 0.01620340347290039,
+      "artifact_kind": "fixture",
+      "split": "example"
+    },
+    {
+      "id": "cal_en_b3",
+      "lang": "en",
+      "kl": 2.013400080613792e-05,
+      "finite": true,
+      "top1_agree": true,
+      "greedy32_match": true,
+      "max_abs_logit_diff": 0.020264625549316406,
+      "artifact_kind": "fixture",
+      "split": "example"
+    },
+    {
+      "id": "cal_en_b4",
+      "lang": "en",
+      "kl": 1.0251003914163448e-05,
+      "finite": true,
+      "top1_agree": true,
+      "greedy32_match": true,
+      "max_abs_logit_diff": 0.019624710083007812,
+      "artifact_kind": "fixture",
+      "split": "example"
+    },
+    {
+      "id": "cal_en_h1",
+      "lang": "en",
+      "kl": 1.2436864381015766e-05,
+      "finite": true,
+      "top1_agree": true,
+      "greedy32_match": true,
+      "max_abs_logit_diff": 0.01682758331298828,
+      "artifact_kind": "fixture",
+      "split": "example"
+    },
+    {
+      "id": "cal_en_h2",
+      "lang": "en",
+      "kl": 5.8887053455691785e-06,
+      "finite": true,
+      "top1_agree": true,
+      "greedy32_match": true,
+      "max_abs_logit_diff": 0.018383026123046875,
+      "artifact_kind": "fixture",
+      "split": "example"
+    },
+    {
+      "id": "cal_en_h3",
+      "lang": "en",
+      "kl": 1.0371667485742364e-05,
+      "finite": true,
+      "top1_agree": true,
+      "greedy32_match": true,
+      "max_abs_logit_diff": 0.025797128677368164,
+      "artifact_kind": "fixture",
+      "split": "example"
+    },
+    {
+      "id": "cal_hi_b1",
+      "lang": "hi",
+      "kl": 6.576665327884257e-07,
+      "finite": true,
+      "top1_agree": true,
+      "greedy32_match": true,
+      "max_abs_logit_diff": 0.014539718627929688,
+      "artifact_kind": "fixture",
+      "split": "example"
+    },
+    {
+      "id": "cal_hi_b2",
+      "lang": "hi",
+      "kl": 4.181190888630226e-06,
+      "finite": true,
+      "top1_agree": true,
+      "greedy32_match": true,
+      "max_abs_logit_diff": 0.02017974853515625,
+      "artifact_kind": "fixture",
+      "split": "example"
+    },
+    {
+      "id": "cal_hi_b3",
+      "lang": "hi",
+      "kl": 3.064989869017154e-06,
+      "finite": true,
+      "top1_agree": true,
+      "greedy32_match": true,
+      "max_abs_logit_diff": 0.02125108242034912,
+      "artifact_kind": "fixture",
+      "split": "example"
+    },
+    {
+      "id": "cal_hi_b4",
+      "lang": "hi",
+      "kl": 8.527436875738204e-06,
+      "finite": true,
+      "top1_agree": true,
+      "greedy32_match": true,
+      "max_abs_logit_diff": 0.021473407745361328,
+      "artifact_kind": "fixture",
+      "split": "example"
+    },
+    {
+      "id": "cal_hi_h1",
+      "lang": "hi",
+      "kl": 6.477926035586279e-06,
+      "finite": true,
+      "top1_agree": true,
+      "greedy32_match": true,
+      "max_abs_logit_diff": 0.02706146240234375,
+      "artifact_kind": "fixture",
+      "split": "example"
+    },
+    {
+      "id": "cal_hi_h2",
+      "lang": "hi",
+      "kl": 5.6500284699723125e-06,
+      "finite": true,
+      "top1_agree": true,
+      "greedy32_match": true,
+      "max_abs_logit_diff": 0.022640466690063477,
+      "artifact_kind": "fixture",
+      "split": "example"
+    },
+    {
+      "id": "cal_hing_b1",
+      "lang": "hinglish",
+      "kl": 1.471993891755119e-05,
+      "finite": true,
+      "top1_agree": true,
+      "greedy32_match": true,
+      "max_abs_logit_diff": 0.027584552764892578,
+      "artifact_kind": "fixture",
+      "split": "example"
+    },
+    {
+      "id": "cal_hing_b2",
+      "lang": "hinglish",
+      "kl": 1.3112701708450913e-05,
+      "finite": true,
+      "top1_agree": true,
+      "greedy32_match": true,
+      "max_abs_logit_diff": 0.015453338623046875,
+      "artifact_kind": "fixture",
+      "split": "example"
+    },
+    {
+      "id": "cal_hing_b3",
+      "lang": "hinglish",
+      "kl": 1.6324036550940946e-05,
+      "finite": true,
+      "top1_agree": true,
+      "greedy32_match": true,
+      "max_abs_logit_diff": 0.022949695587158203,
+      "artifact_kind": "fixture",
+      "split": "example"
+    },
+    {
+      "id": "cal_hing_b4",
+      "lang": "hinglish",
+      "kl": 1.915303073474206e-06,
+      "finite": true,
+      "top1_agree": true,
+      "greedy32_match": true,
+      "max_abs_logit_diff": 0.02089834213256836,
+      "artifact_kind": "fixture",
+      "split": "example"
+    },
+    {
+      "id": "cal_hing_h1",
+      "lang": "hinglish",
+      "kl": 1.0580629350442905e-06,
+      "finite": true,
+      "top1_agree": true,
+      "greedy32_match": true,
+      "max_abs_logit_diff": 0.02425384521484375,
+      "artifact_kind": "fixture",
+      "split": "example"
+    },
+    {
+      "id": "cal_hing_h2",
+      "lang": "hinglish",
+      "kl": 1.4410274161491543e-05,
+      "finite": true,
+      "top1_agree": true,
+      "greedy32_match": true,
+      "max_abs_logit_diff": 0.021935313940048218,
+      "artifact_kind": "fixture",
+      "split": "example"
+    },
+    {
+      "id": "cal_hing_h3",
+      "lang": "hinglish",
+      "kl": 7.291546353371814e-07,
+      "finite": true,
+      "top1_agree": true,
+      "greedy32_match": true,
+      "max_abs_logit_diff": 0.021202921867370605,
+      "artifact_kind": "fixture",
+      "split": "example"
+    }
+  ],
+  "dtype": {
+    "candidate": "float16",
+    "reference": "float32"
+  },
+  "peak_rss_gib": 19.714,
+  "errors": [],
+  "notes": "Hand-written fixture prompts. Not the frozen calibration split. Not a scored result.",
+  "reference_choice": {
+    "reference": "fp32_cpu",
+    "dtype": "float32",
+    "ok": true,
+    "reason": null
+  },
+  "decision": {
+    "passed": true,
+    "mean_kl": 8.59616297930188e-06,
+    "top1_agreement": 1.0,
+    "greedy32_matches": 20,
+    "n_prompts": 20,
+    "n_finite": 20,
+    "nan_or_inf": false,
+    "hooks_attached": true,
+    "thresholds": {
+      "mean_kl_max": 0.01,
+      "top1_min": 0.98,
+      "greedy32_min_matches": 17,
+      "n_prompts": 20
+    }
+  }
+}
