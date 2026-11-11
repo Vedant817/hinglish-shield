@@ -33,7 +33,9 @@ English, Hindi and Hinglish.
   provisional_locate.checks.alpha_zero_matches_base]] for provisional
   locate evidence (no fp32 credit).
 - Repair freeze [[METRICS -> runs/<id>/repair_freeze.json verification]]:
-  research arm only, never a deployable claim.
+  research arm only. The frozen arm is a provisional bf16 research arm chosen
+  only on its calibration logit effect; it carries no safety-effect or
+  circuit-superiority claim.
 
 ## The standard
 

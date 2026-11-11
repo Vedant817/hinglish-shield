@@ -50,7 +50,9 @@ result.
   provisional_locate.checks.alpha_zero_matches_base]]. The node is
   `MLP 0`, the declared score is a pin, not a discovered circuit.
 - Repair freeze [[METRICS -> runs/<id>/repair_freeze.json]]: verification
-  pathway and controls, never a deployable claim.
+  pathway and controls. The frozen arm is a provisional bf16 research arm
+  chosen only on its calibration logit effect; it carries no safety-effect or
+  circuit-superiority claim.
 
 Fixture generations are not ASR. The locked single-shot test stays
 embargoed until Nov 11 IST and the final publishable numbers must come from
