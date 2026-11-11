@@ -403,3 +403,24 @@ opened or produced.
   docs/AMENDMENT_hinglish_test_extension_2026-11-09.md and the dev repair
   result first. The next Run All executes the dev eval and costs GPU hours;
   Vedant accepts that before launching.
+
+## 2026-11-11 IST: Kaggle v20 dev-eval failure (device mismatch), run 20261111-151448-28ca2067
+
+- what: Vedant ran Kaggle v20 (run 20261111-151448-28ca2067). The output zip was
+  evaluated locally. Identity, D8 (1362 rows) and Locate all reported status ok,
+  consistent with v18 (Locate l2_norm 3.0016, alpha-zero logit diff 0.0,
+  candidate 4.9375 vs random 3.765625). The dev repair eval failed.
+- result: dev_repair_status.json recorded status failed with RuntimeError
+  "Expected all tensors to be on the same device, but found at least two
+  devices, cuda:0 and cpu!". dev_repair_generations.jsonl contained only the
+  base arm (885 rows: benign_dev en 245, harm_dev en 296, harm_dev_hi 277,
+  harm_dev_hing 67). The first hooked arm crashed, so there are no judge
+  scores, no rates, and no alpha-zero byte-equality check. No repair result is
+  claimed.
+- cause: _dev_eval_install_hook created the steering vector on CPU and added it
+  without moving it to the output device. The dry-run stubs did not model
+  devices, so the path was missed by tests.
+- next: Fix the hook to move the vector to output.device and output.dtype, make
+  dry-run stubs device-aware and raise on cross-device adds, add a model-free
+  test, rerun the full suite, then save a new Kaggle version with --no-run.
+  The locked test remains prepared only and never runs.
