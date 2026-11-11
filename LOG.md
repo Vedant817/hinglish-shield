@@ -368,3 +368,38 @@ Tiny Aya template pin is invented.
 Validation: 40 focused tests; full suite 400 passed, 1 skipped, 7 subtests;
 smoke passed. No model weights, judge, prompt file, test row, or metric was
 opened or produced.
+
+## 2026-11-11 IST: notebook dev-slice repair evaluation (declared, gated)
+
+- what: Added phase 6d to notebooks/gpu_parity_and_baseline.ipynb: a four-arm
+  dev-slice repair evaluation (base, frozen v18 calibration candidate at alpha 1,
+  norm-matched random seed-7 control, alpha-zero) that runs only when the
+  notebook runs (RUN_DEV_EVAL default on). The cell embeds the frozen bf16
+  direction from runs/gpu-20261110-011925-83c016e0 and re-verifies its canonical
+  hash against pin d5ec351a001fd36a05d267bc8ebe9bb1cf9e4f44720fdc0b85492ebc2b23c8c1
+  before any arm runs; it never refits and never opens the locked test split.
+  Generation shares one float16 harness with an audited bf16-to-fp16 cast
+  (overflow refuses); the hook sits on the HF layer-0 MLP output, the
+  blocks.0.hook_mlp_out equivalent. Alpha-zero must byte-match the base arm
+  (responses and token ids) before any rate is written. WildGuard and
+  Qwen3Guard score all arms as in D8; unsafe and over-refusal rates carry
+  Wilson 95% intervals (z=1.959963984540054) on judge-scored denominators, per
+  language and pooled. The frozen arm wording stays: provisional bf16 research
+  arm chosen only on calibration logit effect, no safety-effect or
+  circuit-superiority claim.
+- result: New artifacts dev_repair_eval_plan.json, dev_repair_generations.jsonl,
+  dev_repair_judge_scores.jsonl, dev_repair_eval.json, dev_repair_status.json
+  stay metrics_eligible false, primary_asr null, "automated-judge only, human
+  calibration pending". scripts/ingest_gpu_artifacts.py accepts and re-verifies
+  them (counts, Wilson bounds, alpha-zero byte equality, embedded direction
+  hash, arm set). scripts/notebook_dry_run.py executes the full eval path on
+  stubs end to end (DEV EVAL DONE rows 1095 arms 4 alpha_zero_match True) and
+  the importer revalidation passes. Full suite 459 passed, 7 subtests. Docs
+  updated: GPU_RUNBOOK phase 6d, KAGGLE_AGENT save-not-run, this log.
+- next: Merge this PR, then save the next Kaggle kernel version on the full slug
+  vedant817/hinglish-shield-gpu-parity-and-baseline with
+  `kaggle kernels push --no-run` (saved, not run). The locked test stays
+  prepared only and never runs: it needs Vedant's verdict on
+  docs/AMENDMENT_hinglish_test_extension_2026-11-09.md and the dev repair
+  result first. The next Run All executes the dev eval and costs GPU hours;
+  Vedant accepts that before launching.

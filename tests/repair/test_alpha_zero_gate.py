@@ -17,7 +17,8 @@ import struct
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
-LOCATE_CELL = "provisional_locate_v1"
+# Unique to the Locate cell: the dev-eval cell also embeds provisional_locate_v1.
+LOCATE_CELL = "def write_locate_diagnostics"
 
 
 def _f32(value):

@@ -23,8 +23,19 @@ hashes are collected after the secret/dependency checks, before parity.
 The D8 cell runs the descriptive baseline in the notebook on the pinned
 calibration/dev slices (771 rows), labeled `automated-judge only, human
 calibration pending`. The Locate cell then runs provisional bf16
-CircuitKIT steering. Both write their own phase statuses and checkpoint
-the zip after each phase. Keep curated paths unset in this fixture notebook.
+CircuitKIT steering. The dev-eval cell (phase 6d) then runs the four-arm
+dev-slice repair evaluation when `RUN_DEV_EVAL` is on (default on): base,
+the frozen v18 calibration candidate at alpha 1, a norm-matched random
+seed-7 control, and alpha-zero, on the dev slice only. It embeds and
+re-verifies the frozen direction, requires alpha-zero to byte-match the base
+arm before any rate is written, and stays `metrics_eligible: false` with
+`primary_asr: null`. Each phase writes its own status and checkpoints the
+zip. Keep curated paths unset in this fixture notebook.
+
+Saving a version is not a run. Push with `kaggle kernels push --no-run` so
+the saved version contains the new cells without executing anything. The next
+Run All (Save and Run All) will execute the dev eval and spend GPU hours on
+generation and judging; Vedant accepts that cost before launching it.
 
 Do not upload a new version while Vedant's editor job is running. Use the
 main notebook link, since version links may be inaccessible to him:
