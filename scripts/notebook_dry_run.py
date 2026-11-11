@@ -615,9 +615,11 @@ def run_dryrun(out_dir: Path) -> int:
 
         ns["checkpoint_phase"](artifacts, phase_zip, "final")
 
-        # Dev-eval plan and full dev repair evaluation (stubbed model and judges),
-        # then locked-test preparation markers.
-        for cell_id in ("hs-dev-eval-cell", "hs-locked-test-prep-cell"):
+        # Dev-eval plan and full dev repair evaluation (stubbed model and judges).
+        exec(compile(_cell_by_id(notebook, "hs-dev-eval-cell"), "hs-dev-eval-cell", "exec"), ns)
+        # Step 3 prepared stages: run in dry-run mode (RUN_ID == "dryrun") so they
+        # take prepared/skipped paths and never open or score the real test split.
+        for cell_id in ("hs-test-hinglish-gen-cell", "hs-locked-test-exec-cell", "b37937a5"):
             exec(compile(_cell_by_id(notebook, cell_id), cell_id, "exec"), ns)
         ns["checkpoint_phase"](artifacts, phase_zip, "final")
         dev_status = json.loads((artifacts / "dev_repair_status.json").read_text(encoding="utf-8"))
@@ -644,6 +646,14 @@ def run_dryrun(out_dir: Path) -> int:
             count = sum(1 for line in (artifacts / ledger).read_text(encoding="utf-8").splitlines()
                         if line.strip())
             assert count == dev_rows_n * 4, (ledger, count, dev_rows_n)
+
+        # Step 3 prepared artifacts exist and do not claim scored test results.
+        hing_test_status = json.loads((artifacts / "hinglish_test_status.json").read_text(encoding="utf-8"))
+        assert hing_test_status["status"] in {"skipped", "prepared", "ok"}, hing_test_status
+        assert hing_test_status.get("metrics_eligible") is False
+        locked_status = json.loads((artifacts / "locked_test_status.json").read_text(encoding="utf-8"))
+        assert locked_status["status"] in {"prepared", "skipped", "ok"}, locked_status
+        assert locked_status.get("metrics_eligible") is False
 
         sys.path.insert(0, str(ROOT))
         from scripts.ingest_gpu_artifacts import ingest

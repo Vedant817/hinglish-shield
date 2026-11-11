@@ -29,7 +29,16 @@ ALLOWED = {"env_report.json", "versions.json", "parity_original_sequential.json"
            "hs_eval_hinglish_calibration.jsonl", "hs_eval_hinglish_dev.jsonl",
            "hinglish_generation.json", "hinglish_status.json", "hinglish_review.csv",
             "dev_repair_eval_plan.json", "dev_repair_status.json", "dev_repair_eval.json",
-            "dev_repair_generations.jsonl", "dev_repair_judge_scores.jsonl"}
+            "dev_repair_generations.jsonl", "dev_repair_judge_scores.jsonl",
+            "hinglish_test_generation.json", "hinglish_test_status.json",
+            "hs_eval_hinglish_test.jsonl",
+            "locked_test_attempt.json", "locked_test_status.json",
+            "locked_test_primary.json",
+            "locked_test_primary_generations.jsonl",
+            "locked_test_primary_judge_scores.jsonl",
+            "locked_test_hinglish_extension.json",
+            "locked_test_hinglish_extension_generations.jsonl",
+            "locked_test_hinglish_extension_judge_scores.jsonl"}
 DEPENDENCY_FILES = {"commands.json", "dependency_check.json", "dependency_check_global.json",
                     "failure.log", "install.log", "imports.log", "manifest.json", "pins.json",
                     "preflight_source.py", "source_notebook.ipynb", "versions.json"}
@@ -42,12 +51,22 @@ D8_METRIC_LABEL = "automated-judge only, human calibration pending"
 PINNED_MODEL_ID = "CohereLabs/tiny-aya-global"
 PINNED_MODEL_REVISION = "af89d219b53ed9b13b8a4645f9c8028973510324"
 HINGLISH_MODEL_ID = "Qwen/Qwen2.5-7B-Instruct"
+HINGLISH_TEST_MODEL_ID = "Qwen/Qwen2.5-1.5B-Instruct"
+HINGLISH_TEST_MODEL_REVISION = "989aa7980e4cf806f80c7fef2b1adb7bc71aa306"
 DEV_EVAL_ARMS = ("base", "candidate_alpha_1", "random_norm_matched_seed_7", "alpha_zero")
 DEV_EVAL_SLICES = {"benign_dev", "harm_dev", "harm_dev_hi", "harm_dev_hing"}
 DEV_EVAL_LANGS = {"en", "hi", "hinglish"}
 DEV_EVAL_DIRECTION_SHA256 = "d5ec351a001fd36a05d267bc8ebe9bb1cf9e4f44720fdc0b85492ebc2b23c8c1"
 DEV_EVAL_FREEZE_SHA256 = "6fc30b183cd5e89676b6cf403646a4c54f567af408fe51d1563ad7cf4a6dbf88"
 DEV_EVAL_Z = 1.959963984540054
+LOCKED_TEST_ARMS = ("base", "refuse_everything", "frozen_repair")
+LOCKED_TEST_PRIMARY_SLICES = {"benign_test_en", "harm_test_en", "benign_test_hi", "harm_test_hi"}
+LOCKED_TEST_PRIMARY_LANGS = {"en", "hi"}
+LOCKED_TEST_HINGLISH_SLICES = {"harm_test_hing"}
+LOCKED_TEST_HINGLISH_LANGS = {"hinglish"}
+LOCKED_TEST_FREEZE_SHA256 = "6fc30b183cd5e89676b6cf403646a4c54f567af408fe51d1563ad7cf4a6dbf88"
+LOCKED_TEST_DIRECTION_SHA256 = "d5ec351a001fd36a05d267bc8ebe9bb1cf9e4f44720fdc0b85492ebc2b23c8c1"
+LOCKED_TEST_MODEL_REVISION = "af89d219b53ed9b13b8a4645f9c8028973510324"
 
 
 
@@ -525,6 +544,235 @@ def _validate_locate_status(obj: object, has_direction: bool) -> None:
         raise ValueError("locate phase status contradicts a written direction")
 
 
+HINGLISH_TEST_AMENDMENT_PROPOSAL_SHA256 = "3bfcf861efe3ff465d315c925f7970a48e46490eb01d89751236b90cbea470b0"
+LOCKED_TEST_HINGLISH_AMENDMENT_PROPOSAL_SHA256 = HINGLISH_TEST_AMENDMENT_PROPOSAL_SHA256
+
+
+def _validate_hinglish_test_generation(obj: object) -> None:
+    if (not isinstance(obj, dict)
+            or obj.get("schema_version") != "hinglish_generation_v1"
+            or obj.get("phase") != "hinglish_test"
+            or obj.get("split") != "test"
+            or obj.get("model_id") != HINGLISH_TEST_MODEL_ID
+            or obj.get("model_revision") != HINGLISH_TEST_MODEL_REVISION
+            or not isinstance(obj.get("seed"), int)
+            or not isinstance(obj.get("n_pairs"), int) or obj.get("n_pairs") <= 0
+            or not isinstance(obj.get("n_kept"), int) or obj.get("n_kept") < 0
+            or not isinstance(obj.get("n_dropped"), int) or obj.get("n_dropped") < 0
+            or obj.get("n_kept") + obj.get("n_dropped") != obj.get("n_pairs")
+            or obj.get("metrics_eligible") is not False
+            or obj.get("primary_asr") is not None
+            or obj.get("descriptive_secondary_only") is not True
+            or obj.get("translation_review") != "unreviewed machine translation"
+            or obj.get("amendment_proposal_sha256") != HINGLISH_TEST_AMENDMENT_PROPOSAL_SHA256):
+        raise ValueError("test hinglish generation journal is missing its fail-closed bindings")
+
+
+def _validate_hinglish_test_rows(data: bytes) -> None:
+    for line in data.splitlines():
+        if not line.strip():
+            continue
+        row = strict_json(line)
+        if not isinstance(row, dict):
+            raise ValueError("test hinglish rows must be JSON objects")
+        if row.get("split") != "test":
+            raise ValueError("test hinglish rows must stay on the test split")
+        if row.get("lang") != "hinglish":
+            raise ValueError("test hinglish rows must be hinglish")
+        if row.get("hs_label") != "harm":
+            raise ValueError("test hinglish rows must be harm rows")
+        if row.get("translation_review") != "unreviewed machine translation":
+            raise ValueError("test hinglish rows must be labeled unreviewed machine translations")
+        if row.get("metrics_eligible") is not False or row.get("primary_asr") is not None:
+            raise ValueError("test hinglish rows cannot claim a metric")
+        if not isinstance(row.get("prompt"), str) or not row.get("prompt"):
+            raise ValueError("test hinglish rows must carry a prompt")
+
+
+def _validate_hinglish_test_status(obj: object, has_journal: bool, has_rows: bool) -> None:
+    payload = _validate_phase_status(obj, "hinglish_test")
+    if payload["status"] == "ok" and not (has_journal and has_rows):
+        raise ValueError("hinglish test status claims success without its generation artifacts")
+    if payload["status"] in {"failed", "blocked", "skipped", "incomplete"} and (has_journal or has_rows):
+        # allow partial presence only when explicitly failed/incomplete? keep strict: non-ok cannot claim success artifacts
+        if has_journal and has_rows and payload["status"] != "incomplete":
+            raise ValueError("hinglish test phase status contradicts written generation artifacts")
+
+
+def _validate_locked_test_attempt(obj: object) -> None:
+    if (not isinstance(obj, dict)
+            or obj.get("status") not in {"reserved", "started", "completed", "failed"}
+            or obj.get("split") != "test"
+            or not isinstance(obj.get("run_id"), str) or not obj.get("run_id")
+            or obj.get("freeze_sha256") != LOCKED_TEST_FREEZE_SHA256):
+        raise ValueError("locked test attempt is missing its fail-closed bindings")
+    arms = obj.get("method_arms")
+    if arms is not None and list(arms) != list(LOCKED_TEST_ARMS):
+        raise ValueError("locked test attempt arms do not match the preregistered arms")
+    gate = obj.get("gate")
+    if gate is not None and (not isinstance(gate, dict) or gate.get("freeze_sha256") != LOCKED_TEST_FREEZE_SHA256):
+        raise ValueError("locked test attempt gate does not bind the frozen arm")
+
+
+def _locked_test_validate_common_row(row: dict, label: str, allowed_slices: set, allowed_langs: set) -> None:
+    if row.get("split") != "test":
+        raise ValueError(f"{label} rows must stay on the test split")
+    if row.get("arm") not in LOCKED_TEST_ARMS:
+        raise ValueError(f"{label} rows must carry a declared locked-test arm")
+    if row.get("slice") not in allowed_slices:
+        raise ValueError(f"{label} rows must use a known locked-test slice")
+    if row.get("lang") not in allowed_langs:
+        raise ValueError(f"{label} rows must carry a known language")
+    if row.get("hs_label") not in {"harm", "benign"}:
+        raise ValueError(f"{label} rows must carry a usable label")
+    expected_label = "harm" if str(row["slice"]).startswith("harm_") else "benign"
+    if row.get("hs_label") != expected_label:
+        raise ValueError(f"{label} row slice and label disagree")
+    if str(row.get("slice", "")).endswith("_hi"):
+        if row.get("translation_review") != "unreviewed_translation":
+            raise ValueError(f"{label} Hindi rows must be labeled unreviewed translations")
+    if str(row.get("slice", "")).endswith("_hing") or row.get("lang") == "hinglish":
+        if row.get("translation_review") != "unreviewed machine translation":
+            raise ValueError(f"{label} Hinglish rows must be labeled unreviewed machine translations")
+    if row.get("metrics_eligible") is not False or row.get("primary_asr") is not None:
+        raise ValueError(f"{label} rows cannot claim a metric")
+
+
+def _validate_locked_test_generations(data: bytes, label: str, allowed_slices: set, allowed_langs: set) -> None:
+    for line in data.splitlines():
+        if not line.strip():
+            continue
+        row = strict_json(line)
+        if not isinstance(row, dict):
+            raise ValueError(f"{label} generation row is not an object")
+        _locked_test_validate_common_row(row, label, allowed_slices, allowed_langs)
+        if not isinstance(row.get("response"), str):
+            raise ValueError(f"{label} generation row is missing its response")
+        ids = row.get("new_token_ids")
+        if (not isinstance(ids, list)
+                or any(not isinstance(v, int) or isinstance(v, bool) for v in ids)):
+            raise ValueError(f"{label} generation rows must carry new token ids")
+        if row.get("new_token_count") != len(ids):
+            raise ValueError(f"{label} generation token count disagrees with ids")
+        if not isinstance(row.get("truncated"), bool):
+            raise ValueError(f"{label} generation truncated flag must be boolean")
+
+
+def _validate_locked_test_judges(data: bytes, label: str, allowed_slices: set, allowed_langs: set) -> None:
+    for line in data.splitlines():
+        if not line.strip():
+            continue
+        row = strict_json(line)
+        if not isinstance(row, dict):
+            raise ValueError(f"{label} judge row is not an object")
+        _locked_test_validate_common_row(row, label, allowed_slices, allowed_langs)
+        wg = row.get("wildguard")
+        if (not isinstance(wg, dict) or wg.get("value") not in {0.0, 1.0}
+                or not isinstance(wg.get("fields"), dict)):
+            raise ValueError(f"{label} judge rows must carry parsed WildGuard fields")
+        q = row.get("qwen3guard")
+        if (not isinstance(q, dict) or q.get("value") not in {None, 0.0, 1.0}
+                or q.get("label") not in {"safe", "unsafe", "secondary_controversial", "judge_failure"}
+                or not isinstance(q.get("categories"), list)):
+            raise ValueError(f"{label} judge rows must carry parsed Qwen3Guard verdicts")
+
+
+def _validate_locked_test_report(obj: object, generations: bytes | None, judges: bytes | None,
+                                 prefix: str, allowed_slices: set, allowed_langs: set,
+                                 require_descriptive_secondary: bool) -> None:
+    if (not isinstance(obj, dict)
+            or obj.get("schema_version") != prefix + "_v1"
+            or obj.get("split") != "test"
+            or obj.get("scored_baseline") is not False
+            or obj.get("metrics_eligible") is not False
+            or obj.get("primary_asr") is not None
+            or obj.get("human_calibration") != "pending"):
+        raise ValueError(f"{prefix} report cannot claim a scored or human-calibrated baseline")
+    if require_descriptive_secondary and obj.get("descriptive_secondary") is not True:
+        raise ValueError(f"{prefix} report must be marked descriptive secondary")
+    if not require_descriptive_secondary and obj.get("primary_result") is not True:
+        raise ValueError(f"{prefix} report must be marked primary")
+    if obj.get("artifact_kind") == "harness_failure":
+        if generations is not None or judges is not None:
+            raise ValueError(f"a failed {prefix} report must not ship generations or judgments")
+        return
+    if obj.get("artifact_kind") != "run":
+        # allow explicit skipped report objects for extension-no-rows case handled separately
+        raise ValueError(f"{prefix} report has an unknown artifact kind")
+    if generations is None or judges is None:
+        raise ValueError(f"a run {prefix} report requires its generation and judgment ledgers")
+    gen_rows = [strict_json(line) for line in generations.splitlines() if line.strip()]
+    judge_rows = [strict_json(line) for line in judges.splitlines() if line.strip()]
+    arms = obj.get("arms")
+    if not isinstance(arms, dict) or set(arms) != set(LOCKED_TEST_ARMS):
+        raise ValueError(f"{prefix} arms must be exactly the preregistered locked-test arms")
+    by_arm_gen = {}
+    for row in gen_rows:
+        by_arm_gen.setdefault(row["arm"], []).append(row)
+    by_arm_judge = {}
+    for row in judge_rows:
+        by_arm_judge.setdefault(row["arm"], []).append(row)
+    row_counts = obj.get("row_counts") or {}
+    expected_total = row_counts.get("total")
+    if not isinstance(expected_total, int) or expected_total < 0:
+        raise ValueError(f"{prefix} report is missing its total row count")
+    for arm in LOCKED_TEST_ARMS:
+        arm_block = arms.get(arm)
+        if not isinstance(arm_block, dict):
+            raise ValueError(f"{prefix} arm {arm} block is missing")
+        hook = arm_block.get("hook")
+        if not isinstance(hook, dict):
+            raise ValueError(f"{prefix} arm {arm} hook record is missing")
+        if hook.get("installed") is not (arm == "frozen_repair"):
+            raise ValueError(f"{prefix} arm {arm} hook record disagrees with its definition")
+        if arm != "frozen_repair" and hook.get("hook_count") != 0:
+            raise ValueError(f"{prefix} arm {arm} must run without a hook")
+        if arm == "frozen_repair" and (not isinstance(hook.get("hook_count"), int) or hook.get("hook_count") < 1):
+            raise ValueError(f"{prefix} frozen_repair arm reports an effective hook count of 0")
+        gen_arm = by_arm_gen.get(arm, [])
+        judge_arm = by_arm_judge.get(arm, [])
+        if len(gen_arm) != len(judge_arm) or len(gen_arm) != expected_total:
+            raise ValueError(f"{prefix} arm {arm} row counts disagree with the ledgers")
+        for kind in ("harm", "benign"):
+            pooled = arm_block.get("pooled", {}).get(kind)
+            subset = [r for r in gen_arm if r.get("hs_label") == kind]
+            sub_judged = [r for r in judge_arm if r.get("hs_label") == kind]
+            if len(subset) != len(sub_judged):
+                raise ValueError(f"{prefix} arm {arm} {kind} ledger mismatch")
+            if pooled is None:
+                if subset:
+                    raise ValueError(f"{prefix} arm {arm} pooled {kind} block is missing")
+                continue
+            expected_n = len(subset)
+            n, _, _ = _validate_dev_eval_rate_cell(pooled, f"{prefix} arm {arm} pooled {kind}")
+            if n != expected_n:
+                raise ValueError(f"{prefix} arm {arm} pooled {kind} row count does not recompute")
+            wg_failures = sum(1 for r in sub_judged if r["wildguard"]["fields"].get("harmful_response") is None)
+            wg_unsafe = sum(1 for r in sub_judged if r["wildguard"]["value"] == 1.0)
+            wg_refusal = sum(1 for r in sub_judged if r["wildguard"]["fields"].get("response_refusal") == "yes")
+            q_failures = sum(1 for r in sub_judged if r["qwen3guard"]["label"] == "judge_failure")
+            q_unsafe = sum(1 for r in sub_judged if r["qwen3guard"]["value"] == 1.0)
+            q_refusal = sum(1 for r in sub_judged if r["qwen3guard"]["refusal"] is True)
+            if (pooled["wildguard"]["unsafe_count"] != wg_unsafe
+                    or pooled["wildguard"]["refusal_count"] != wg_refusal
+                    or pooled["wildguard"]["judge_failure_count"] != wg_failures
+                    or pooled["wildguard"]["n_scored"] != expected_n - wg_failures
+                    or pooled["qwen3guard"]["unsafe_count"] != q_unsafe
+                    or pooled["qwen3guard"]["refusal_count"] != q_refusal
+                    or pooled["qwen3guard"]["judge_failure_count"] != q_failures
+                    or pooled["qwen3guard"]["n_scored"] != expected_n - q_failures):
+                raise ValueError(f"{prefix} arm {arm} pooled {kind} counts do not recompute from the judgments")
+
+
+def _validate_locked_test_status(obj: object, has_primary: bool, has_extension: bool) -> None:
+    payload = _validate_phase_status(obj, "locked_test")
+    if payload["status"] == "ok" and not has_primary:
+        raise ValueError("locked test status claims success without a primary report")
+    if payload["status"] in {"skipped", "blocked"} and has_primary:
+        raise ValueError("locked test phase status contradicts a written primary report")
+
+
+
 def inspect_archive(archive: Path, *, reject_locate: bool = False) -> tuple[dict[str, bytes], dict]:
     files = {}
     normalized = set()
@@ -640,6 +888,48 @@ def inspect_archive(archive: Path, *, reject_locate: bool = False) -> tuple[dict
             _validate_locate_diagnostics(strict_json(data))
         if name == "hinglish_generation.json":
             _validate_hinglish_generation(strict_json(data))
+        if name == "hinglish_test_generation.json":
+            obj_ht = strict_json(data)
+            _validate_hinglish_test_generation(obj_ht)
+            files_meta = obj_ht.get("files")
+            if isinstance(files_meta, dict) and "hs_eval_hinglish_test.jsonl" in files:
+                rec = files_meta.get("hs_eval_hinglish_test.jsonl")
+                if isinstance(rec, dict):
+                    if rec.get("sha256") not in (None, hashlib.sha256(files["hs_eval_hinglish_test.jsonl"]).hexdigest()):
+                        raise ValueError("test hinglish generation file hash does not match its rows")
+        if name == "hs_eval_hinglish_test.jsonl":
+            _validate_hinglish_test_rows(data)
+        if name == "hinglish_test_status.json":
+            _validate_phase_status(strict_json(data), "hinglish_test")
+        if name == "locked_test_attempt.json":
+            _validate_locked_test_attempt(strict_json(data))
+        if name == "locked_test_primary_generations.jsonl":
+            _validate_locked_test_generations(data, "locked test primary", LOCKED_TEST_PRIMARY_SLICES, LOCKED_TEST_PRIMARY_LANGS)
+        if name == "locked_test_primary_judge_scores.jsonl":
+            _validate_locked_test_judges(data, "locked test primary", LOCKED_TEST_PRIMARY_SLICES, LOCKED_TEST_PRIMARY_LANGS)
+        if name == "locked_test_hinglish_extension_generations.jsonl":
+            _validate_locked_test_generations(data, "locked test hinglish extension", LOCKED_TEST_HINGLISH_SLICES, LOCKED_TEST_HINGLISH_LANGS)
+        if name == "locked_test_hinglish_extension_judge_scores.jsonl":
+            _validate_locked_test_judges(data, "locked test hinglish extension", LOCKED_TEST_HINGLISH_SLICES, LOCKED_TEST_HINGLISH_LANGS)
+        if name == "locked_test_primary.json":
+            _validate_locked_test_report(strict_json(data), files.get("locked_test_primary_generations.jsonl"),
+                                         files.get("locked_test_primary_judge_scores.jsonl"),
+                                         "locked_test_primary", LOCKED_TEST_PRIMARY_SLICES, LOCKED_TEST_PRIMARY_LANGS,
+                                         require_descriptive_secondary=False)
+        if name == "locked_test_hinglish_extension.json":
+            obj_lhe = strict_json(data)
+            if obj_lhe.get("status") == "skipped":
+                if (obj_lhe.get("metrics_eligible") is not False
+                        or obj_lhe.get("primary_asr") is not None
+                        or obj_lhe.get("descriptive_secondary") is not True):
+                    raise ValueError("skipped locked test hinglish extension cannot claim metrics")
+            else:
+                _validate_locked_test_report(obj_lhe, files.get("locked_test_hinglish_extension_generations.jsonl"),
+                                             files.get("locked_test_hinglish_extension_judge_scores.jsonl"),
+                                             "locked_test_hinglish_extension", LOCKED_TEST_HINGLISH_SLICES, LOCKED_TEST_HINGLISH_LANGS,
+                                             require_descriptive_secondary=True)
+        if name == "locked_test_status.json":
+            _validate_phase_status(strict_json(data), "locked_test")
         if name == "dev_repair_eval_plan.json":
             obj = strict_json(data)
             if (not isinstance(obj, dict) or obj.get("artifact_kind") != "planned"
@@ -739,6 +1029,43 @@ def inspect_archive(archive: Path, *, reject_locate: bool = False) -> tuple[dict
                                       files.get("dev_repair_generations.jsonl"),
                                       files.get("dev_repair_judge_scores.jsonl"),
                                       ROOT)
+
+    # Hinglish test (test-split extension generation, descriptive secondary only)
+    if "hinglish_test_status.json" in files:
+        ht_status = _validate_phase_status(strict_json(files["hinglish_test_status.json"]), "hinglish_test")
+        has_ht_journal = "hinglish_test_generation.json" in files
+        has_ht_rows = "hs_eval_hinglish_test.jsonl" in files
+        if ht_status["status"] == "ok" and not (has_ht_journal and has_ht_rows):
+            raise ValueError("hinglish test status claims success without its generation artifacts")
+        if ht_status["status"] in {"skipped", "blocked"} and (has_ht_journal or has_ht_rows):
+            raise ValueError("hinglish test phase status contradicts written generation artifacts")
+
+    # Locked test (single-shot, test split). No scored claims.
+    if "locked_test_status.json" in files:
+        lt_status = _validate_phase_status(strict_json(files["locked_test_status.json"]), "locked_test")
+        has_lt_primary = "locked_test_primary.json" in files
+        has_lt_primary_g = "locked_test_primary_generations.jsonl" in files
+        has_lt_primary_j = "locked_test_primary_judge_scores.jsonl" in files
+        if has_lt_primary_g != has_lt_primary_j:
+            raise ValueError("locked test primary generation and judgment ledgers must ship together")
+        if lt_status["status"] == "ok" and not has_lt_primary:
+            raise ValueError("locked test status claims success without a primary report")
+        if lt_status["status"] in {"skipped", "blocked"} and has_lt_primary:
+            raise ValueError("locked test phase status contradicts a written primary report")
+        if has_lt_primary and (has_lt_primary_g != has_lt_primary_j or not has_lt_primary_g):
+            # primary run report requires ledgers (except harness_failure handled in report validator)
+            primary_obj = strict_json(files["locked_test_primary.json"])
+            if primary_obj.get("artifact_kind") == "run":
+                raise ValueError("locked test primary run report requires its generation and judgment ledgers")
+        if "locked_test_hinglish_extension.json" in files:
+            lhe = strict_json(files["locked_test_hinglish_extension.json"])
+            has_lhe_g = "locked_test_hinglish_extension_generations.jsonl" in files
+            has_lhe_j = "locked_test_hinglish_extension_judge_scores.jsonl" in files
+            if has_lhe_g != has_lhe_j:
+                raise ValueError("locked test hinglish extension ledgers must ship together")
+            if lhe.get("artifact_kind") == "run" and (not has_lhe_g or not has_lhe_j):
+                raise ValueError("locked test hinglish extension run report requires its ledgers")
+
     standalone_dependency = {"preflight_source.py", "source_notebook.ipynb", "commands.json",
                              "install.log", "imports.log", "failure.log", "pins.json"}
     if set(files) & standalone_dependency and "manifest.json" not in files:
@@ -767,27 +1094,39 @@ def inspect_archive(archive: Path, *, reject_locate: bool = False) -> tuple[dict
                                   if "d8_descriptive.json" in files else None),
                "hinglish_generation": (strict_json(files["hinglish_generation.json"])
                                         if "hinglish_generation.json" in files else None),
+               "hinglish_test_generation": (strict_json(files["hinglish_test_generation.json"])
+                                            if "hinglish_test_generation.json" in files else None),
                "provisional_locate": (strict_json(files["locate_direction.json"])
                                       if "locate_direction.json" in files else None),
                "dev_repair_plan": (strict_json(files["dev_repair_eval_plan.json"])
                                    if "dev_repair_eval_plan.json" in files else None),
                "dev_repair_eval": (strict_json(files["dev_repair_eval.json"])
                                    if "dev_repair_eval.json" in files else None),
+               "locked_test_attempt": (strict_json(files["locked_test_attempt.json"])
+                                       if "locked_test_attempt.json" in files else None),
+               "locked_test_primary": (strict_json(files["locked_test_primary.json"])
+                                       if "locked_test_primary.json" in files else None),
+               "locked_test_hinglish_extension": (strict_json(files["locked_test_hinglish_extension.json"])
+                                                  if "locked_test_hinglish_extension.json" in files else None),
                 "locate_rejected": ({"rejected": True,
                                        "alpha_zero_diff": rejections.get("alpha_zero_diff")}
                                       if rejections else None),
                "phase_status": {phase: strict_json(files[name])
                                 for phase, name in (("identity", "identity_status.json"),
                                                     ("hinglish", "hinglish_status.json"),
+                                                    ("hinglish_test", "hinglish_test_status.json"),
                                                     ("d8", "d8_status.json"),
                                                     ("locate", "locate_status.json"),
-                                                    ("dev_eval", "dev_repair_status.json"))
+                                                    ("dev_eval", "dev_repair_status.json"),
+                                                    ("locked_test", "locked_test_status.json"))
                                 if name in files},
                "fp32_execution": strict_json(files["fp32_not_run.json"]) if "fp32_not_run.json" in files else None,
                "limitations": ["ZIP inspection does not authenticate the producing machine",
                                "bf16 variant is separate from original fp32 parity",
                                "provisional bf16 locate is not original fp32 parity credit",
                                "D8 automated-judge rates are not human-calibrated ASR",
+                               "Test Hinglish and locked-test extension rates are descriptive and unreviewed",
+                               "Locked test outputs are automated-judge only with human calibration pending",
                                "Fixture generation is not ASR or a scored baseline"]}
     return files, summary
 
@@ -798,6 +1137,11 @@ def metrics_document(summary: dict) -> dict:
     Descriptive judge counts only. Primary metrics stay null because human
     calibration is pending; provisional locate is not fp32 parity credit.
     """
+    has_test = bool(summary.get("locked_test_primary") or summary.get("locked_test_hinglish_extension")
+                    or summary.get("hinglish_test_generation"))
+    has_dev = bool(summary.get("d8_descriptive") or summary.get("provisional_locate")
+                   or summary.get("dev_repair_eval"))
+    split = "test" if has_test and not has_dev else ("calibration+dev" if has_dev else ("test" if has_test else "example"))
     return {
         "schema_version": "gpu_metrics_v1",
         "artifact_kind": "setup-smoke",
@@ -807,15 +1151,18 @@ def metrics_document(summary: dict) -> dict:
         "metric_label": D8_METRIC_LABEL,
         "human_calibration": "pending",
         "scores": "not_a_scored_test",
-        "split": "calibration+dev" if (summary.get("d8_descriptive") or summary.get("provisional_locate")
-                                       or summary.get("dev_repair_eval")) else "example",
+        "split": split,
         "archive_sha256": summary.get("archive_sha256"),
         "original_parity": summary.get("original_parity"),
         "target_identity": summary.get("target_identity"),
         "d8_descriptive": summary.get("d8_descriptive"),
+        "hinglish_test_generation": summary.get("hinglish_test_generation"),
         "provisional_locate": summary.get("provisional_locate"),
         "dev_repair_plan": summary.get("dev_repair_plan"),
         "dev_repair_eval": summary.get("dev_repair_eval"),
+        "locked_test_attempt": summary.get("locked_test_attempt"),
+        "locked_test_primary": summary.get("locked_test_primary"),
+        "locked_test_hinglish_extension": summary.get("locked_test_hinglish_extension"),
         "locate_rejected": summary.get("locate_rejected"),
         "phase_status": summary.get("phase_status", {}),
         "fp32_execution": summary.get("fp32_execution"),

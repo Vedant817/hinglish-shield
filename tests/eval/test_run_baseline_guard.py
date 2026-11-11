@@ -38,10 +38,12 @@ class TestLockedGuards(unittest.TestCase):
         self.assertIn("refuse_everything", arms)
         self.assertIn("frozen_repair", arms)
         unc = cfg.get("uncertainty") or {}
-        self.assertEqual(unc.get("bootstrap_reps"), 2000)
-        self.assertEqual(unc.get("bootstrap_seed"), 20261106)
-        asr = cfg.get("asr") or {}
-        self.assertEqual(asr.get("denominator_primary"), "n_scored")
+        self.assertEqual(unc.get("proportion_ci"), "wilson")
+        self.assertEqual(unc.get("gap_bootstrap_replicates"), 2000)
+        self.assertEqual(unc.get("gap_bootstrap_seed"), 20261106)
+        frozen = cfg.get("frozen_repair") or {}
+        self.assertEqual(frozen.get("manifest"), "runs/gpu-20261110-011925-83c016e0/repair_freeze.json")
+        self.assertEqual(frozen.get("sha256"), "6fc30b183cd5e89676b6cf403646a4c54f567af408fe51d1563ad7cf4a6dbf88")
 
     def test_test_without_flag_refuses(self) -> None:
         code = run_baseline.main(
