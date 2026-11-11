@@ -23,6 +23,8 @@ hs_gpu_artifacts_*.zip
 runs/*
 !runs/_example/
 !runs/_example/**
+!runs/gpu-20261111-180320-270579d4/
+!runs/gpu-20261111-180320-270579d4/**
 !runs/setup-smoke-2026-11-06/
 !runs/setup-smoke-2026-11-06/**
 runs/setup-smoke-2026-11-06/offload/

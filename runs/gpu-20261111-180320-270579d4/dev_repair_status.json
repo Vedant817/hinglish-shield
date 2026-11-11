@@ -1,0 +1,13 @@
+{
+  "phase": "dev_eval",
+  "status": "ok",
+  "run_id": "20261111-180320-270579d4",
+  "timestamp": "2026-11-11T22:18:33.090273+05:30",
+  "metrics_eligible": false,
+  "primary_asr": null,
+  "error_type": null,
+  "error": null,
+  "metric_label": "automated-judge only, human calibration pending",
+  "rows": 885,
+  "arms": 4
+}
