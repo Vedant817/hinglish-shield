@@ -21,12 +21,16 @@ def test_embargo_is_2026_11_11_ist():
     assert runner.TEST_EMBARGO_END == expected
 
 
-def test_frozen_config_is_still_not_admissible():
+def test_frozen_config_is_pinned_but_still_not_run():
     cfg = _config()
     assert cfg["status"] == "locked_test_pending"
-    assert cfg["frozen_repair"]["manifest"] is None
-    assert cfg["frozen_repair"]["sha256"] is None
-    assert cfg["datasets"]["dataset_hash"] is None
+    frozen = cfg["frozen_repair"]
+    assert frozen["manifest"] == "runs/gpu-20261110-011925-83c016e0/repair_freeze.json"
+    assert frozen["sha256"] == "6fc30b183cd5e89676b6cf403646a4c54f567af408fe51d1563ad7cf4a6dbf88"
+    assert cfg["datasets"]["dataset_hash"] == "334e7151edfd9fe958afcded67417b9315d2d26b693b51f91b998c5d9638b531"
+    assert cfg["datasets"]["split_manifest"] == "data/splits/family_splits_v2.json"
+    assert cfg["model_revision"] == "af89d219b53ed9b13b8a4645f9c8028973510324"
+    assert cfg["method_arms"] == ["base", "refuse_everything", "frozen_repair"]
 
 
 def test_guard_refuses_before_embargo_without_executing():
