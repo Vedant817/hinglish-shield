@@ -1104,7 +1104,8 @@ class TestGpuNotebook(unittest.TestCase):
         cell = cell_with("DEV_EVAL_EMBEDDED_DIRECTION =")
         hook = cell[cell.index("def _dev_eval_install_hook"):cell.index("def dev_eval_generate")]
         self.assertIn('getattr(output, "device"', hook)
-        self.assertIn("base.to(device=device, dtype=output.dtype)", hook)
+        self.assertIn("output.dtype", hook)
+        self.assertRegex(hook, r"base\.to\(device=device,\s*dtype=")
         # The steering vector must not be added from CPU without a device move.
         self.assertNotIn("return output + (vec.to(output.dtype) * alpha)", hook)
 

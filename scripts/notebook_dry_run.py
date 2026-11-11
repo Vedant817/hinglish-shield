@@ -60,7 +60,12 @@ class FakeTensor:
         dtype = self.dtype
         if args:
             first = args[0]
-            if isinstance(first, str) or hasattr(first, "type"):
+            if isinstance(first, str):
+                if first == "cpu" or first.startswith("cuda") or first.startswith("mps") or first == "meta":
+                    device = first
+                else:
+                    dtype = first
+            elif hasattr(first, "index") and hasattr(first, "type"):
                 device = first
             elif first is not None:
                 dtype = first
