@@ -45,15 +45,39 @@ class FakeFloat:
 
 
 class FakeTensor:
-    def __init__(self, values):
+    def __init__(self, values, device="cpu", dtype="float16"):
         self.data = [float(v) for v in values]
-        self.dtype = "float16"
+        self.device = device
+        self.dtype = dtype
 
-    def to(self, _device=None):
-        return self
+    def _like(self, values, device=None, dtype=None):
+        return FakeTensor(values,
+                          device=self.device if device is None else device,
+                          dtype=self.dtype if dtype is None else dtype)
+
+    def to(self, *args, **kwargs):
+        device = self.device
+        dtype = self.dtype
+        if args:
+            first = args[0]
+            if isinstance(first, str) or hasattr(first, "type"):
+                device = first
+            elif first is not None:
+                dtype = first
+        if "device" in kwargs:
+            device = kwargs["device"]
+        if "dtype" in kwargs:
+            dtype = kwargs["dtype"]
+        return FakeTensor(self.data, device=device, dtype=dtype)
 
     def __add__(self, other):
-        return FakeTensor([a + (b if isinstance(b, float) else 0.0) for a, b in zip(self.data, other.data)])
+        if isinstance(other, FakeTensor) and self.device != other.device:
+            raise RuntimeError(
+                "Expected all tensors to be on the same device, but found at least two devices, "
+                f"{self.device} and {other.device}!"
+            )
+        other_data = other.data if isinstance(other, FakeTensor) else [float(other)] * len(self.data)
+        return self._like([a + b for a, b in zip(self.data, other_data)])
 
     def detach(self):
         return self
@@ -71,21 +95,25 @@ class FakeTensor:
         return FakeFloat(math.sqrt(sum(v * v for v in self.data)))
 
     def abs(self):
-        return FakeTensor([abs(v) for v in self.data])
+        return self._like([abs(v) for v in self.data])
 
     def max(self):
         return FakeFloat(max(self.data, default=0.0))
 
     def __sub__(self, other):
-        return FakeTensor([a - b for a, b in zip(self.data, other.data)])
+        other_data = other.data if isinstance(other, FakeTensor) else [float(other)] * len(self.data)
+        return self._like([a - b for a, b in zip(self.data, other_data)])
 
     def add(self, other):
-        return FakeTensor([a + (b if not isinstance(b, float) else 0.0) for a, b in zip(self.data, other.data)])
+        return self.__add__(other)
 
     def mul(self, factor):
-        return FakeTensor([v * factor for v in self.data])
+        return self._like([v * factor for v in self.data])
 
     def __mul__(self, factor):
+        return self.mul(factor)
+
+    def __rmul__(self, factor):
         return self.mul(factor)
 
     def __getitem__(self, key):
@@ -156,13 +184,13 @@ def _make_torch_module():
     module.no_grad = lambda: _NoGrad()
 
     def tensor(values, dtype=None):
-        return FakeTensor([float(v) for v in values])
+        return FakeTensor([float(v) for v in values], device="cpu", dtype=dtype or "float32")
 
     def zeros(n):
-        return FakeTensor([0.0] * int(n))
+        return FakeTensor([0.0] * int(n), device="cpu")
 
     def randn(shape, generator=None):
-        return FakeTensor([0.3] * shape[0])
+        return FakeTensor([0.3] * shape[0], device="cpu")
 
     def manual_seed(_seed):
         return None
@@ -243,7 +271,8 @@ class FakeModel:
         outputs = []
         for _row in input_ids:
             # Fire the registered hooks once per row, as a real forward would.
-            self.model.layers[0].mlp(FakeTensor([float(v) for v in _row]))
+            hidden = FakeTensor([float(v) for v in _row], device=self.device, dtype=self.dtype)
+            self.model.layers[0].mlp(hidden)
             beam = list(_row) + canned[:max(1, item)]
             outputs.append(beam)
         return outputs

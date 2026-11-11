@@ -1100,6 +1100,14 @@ class TestGpuNotebook(unittest.TestCase):
         recomputed = math.sqrt(sum(v * v for v in embedded["vector"]))
         self.assertAlmostEqual(recomputed, embedded["l2_norm"], places=4)
 
+    def test_dev_eval_hook_moves_vector_to_output_device(self) -> None:
+        cell = cell_with("DEV_EVAL_EMBEDDED_DIRECTION =")
+        hook = cell[cell.index("def _dev_eval_install_hook"):cell.index("def dev_eval_generate")]
+        self.assertIn('getattr(output, "device"', hook)
+        self.assertIn("base.to(device=device, dtype=output.dtype)", hook)
+        # The steering vector must not be added from CPU without a device move.
+        self.assertNotIn("return output + (vec.to(output.dtype) * alpha)", hook)
+
     def test_dev_eval_alpha_zero_gate_precedes_any_rates(self) -> None:
         cell = cell_with("DEV_EVAL_EMBEDDED_DIRECTION =")
         equality_pos = cell.index("_dev_eval_alpha_zero_equality(_dev_generations)")
