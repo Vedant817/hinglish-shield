@@ -19,6 +19,18 @@ def test_notebook_dry_run_chain_completes(tmp_path):
     assert "rows=17" in completed.stdout or "rows=1244" in completed.stdout
 
     artifacts = out / "hs_gpu_artifacts"
+    plan = json.loads((artifacts / "dev_repair_eval_plan.json").read_text(encoding="utf-8"))
+    assert plan["split"] == "dev"
+    assert plan["arms"] == ["base", "candidate_alpha_1", "random_norm_matched_seed_7", "alpha_zero"]
+    assert plan["metrics_eligible"] is False
+    assert plan["primary_asr"] is None
+    assert plan["wilson_z"] == 1.959963984540054
+    dev_status = json.loads((artifacts / "dev_repair_status.json").read_text(encoding="utf-8"))
+    assert dev_status["status"] == "ok"
+    dev_eval = json.loads((artifacts / "dev_repair_eval.json").read_text(encoding="utf-8"))
+    assert dev_eval["artifact_kind"] == "run"
+    assert dev_eval["alpha_zero_byte_equality"]["match"] is True
+    assert set(dev_eval["arms"]) == set(plan["arms"])
     summary = json.loads((artifacts / "d8_descriptive.json").read_text(encoding="utf-8"))
     hing_rows = 0
     for part in ("hs_eval_hinglish_calibration.jsonl", "hs_eval_hinglish_dev.jsonl"):

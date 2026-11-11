@@ -8,6 +8,7 @@ import ast
 import gc
 import hashlib
 import json
+import math
 import unittest
 import weakref
 from pathlib import Path
@@ -35,6 +36,7 @@ FUNC_NAMES = {
     "wildguard_value",
     "qwen3_value",
     "descriptive_rate",
+    "dev_eval_wilson",
     "is_memory_failure",
     "host_ram_gib",
     "refuse_fp32_conversion_if_short",
@@ -1008,7 +1010,8 @@ class TestGpuNotebook(unittest.TestCase):
             self.assertIn(marker, d8)
         self.assertNotIn("test_locked", d8)
         self.assertNotIn("hs_benign_en/test", d8)
-        locate = cell_with("provisional_locate_v1")
+        # Unique to the Locate cell: the dev-eval cell also embeds provisional_locate_v1.
+        locate = cell_with("def write_locate_diagnostics")
         for marker in ("MLP 0", "locate_direction.json", "locate_status.json",
                        "locate_diagnostics.json", "selected_chat_template",
                        "checkpoint_phase", "original_fp32_credit",
@@ -1020,6 +1023,110 @@ class TestGpuNotebook(unittest.TestCase):
         self.assertIn("checkpoint_phase", identity)
         self.assertIn('target_identity.get("status") != "metadata_retrieved"', d8)
         self.assertIn('target_identity.get("status") != "metadata_retrieved"', locate)
+
+    def test_dev_eval_config_constants_are_pinned(self) -> None:
+        config = cell_with("DEV_EVAL_DIRECTION_SHA256 =")
+        tree = ast.parse(config)
+        values = {}
+        wanted = {"DEV_EVAL_ARMS", "DEV_EVAL_MAX_NEW_TOKENS", "DEV_EVAL_GENERATION_BATCH",
+                  "DEV_EVAL_Z", "DEV_EVAL_RANDOM_SEED", "DEV_EVAL_DIRECTION_SHA256",
+                  "DEV_EVAL_FREEZE_SHA256", "DEV_EVAL_DIRECTION_SOURCE"}
+        for node in tree.body:
+            if isinstance(node, ast.Assign):
+                for target in node.targets:
+                    if isinstance(target, ast.Name) and target.id in wanted:
+                        values[target.id] = ast.literal_eval(node.value)
+        self.assertEqual(sorted(values), sorted(wanted), sorted(wanted - set(values)))
+        self.assertEqual(values["DEV_EVAL_ARMS"],
+                         ["base", "candidate_alpha_1", "random_norm_matched_seed_7", "alpha_zero"])
+        self.assertEqual(values["DEV_EVAL_MAX_NEW_TOKENS"], 256)
+        self.assertEqual(values["DEV_EVAL_GENERATION_BATCH"], 16)
+        self.assertEqual(values["DEV_EVAL_Z"], 1.959963984540054)
+        self.assertEqual(values["DEV_EVAL_RANDOM_SEED"], 7)
+        self.assertEqual(values["DEV_EVAL_DIRECTION_SHA256"],
+                         "d5ec351a001fd36a05d267bc8ebe9bb1cf9e4f44720fdc0b85492ebc2b23c8c1")
+        self.assertEqual(values["DEV_EVAL_FREEZE_SHA256"],
+                         "6fc30b183cd5e89676b6cf403646a4c54f567af408fe51d1563ad7cf4a6dbf88")
+        self.assertIn("runs/gpu-20261110-011925-83c016e0/locate_direction.json",
+                      values["DEV_EVAL_DIRECTION_SOURCE"])
+        # The eval runs by default so a Run All executes it.
+        self.assertIn('os.environ.get("RUN_DEV_EVAL", "1")', config)
+
+    def test_dev_eval_wilson_matches_stats_and_refuses_nulls(self) -> None:
+        from src.eval.stats import wilson_ci
+        dev_eval_wilson = self.ns["dev_eval_wilson"]
+        z = 1.959963984540054
+        for successes, n in ((0, 1), (1, 1), (3, 10), (0, 562), (17, 1244), (850, 850)):
+            got = dev_eval_wilson(successes, n)
+            want = wilson_ci(successes, n, z=z)
+            self.assertAlmostEqual(got["estimate"], want.estimate, places=15)
+            self.assertAlmostEqual(got["low"], want.low, places=15)
+            self.assertAlmostEqual(got["high"], want.high, places=15)
+            self.assertEqual(got["numerator"], successes)
+            self.assertEqual(got["denominator"], n)
+            self.assertEqual(got["method"], "wilson_95")
+        self.assertIsNone(dev_eval_wilson(0, 0))
+        self.assertIsNone(dev_eval_wilson(3, 2))
+        self.assertIsNone(dev_eval_wilson(True, 10))
+        self.assertIsNone(dev_eval_wilson(3.0, 10))
+        self.assertIsNone(dev_eval_wilson(3, 10.0))
+        self.assertIsNone(dev_eval_wilson(-1, 10))
+
+    def test_dev_eval_embedded_direction_matches_the_v18_pin(self) -> None:
+        from src.repair.jsonutil import content_sha256
+        cell = cell_with("DEV_EVAL_EMBEDDED_DIRECTION =")
+        tree = ast.parse(cell)
+        embedded = None
+        for node in tree.body:
+            if (isinstance(node, ast.Assign)
+                    and any(isinstance(t, ast.Name) and t.id == "DEV_EVAL_EMBEDDED_DIRECTION"
+                            for t in node.targets)):
+                embedded = json.loads(ast.literal_eval(node.value.args[0]))
+        self.assertIsInstance(embedded, dict)
+        direction_sha = cell_with("DEV_EVAL_DIRECTION_SHA256 =")
+        values = {}
+        for node in ast.parse(direction_sha).body:
+            if isinstance(node, ast.Assign):
+                for target in node.targets:
+                    if isinstance(target, ast.Name) and target.id == "DEV_EVAL_DIRECTION_SHA256":
+                        values["pin"] = ast.literal_eval(node.value)
+        self.assertEqual(content_sha256(embedded), values["pin"])
+        self.assertEqual(embedded["schema_version"], "provisional_locate_v1")
+        self.assertEqual(embedded["node"], "MLP 0")
+        self.assertEqual(embedded["dtype"], "bfloat16")
+        self.assertEqual(embedded["split"], "calibration")
+        self.assertEqual(len(embedded["vector"]), 2048)
+        self.assertTrue(all(v == v and abs(v) != float("inf") for v in embedded["vector"]))
+        recomputed = math.sqrt(sum(v * v for v in embedded["vector"]))
+        self.assertAlmostEqual(recomputed, embedded["l2_norm"], places=4)
+
+    def test_dev_eval_alpha_zero_gate_precedes_any_rates(self) -> None:
+        cell = cell_with("DEV_EVAL_EMBEDDED_DIRECTION =")
+        equality_pos = cell.index("_dev_eval_alpha_zero_equality(_dev_generations)")
+        gate_pos = cell.index("if not _dev_equality[\"match\"]:")
+        raise_pos = cell.index("alpha-zero arm does not byte-match the base arm")
+        judge_pos = cell.index("_dev_judges = dev_eval_judge(_dev_generations)")
+        report_pos = cell.index("write_json(ARTIFACT_DIR / \"dev_repair_eval.json\", _dev_report)")
+        self.assertLess(equality_pos, gate_pos)
+        self.assertLess(gate_pos, raise_pos)
+        self.assertLess(raise_pos, judge_pos)
+        self.assertLess(judge_pos, report_pos)
+        # The equality itself compares responses and token ids, not just counts.
+        block = cell[cell.index("def _dev_eval_alpha_zero_equality"):cell.index("def dev_eval_judge")]
+        self.assertIn('base["response"] != row["response"]', block)
+        self.assertIn('base["new_token_ids"] != row["new_token_ids"]', block)
+        alphas = {"base": None, "alpha_zero": 0.0,
+                  "candidate_alpha_1": 1.0, "random_norm_matched_seed_7": 1.0}
+        tree = ast.parse(cell)
+        declared = None
+        for node in tree.body:
+            if (isinstance(node, ast.Assign)
+                    and any(isinstance(t, ast.Name) and t.id == "DEV_EVAL_ALPHAS"
+                            for t in node.targets)):
+                declared = ast.literal_eval(node.value)
+        self.assertEqual(declared, alphas)
+        # Dev-only: the cell never names the locked split.
+        self.assertNotIn("test_locked", cell.replace("hs-locked-test-prep-cell", ""))
 
     def test_d8_data_pin_matches_repository_files(self) -> None:
         config = cell_with("HS_DATA_FILES = {")

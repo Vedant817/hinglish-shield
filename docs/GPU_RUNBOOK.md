@@ -18,7 +18,7 @@ run while TL is still resident. See prereg D4 in `docs/research/PREREG_baseline.
 2. Create a notebook (or upload `notebooks/gpu_parity_and_baseline.ipynb`) and set **Settings → Accelerator → GPU T4 x2**.
 3. Add secret `HF_TOKEN` (Add-ons → Secrets) for the Hugging Face account that already accepted Tiny Aya terms. Never paste the token into a cell.
 4. Leave `CURATED_PROMPTS_PATH` unset. This notebook refuses a curated JSONL. Generations here are fixtures (`artifact_kind: fixture`, `split: example`). A scored curated run belongs in a separate pipeline. `max_new_tokens` 64 is fixture length only. Scored generation stays at 256.
-5. Click **Run All**. The notebook writes identity first, then the parity cells (fp32 stays off by default), the fp16 guard, the fixture baseline, the D8 descriptive baseline, and the provisional Locate, checkpointing the output zip after each phase. The earlier phases were roughly 60 to 240 minutes (install + parity + fp16 guard + short fixture baseline); D8 and Locate add generation, judging and steering time on top. On a Kaggle host of about 31 GiB, D5 refuses the dual-resident fp32 conversion before the platform can kill the kernel, and the CPU bf16 variant runs instead. D6 loads that TransformerLens copy with `from_pretrained_no_processing` and no live HF donor. A larger host that has at least 32 GiB available and 32 GiB total still attempts sequential fp32, including the long 4196-token forward (a planning guess of about 20 to 90 minutes, not a measurement). Stop early only if a cell hard-fails.
+5. Click **Run All**. The notebook writes identity first, then the parity cells (fp32 stays off by default), the fp16 guard, the fixture baseline, the D8 descriptive baseline, the provisional Locate, and the dev-slice repair evaluation (four arms on dev, gated), checkpointing the output zip after each phase. The earlier phases were roughly 60 to 240 minutes (install + parity + fp16 guard + short fixture baseline); D8, Locate and the dev eval add generation, judging and steering time on top. On a Kaggle host of about 31 GiB, D5 refuses the dual-resident fp32 conversion before the platform can kill the kernel, and the CPU bf16 variant runs instead. D6 loads that TransformerLens copy with `from_pretrained_no_processing` and no live HF donor. A larger host that has at least 32 GiB available and 32 GiB total still attempts sequential fp32, including the long 4196-token forward (a planning guess of about 20 to 90 minutes, not a measurement). Stop early only if a cell hard-fails.
 6. Download `hs_gpu_artifacts_<run_id>.zip` from `/kaggle/working/` and copy it into the repo as `runs/<run_id>/` (unzip so manifests are visible). Never commit tokens or model weights.
 
 ## Gate details (prereg D4)
@@ -134,6 +134,40 @@ failure logs. A dependency preflight pass is only environment evidence and canno
 grant parity, Locate or judge credit. If the notebook install pins change, prepare
 a new preflight against the new committed notebook and preserve the older run.
 
+### Dev-slice repair evaluation (phase 6d, dev only)
+
+Declared in the config cell and executed by the `hs-dev-eval-cell` after Locate
+when `RUN_DEV_EVAL` is on (default on). It never opens the locked test split and
+never refits a direction. Four arms run on the dev rows only: base, the frozen
+v18 calibration candidate at alpha 1, a norm-matched random seed-7 control, and
+alpha-zero with the wrapper. The frozen bf16 direction is embedded in the cell
+and re-verified against pin
+`d5ec351a001fd36a05d267bc8ebe9bb1cf9e4f44720fdc0b85492ebc2b23c8c1` before any
+arm runs. It was fit on calibration only and is a provisional bf16 research arm
+chosen only on calibration logit effect, with no safety-effect or
+circuit-superiority claim.
+
+Generation shares one float16 harness across arms (same batch order, padding,
+greedy decoding, 256 new tokens), with the bf16-to-fp16 vector cast audited;
+an overflowing component refuses outright. The steering hook sits on the HF
+layer-0 MLP output, the equivalent of the frozen arm's `blocks.0.hook_mlp_out`.
+Alpha-zero keeps the wrapper at coefficient 0 and must reproduce the base arm
+byte for byte (responses and token ids); any mismatch fails the eval before any
+rate is written. WildGuard and Qwen3Guard score every arm exactly as the D8
+lane does. Unsafe rate on harm rows and over-refusal (benign unsafe rate per
+the plan, with the refusal rate recorded beside it) are reported per language
+and pooled with Wilson 95% intervals (z=1.959963984540054) on judge-scored
+denominators only.
+
+Outputs: `dev_repair_eval_plan.json` (planned), `dev_repair_generations.jsonl`,
+`dev_repair_judge_scores.jsonl`, `dev_repair_eval.json` (run), and
+`dev_repair_status.json`. All stay `metrics_eligible: false`,
+`primary_asr: null`, metric label "automated-judge only, human calibration
+pending"; hi and hinglish rows are unreviewed machine translations. Saving a
+version with `--no-run` never executes this evaluation; the next Run All will,
+at GPU cost. The importer recomputes the counts, Wilson bounds, alpha-zero byte
+equality and the embedded direction hash before it accepts the run artifacts.
+
 ## Bringing artifacts home
 
 ```bash
@@ -141,7 +175,8 @@ python scripts/ingest_gpu_artifacts.py ~/Downloads/hs_gpu_artifacts_<run_id>.zip
 ```
 
 The same command writes `metrics.json` into the run directory: the descriptive
-judge summary (or null), provisional locate (or null), phase statuses, and
+judge summary (or null), provisional locate (or null), the dev repair eval plan
+and report (or null), phase statuses, and
 null primary metrics. It is the one-command view to read when a fresh editor
 zip arrives.
 

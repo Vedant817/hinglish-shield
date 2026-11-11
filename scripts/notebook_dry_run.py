@@ -47,9 +47,13 @@ class FakeFloat:
 class FakeTensor:
     def __init__(self, values):
         self.data = [float(v) for v in values]
+        self.dtype = "float16"
 
     def to(self, _device=None):
         return self
+
+    def __add__(self, other):
+        return FakeTensor([a + (b if isinstance(b, float) else 0.0) for a, b in zip(self.data, other.data)])
 
     def detach(self):
         return self
@@ -189,14 +193,41 @@ def _cell_by_id(notebook, cell_id):
     raise LookupError(cell_id)
 
 
+class FakeMlp:
+    """Layer-0 MLP module: registers forward hooks and applies them on call."""
+
+    def __init__(self):
+        self._hooks = []
+
+    def register_forward_hook(self, hook):
+        self._hooks.append(hook)
+        return types.SimpleNamespace(remove=lambda: self._hooks.remove(hook))
+
+    def __call__(self, hidden):
+        for hook in tuple(self._hooks):
+            replaced = hook(self, (), hidden)
+            if replaced is not None:
+                hidden = replaced
+        return hidden
+
+
+class FakeLayer:
+    def __init__(self):
+        self.mlp = FakeMlp()
+
+
 class FakeModel:
     def __init__(self, kind):
         self.kind = kind
         self.device = "cuda"
         self.dtype = "float16"
+        self.model = types.SimpleNamespace(layers=[FakeLayer()])
 
     def eval(self):
         return self
+
+    def named_modules(self):
+        yield "model.layers.0.mlp", self.model.layers[0].mlp
 
     def generate(self, **kwargs):
         input_ids = kwargs["input_ids"]
@@ -211,6 +242,8 @@ class FakeModel:
             canned = [301]
         outputs = []
         for _row in input_ids:
+            # Fire the registered hooks once per row, as a real forward would.
+            self.model.layers[0].mlp(FakeTensor([float(v) for v in _row]))
             beam = list(_row) + canned[:max(1, item)]
             outputs.append(beam)
         return outputs
@@ -440,6 +473,7 @@ def run_dryrun(out_dir: Path) -> int:
         ns["RUN_ID"] = "dryrun"
         ns["RUN_D8_BASELINE"] = True
         ns["RUN_LOCATE_BF16"] = True
+        ns["RUN_DEV_EVAL"] = True
         ns["CURATED_PROMPTS_PATH"] = ""
         qwen_template_hash = hashlib.sha256(b"QWEN STUB CHAT TEMPLATE").hexdigest()
         qwen_config_hash = hashlib.sha256(b"QWEN STUB CONFIG").hexdigest()
@@ -546,6 +580,36 @@ def run_dryrun(out_dir: Path) -> int:
         assert diagnostics["status"] == "ok"
 
         ns["checkpoint_phase"](artifacts, phase_zip, "final")
+
+        # Dev-eval plan and full dev repair evaluation (stubbed model and judges),
+        # then locked-test preparation markers.
+        for cell_id in ("hs-dev-eval-cell", "hs-locked-test-prep-cell"):
+            exec(compile(_cell_by_id(notebook, cell_id), cell_id, "exec"), ns)
+        ns["checkpoint_phase"](artifacts, phase_zip, "final")
+        dev_status = json.loads((artifacts / "dev_repair_status.json").read_text(encoding="utf-8"))
+        if dev_status.get("status") != "ok":
+            print("DEV EVAL STATUS:", json.dumps(dev_status))
+        assert dev_status["status"] == "ok"
+        dev_plan = json.loads((artifacts / "dev_repair_eval_plan.json").read_text(encoding="utf-8"))
+        assert dev_plan["arms"] == ["base", "candidate_alpha_1", "random_norm_matched_seed_7",
+                                    "alpha_zero"]
+        dev_eval = json.loads((artifacts / "dev_repair_eval.json").read_text(encoding="utf-8"))
+        assert dev_eval["artifact_kind"] == "run"
+        assert dev_eval["split"] == "dev"
+        assert dev_eval["metrics_eligible"] is False and dev_eval["primary_asr"] is None
+        assert set(dev_eval["arms"]) == {"base", "candidate_alpha_1",
+                                         "random_norm_matched_seed_7", "alpha_zero"}
+        assert dev_eval["alpha_zero_byte_equality"]["match"] is True
+        assert dev_eval["direction"]["content_sha256"] == (
+            json.loads((ROOT / "runs" / "gpu-20261110-011925-83c016e0" / "locate_direction.json")
+                       .read_text(encoding="utf-8"))["content_sha256"])
+        dev_rows_n = sum(1 for line in (artifacts / "d8_generations.jsonl").read_text(
+            encoding="utf-8").splitlines()
+            if line.strip() and json.loads(line)["split"] == "dev")
+        for ledger in ("dev_repair_generations.jsonl", "dev_repair_judge_scores.jsonl"):
+            count = sum(1 for line in (artifacts / ledger).read_text(encoding="utf-8").splitlines()
+                        if line.strip())
+            assert count == dev_rows_n * 4, (ledger, count, dev_rows_n)
 
         sys.path.insert(0, str(ROOT))
         from scripts.ingest_gpu_artifacts import ingest

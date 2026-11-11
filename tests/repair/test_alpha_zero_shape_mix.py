@@ -80,7 +80,7 @@ def test_notebook_base_fetch_uses_control_row_shape():
     cell = None
     for candidate in notebook["cells"]:
         text = "".join(candidate["source"]) if isinstance(candidate["source"], list) else candidate["source"]
-        if "provisional_locate_v1" in text:
+        if "def write_locate_diagnostics" in text:
             cell = text
     assert cell is not None
     assert "cpu()[0, -1])" in cell
