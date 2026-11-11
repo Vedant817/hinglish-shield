@@ -57,3 +57,21 @@ proposal_sha256: 3bfcf861efe3ff465d315c925f7970a48e46490eb01d89751236b90cbea470b
 The SHA-256 above is the SHA-256 of this file's bytes up to and including
 the line before `## Proposal hash`, so the proposal is content-addressed.
 It commits the experiment design, not any result.
+
+## Approval
+
+Status: **APPROVED** (decision record). Decided by Vedant via delegation to Lexsi on 2026-11-11 22:46 IST.
+
+This approval cites and preserves proposal_sha256 `3bfcf861efe3ff465d315c925f7970a48e46490eb01d89751236b90cbea470b0` (the proposal hash recorded above). The proposal text and its recorded hash are left intact; this section appends the approval decision only.
+
+Conditions of approval:
+
+(a) Build exactly as proposed: same families as the frozen test split (from `data/splits/family_splits_v2.json`), same pairing as calibration/dev; pinned Qwen2.5-1.5B-Instruct generator and prompt (as specified by the proposal and its lineage/pin), greedy decoding, seed 42; same three automated checks and the same drop policy; rows that fail are counted, not hand-fixed.
+
+(b) Generation happens in-notebook on Kaggle GPU (GPU T4 x2). The CPU generation path is abandoned.
+
+(c) Every test Hinglish row stays labeled `unreviewed machine translation`, with `metrics_eligible: false` and `primary_asr: null`, and is reported as descriptive secondary only.
+
+(d) Per point 7 of the proposal, the frozen EN+HI locked-test config is unchanged and remains the primary H1 result. Extending that config is a separate frozen-config decision; this approval does not change it.
+
+Scope note: this is the approval record for building the Hinglish extension as specified. It does not authorize running the locked test outside the single prepared, guarded pass, and it does not create a safety-effect or circuit-superiority claim. The frozen arm remains a provisional bf16 research arm chosen only on its calibration logit effect.
