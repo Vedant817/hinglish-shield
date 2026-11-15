@@ -26,25 +26,63 @@ tags: [safety, steering, refusal-direction, hinglish, circuitkit, lexsi-hackatho
 
 CircuitKIT ActivationSteering difference-of-means refusal direction at `blocks.0.hook_mlp_out`
 for `CohereLabs/tiny-aya-global` rev `af89d219b53ed9b13b8a4645f9c8028973510324`, fit on the
-calibration split, plus the sha256 freeze manifest of the alpha 1.0 steering arm.
+calibration split, plus the sha256 freeze manifest of the alpha 1.0 steering arm, the bf16 parity
+and fp16 guard gate results, the tokenizer/model identity pin, and all project configs.
+This repo contains a steering vector and configs, not fine-tuned weights or adapters.
 Dev result: the steered arm did not separate from base or a norm-matched random direction
 (see https://github.com/Vedant817/hinglish-shield/blob/main/docs/RESULTS.md).
 """
 
 DATA_CARD = """---
-license: apache-2.0
+license: other
+license_name: mixed-source-licenses
+license_link: LICENSE.md
 language: [en, hi]
 tags: [safety, red-teaming, hinglish, code-mixing, over-refusal, lexsi-hackathon]
+pretty_name: Hinglish Shield evaluation data and logs
 ---
 # Hinglish Shield evaluation data and logs
 
-> Content warning: contains harmful prompts and model outputs from public red-teaming benchmarks.
+> **Content warning:** this dataset contains harmful prompts (from public red-teaming benchmarks)
+> and model outputs to them. It is published for safety evaluation research only.
 
-EN/HI/Hinglish harmful and benign evaluation rows, frozen family-level splits, Tiny Aya Global
-generations and WildGuard / Qwen3Guard judge scores for the dev repair evaluation
-(run 20261111-180320-270579d4). Hindi and Hinglish prompts are unreviewed machine translations.
-Sources: Aya Red-Teaming (Apache 2.0), HarmBench (MIT), XSTest (CC BY 4.0), OR-Bench (CC BY 4.0).
-Code and write-up: https://github.com/Vedant817/hinglish-shield
+English, Hindi and Hinglish harmful and benign evaluation rows, frozen family-level splits, and the
+full outputs of the Hinglish Shield dev evaluation of `CohereLabs/tiny-aya-global`
+(rev `af89d219b53ed9b13b8a4645f9c8028973510324`): generations, WildGuard and Qwen3Guard judge labels,
+Wilson CI / kappa summaries and run logs.
+
+**Label provenance:** Hindi rows are unreviewed literal translations (Aya Red-Teaming Hindi).
+Hinglish rows (`hs_eval_hinglish_*.jsonl`) are **unreviewed machine translation** generated with
+`Qwen/Qwen2.5-7B-Instruct` and filtered by automated script checks (473 candidates, 118 kept).
+Judge labels are automated (WildGuard primary, Qwen3Guard secondary), not human labels.
+
+## Layout
+- `splits/`: frozen family-level calibration/dev/test manifest (`family_splits_v2.json`) and lookup.
+- `curated/`: CuratorKIT-curated English harm and benign sets with per-split manifests.
+- `interim/`: normalized interim rows.
+- `runs/20261111-180320-270579d4/`: dev repair evaluation (4 arms x 885 rows), generations, judge scores, metrics, status and environment logs.
+- `runs/20261110-011925-83c016e0/wilson_kappa.json`: judge agreement on 1362 calibration+dev rows.
+- `sources/`: source manifest and provenance notes.
+
+## Sources and licenses
+| Source | License | Redistribution |
+|---|---|---|
+| Aya Red-Teaming (CohereLabs) | Apache 2.0 | permitted, with attribution |
+| HarmBench text behaviors | MIT | permitted, with license notice |
+| XSTest | CC BY 4.0 | permitted, with attribution |
+| OR-Bench | CC BY 4.0 | permitted, with attribution |
+| Tiny Aya Global generations | model under CC-BY-NC-4.0 | outputs shared for non-commercial research |
+| Qwen2.5 Hinglish rewrites | Apache 2.0 model | permitted |
+
+All source licenses permit redistribution with attribution, so rows are included as text.
+Code, write-up and reproduction: https://github.com/Vedant817/hinglish-shield
+"""
+
+LICENSE_MD = """# Licenses
+Rows keep the license of their source dataset: Aya Red-Teaming (Apache 2.0), HarmBench (MIT,
+Copyright (c) 2024 centerforaisafety), XSTest (CC BY 4.0), OR-Bench (CC BY 4.0). Model generations
+come from CohereLabs/tiny-aya-global (CC-BY-NC-4.0) and are shared for non-commercial research.
+Original code and annotations by Hinglish Shield are released under CC BY 4.0.
 """
 
 
@@ -58,6 +96,8 @@ def stage(files, card):
         else:
             shutil.copy2(src, target)
     (tmp / "README.md").write_text(card, encoding="utf-8")
+    if card is DATA_CARD:
+        (tmp / "LICENSE.md").write_text(LICENSE_MD, encoding="utf-8")
     return tmp
 
 
@@ -74,8 +114,21 @@ def main():
         (V18 / "repair_freeze.json", "v18/repair_freeze.json"),
         (V21 / "locate_direction.json", "v21/locate_direction.json"),
         (V21 / "locate_status.json", "v21/locate_status.json"),
+        (V21 / "parity_variant_bf16.json", "v21/parity_variant_bf16.json"),
+        (V21 / "fp16_guard.json", "v21/fp16_guard.json"),
+        (V21 / "identity.json", "v21/identity.json"),
+        (ROOT / "configs", "configs"),
     ], MODEL_CARD)
-    data_files = [(ROOT / "data/splits", "splits"), (ROOT / "data/curated", "curated")]
+    data_files = [
+        (ROOT / "data/splits", "splits"),
+        (ROOT / "data/curated", "curated"),
+        (ROOT / "data/interim", "interim"),
+        (ROOT / "data/CURATION_PLAN.md", "sources/CURATION_PLAN.md"),
+        (ROOT / "data/seeds/SOURCES.md", "sources/SOURCES.md"),
+        (ROOT / "data/seeds/MANIFEST.json", "sources/MANIFEST.json"),
+        (ROOT / "data/seeds/harmbench/LICENSE", "sources/HARMBENCH_LICENSE"),
+        (ROOT / "data/seeds/xstest/LICENSE", "sources/XSTEST_LICENSE"),
+    ]
     for name in sorted(os.listdir(V21)):
         data_files.append((V21 / name, f"runs/20261111-180320-270579d4/{name}"))
     data_files.append((V18 / "wilson_kappa.json", "runs/20261110-011925-83c016e0/wilson_kappa.json"))
