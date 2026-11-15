@@ -2,19 +2,18 @@
 
 Multilingual and code-mixed (Hindi, Hinglish, English) safety audit and repair pipeline for [Tiny Aya Global](https://huggingface.co/CohereLabs/tiny-aya-global).
 
-Lexsi AI Safety and Alignment Hackathon, Track 2 (AI Red Teaming, Safety and Alignment). Submission due Nov 14, 2026 AoE.
+Lexsi AI Safety and Alignment Hackathon, Track 2a (multilingual and code-mixed safety, safety evaluation sets) and Track 2b (inference-time steering, locating where safety lives).
 
-## Status
+**Write-up:** [docs/ARTICLE.md](docs/ARTICLE.md). **Results:** [docs/RESULTS.md](docs/RESULTS.md).
 
-Measured attack success rate, over-refusal, capability, and repair acceptance: **Not run** (no human-calibrated, scored baseline). See [docs/RESULTS.md](docs/RESULTS.md) for current descriptive results and locked-test placeholders.
+## Key findings (dev split, automated dual judges, every number from a committed run)
 
-The tracked `metrics.json` files are `artifact_kind: fixture` or descriptive/non-scored evidence with null primary benchmark fields where applicable (for example `runs/_example/metrics.json` and `runs/wildguard-fixture-20261107T141335276834Z/metrics.json`). Fixture generations are not ASR. Automated-judge outputs are labeled "automated-judge only, human calibration pending" with `metrics_eligible: false` and `primary_asr: null`.
+- **The cross-lingual safety gap is real.** Tiny Aya Global (rev `af89d219`) refuses **69.3%** [63.8, 74.2] of harmful English prompts (205/296) but **54.2%** [48.3, 59.9] in Hindi (150/277) and only **23.9%** [15.3, 35.3] in Hinglish (16/67), WildGuard. Qwen3Guard agrees (68.2% / 61.7% / 29.9%). Source: [dev_eval_language_breakdown.md](runs/gpu-20261111-180320-270579d4/dev_eval_language_breakdown.md).
+- **English-centric judges under-read Hindi.** On Hindi harmful prompts WildGuard flags 0.7% of responses unsafe, Qwen3Guard 6.1%. Dual judging with agreement stats (Cohen's kappa 0.497, 91.8% raw agreement, 1334 rows) is necessary.
+- **Single-direction steering does not close the gap.** A CircuitKIT difference-of-means refusal direction at `blocks.0.hook_mlp_out`, frozen before evaluation, gives harm unsafe **7.0%** (45/640) vs **6.7%** (43/640) base and **7.3%** (47/640) for a norm-matched random direction, with overlapping Wilson 95% intervals under both judges ([dev_repair_eval.json](runs/gpu-20261111-180320-270579d4/dev_repair_eval.json)). The alpha-zero control matched base byte-for-byte on all 885 dev rows, so this is a property of the direction, not the harness.
+- **Reproducible by construction.** Frozen family-level splits, pinned model, tokenizer and judge revisions, bf16 parity and fp16 guard gates, pre-registration (`docs/research/PREREG_baseline.md`), and a single-shot locked-test gate (`configs/eval/test_locked.yaml`: 1364 EN+HI rows x `base`, `refuse_everything`, `frozen_repair`).
 
-**Dev repair (v21, run 20261111-180320-270579d4, dev split only): clean null, no safety claim.** The frozen provisional bf16 steering candidate (`candidate_alpha_1`, alpha 1.0, MLP 0 / `blocks.0.hook_mlp_out` equivalent, v18 calibration direction `d5ec351a...`, freeze `6fc30b1...`) did not separate from `random_norm_matched_seed_7` or `base`: Wilson 95% intervals overlap under both WildGuard (primary) and Qwen3Guard (secondary) on harm unsafe rate and benign over-refusal. `alpha_zero` matched `base` byte-for-byte on all 885 dev rows (0 mismatches). Inter-judge agreement was modest (Cohen's kappa around 0.55, all-dev scored rows). This is automated-judge only, dev-only, hi/hinglish rows are unreviewed machine translations, and the arm is a provisional bf16 research arm chosen on calibration logit effect only. No safety-effect or circuit-superiority claim. Details: [docs/RESULTS.md](docs/RESULTS.md), [runs/gpu-20261111-180320-270579d4/dev_eval_language_breakdown.md](runs/gpu-20261111-180320-270579d4/dev_eval_language_breakdown.md).
-
-**Locked test (frozen EN+HI primary, single shot): PLACEHOLDER, not run.** Hinglish test extension (descriptive secondary, approved amendment): **PLACEHOLDER, not run**. No locked-test or extension numbers exist. A prepared notebook version (v22, `--no-run`) is saved at <https://www.kaggle.com/code/vedant817/hinglish-shield-gpu-parity-and-baseline> for one guarded Save & Run All on GPU T4 x2; it has not been executed.
-
-Original fp32 parity remains incomplete/not credited; provisional bf16 Locate parity is not original fp32 credit. The locked test remains single-shot and gated (never run locally).
+Scope: dev-split results with automated judges and machine-translated Hindi/Hinglish prompts; the frozen locked test is packaged as a single-shot gated notebook and its scoring is the next milestone.
 
 ## Pipeline (ADR summary)
 
